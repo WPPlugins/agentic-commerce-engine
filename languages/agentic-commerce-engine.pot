@@ -1,0 +1,1640 @@
+# Copyright (C) 2026 Authoritas
+# This file is distributed under the GPLv2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Agentic Commerce Engine 4.3.1\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/agentic-commerce-engine\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-07-21T17:32:41+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: agentic-commerce-engine\n"
+
+#. Plugin Name of the plugin
+#: agentic-commerce-engine.php
+#: includes/class-admin.php:64
+msgid "Agentic Commerce Engine"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: agentic-commerce-engine.php
+msgid "https://ace.authoritas.com"
+msgstr ""
+
+#. Description of the plugin
+#: agentic-commerce-engine.php
+msgid "Free AI crawler analytics, schema output and publishing tools for any WordPress site. Article generation and AI search research additionally use the ACE service."
+msgstr ""
+
+#. Author of the plugin
+#: agentic-commerce-engine.php
+msgid "Authoritas"
+msgstr ""
+
+#. Author URI of the plugin
+#: agentic-commerce-engine.php
+msgid "https://authoritas.com"
+msgstr ""
+
+#: admin/views/page-aisearch.php:23
+#: admin/views/page-content.php:79
+msgid "Overview"
+msgstr ""
+
+#: admin/views/page-aisearch.php:24
+msgid "Prompts"
+msgstr ""
+
+#: admin/views/page-aisearch.php:25
+msgid "Competitors"
+msgstr ""
+
+#: admin/views/page-aisearch.php:28
+msgid "Crawlers"
+msgstr ""
+
+#: admin/views/page-aisearch.php:29
+#: admin/views/page-aisearch.php:219
+msgid "Runs"
+msgstr ""
+
+#: admin/views/page-aisearch.php:54
+msgid "AI Search research is not part of this ACE plan"
+msgstr ""
+
+#: admin/views/page-aisearch.php:55
+msgid "Research runs query AI answer engines on ACE servers, and that capability is not included on the ACE account this site is linked to. The Crawlers tab is unaffected: it tracks AI crawler visits directly on this site and needs no account at all."
+msgstr ""
+
+#: admin/views/page-aisearch.php:59
+msgid "AI Search research runs on ACE servers"
+msgstr ""
+
+#: admin/views/page-aisearch.php:60
+msgid "Track how AI assistants answer questions about your products, which brands they recommend, and which pages they cite. Querying those engines is work this site cannot do by itself, so it needs an ACE account. The Crawlers tab works without one."
+msgstr ""
+
+#: admin/views/page-aisearch.php:61
+msgid "Open Connection"
+msgstr ""
+
+#: admin/views/page-aisearch.php:73
+msgid "No research results yet"
+msgstr ""
+
+#: admin/views/page-aisearch.php:74
+msgid "Launch your first research run to see how often AI assistants mention your brand and which competitors they recommend instead."
+msgstr ""
+
+#: admin/views/page-aisearch.php:75
+msgid "Go to Runs"
+msgstr ""
+
+#: admin/views/page-aisearch.php:84
+msgid "Share of answers over time"
+msgstr ""
+
+#: admin/views/page-aisearch.php:88
+msgid "Brand presence in AI answers"
+msgstr ""
+
+#: admin/views/page-aisearch.php:92
+msgid "Most cited domains"
+msgstr ""
+
+#: admin/views/page-aisearch.php:96
+msgid "Most mentioned brands"
+msgstr ""
+
+#: admin/views/page-aisearch.php:106
+msgid "Research prompts"
+msgstr ""
+
+#: admin/views/page-aisearch.php:107
+msgid "These are the questions ACE asks the AI engines on every run. Add or replace prompts from the Runs tab."
+msgstr ""
+
+#: admin/views/page-aisearch.php:113
+#: admin/views/page-aisearch.php:114
+msgid "Filter prompts"
+msgstr ""
+
+#: admin/views/page-aisearch.php:124
+msgid "Brands AI assistants recommend"
+msgstr ""
+
+#: admin/views/page-aisearch.php:125
+msgid "How often each brand appears across all AI answers in the latest run. Your brand is highlighted."
+msgstr ""
+
+#: admin/views/page-aisearch.php:129
+msgid "Mention counts"
+msgstr ""
+
+#: admin/views/page-aisearch.php:137
+msgid "Research configuration"
+msgstr ""
+
+#: admin/views/page-aisearch.php:142
+msgid "Create a research flow to start tracking your brand in AI answers. This takes a few seconds and only happens once."
+msgstr ""
+
+#: admin/views/page-aisearch.php:145
+msgid "Flow name"
+msgstr ""
+
+#: admin/views/page-aisearch.php:146
+msgid "My store research"
+msgstr ""
+
+#: admin/views/page-aisearch.php:149
+msgid "Brand name"
+msgstr ""
+
+#: admin/views/page-aisearch.php:150
+msgid "Your brand as customers know it"
+msgstr ""
+
+#: admin/views/page-aisearch.php:153
+msgid "Create research flow"
+msgstr ""
+
+#: admin/views/page-aisearch.php:158
+msgid "Prompts (one per line)"
+msgstr ""
+
+#: admin/views/page-aisearch.php:163
+msgid "What are the best waterproof hiking boots?"
+msgstr ""
+
+#: admin/views/page-aisearch.php:173
+msgid "Topic for suggestions (optional)"
+msgstr ""
+
+#: admin/views/page-aisearch.php:174
+msgid "Topic for suggestions"
+msgstr ""
+
+#: admin/views/page-aisearch.php:178
+msgid "Include branded prompts"
+msgstr ""
+
+#: admin/views/page-aisearch.php:180
+msgid "Suggest prompts"
+msgstr ""
+
+#: admin/views/page-aisearch.php:186
+msgid "Append to saved prompts"
+msgstr ""
+
+#: admin/views/page-aisearch.php:190
+msgid "Replace saved prompts"
+msgstr ""
+
+#: admin/views/page-aisearch.php:192
+msgid "Save prompts"
+msgstr ""
+
+#: admin/views/page-aisearch.php:197
+msgid "AI engines"
+msgstr ""
+
+#: admin/views/page-aisearch.php:199
+msgid "Hold Ctrl or Cmd to pick more than one engine. Leave empty to use the flow defaults."
+msgstr ""
+
+#: admin/views/page-aisearch.php:202
+msgid "Region"
+msgstr ""
+
+#: admin/views/page-aisearch.php:206
+#: admin/views/page-content.php:95
+msgid "Language"
+msgstr ""
+
+#: admin/views/page-aisearch.php:212
+msgid "Estimate credits"
+msgstr ""
+
+#: admin/views/page-aisearch.php:213
+msgid "Launch run"
+msgstr ""
+
+#: admin/views/page-aisearch.php:231
+msgid "AI crawler tracking is currently turned off, so new visits are not being recorded. You can turn it back on under Settings."
+msgstr ""
+
+#: admin/views/page-aisearch.php:236
+msgid "Range"
+msgstr ""
+
+#: admin/views/page-aisearch.php:238
+msgid "Last 7 days"
+msgstr ""
+
+#: admin/views/page-aisearch.php:239
+msgid "Last 30 days"
+msgstr ""
+
+#: admin/views/page-aisearch.php:240
+msgid "Last 90 days"
+msgstr ""
+
+#: admin/views/page-aisearch.php:244
+msgid "Send daily summary to ACE"
+msgstr ""
+
+#: admin/views/page-aisearch.php:246
+msgid "Send now"
+msgstr ""
+
+#: admin/views/page-aisearch.php:255
+msgid "Crawler visits over time"
+msgstr ""
+
+#: admin/views/page-aisearch.php:259
+msgid "Hits by crawler"
+msgstr ""
+
+#: admin/views/page-aisearch.php:265
+msgid "Most crawled pages"
+msgstr ""
+
+#: admin/views/page-aisearch.php:270
+msgid "Daily activity by crawler"
+msgstr ""
+
+#: admin/views/page-aisearch.php:275
+msgid "Counts are a lower bound: page caches and CDNs can serve crawlers without reaching WordPress. For privacy, only the date, crawler name, path, and hit count are stored. IP addresses and full user agents are never recorded."
+msgstr ""
+
+#: admin/views/page-connection.php:21
+msgid "The plugin is free and works on its own"
+msgstr ""
+
+#: admin/views/page-connection.php:23
+msgid "AI crawler analytics, schema output, and the publishing tools are free and always on, with or without an ACE account. Nothing on this page is needed to use them."
+msgstr ""
+
+#: admin/views/page-connection.php:26
+msgid "ACE is a separate service that writes content and runs AI search research on its own servers. Writing an article or querying an AI answer engine is work your site cannot do by itself, so those features send a request to ACE and need an account."
+msgstr ""
+
+#: admin/views/page-connection.php:35
+msgid "Account"
+msgstr ""
+
+#: admin/views/page-connection.php:36
+msgid "This site is linked to your ACE project. The key is stored server-side and never shown again."
+msgstr ""
+
+#: admin/views/page-connection.php:39
+#: admin/views/partial-empty-state.php:29
+msgid "API key"
+msgstr ""
+
+#: admin/views/page-connection.php:43
+msgid "Store ID"
+msgstr ""
+
+#: admin/views/page-connection.php:47
+msgid "Run health check"
+msgstr ""
+
+#: admin/views/page-connection.php:51
+msgid "Remove the connection"
+msgstr ""
+
+#: admin/views/page-connection.php:52
+msgid "Disconnecting removes the API key and store link from this site. Your products, articles, and crawler logs stay untouched, the local features keep working, and you can reconnect at any time."
+msgstr ""
+
+#: admin/views/page-connection.php:53
+msgid "Disconnect"
+msgstr ""
+
+#: admin/views/page-content.php:29
+#: admin/views/page-content.php:42
+msgid "New article"
+msgstr ""
+
+#: admin/views/page-content.php:33
+msgid "Generate"
+msgstr ""
+
+#: admin/views/page-content.php:34
+msgid "Briefs"
+msgstr ""
+
+#: admin/views/page-content.php:35
+#: admin/views/page-content.php:142
+msgid "Published"
+msgstr ""
+
+#: admin/views/page-content.php:45
+msgid "Writing an article is done by a language model on ACE servers, so this form needs an ACE account. The Published tab below works without one."
+msgstr ""
+
+#: admin/views/page-content.php:52
+#: includes/class-meta.php:53
+msgid "Title"
+msgstr ""
+
+#: admin/views/page-content.php:53
+msgid "What should the article be about?"
+msgstr ""
+
+#: admin/views/page-content.php:57
+msgid "Content type"
+msgstr ""
+
+#: admin/views/page-content.php:64
+msgid "Category name"
+msgstr ""
+
+#: admin/views/page-content.php:65
+msgid "Running shoes"
+msgstr ""
+
+#: admin/views/page-content.php:68
+msgid "Category path"
+msgstr ""
+
+#: admin/views/page-content.php:69
+msgid "Shoes > Running"
+msgstr ""
+
+#: admin/views/page-content.php:74
+msgid "Target keywords"
+msgstr ""
+
+#: admin/views/page-content.php:75
+msgid "Comma separated, optional"
+msgstr ""
+
+#: admin/views/page-content.php:80
+msgid "Optional: angle, audience, or anything the writer should know."
+msgstr ""
+
+#: admin/views/page-content.php:85
+msgid "Tone"
+msgstr ""
+
+#: admin/views/page-content.php:86
+msgid "Optional, e.g. friendly expert"
+msgstr ""
+
+#: admin/views/page-content.php:89
+msgid "Word count"
+msgstr ""
+
+#: admin/views/page-content.php:90
+msgid "Auto"
+msgstr ""
+
+#: admin/views/page-content.php:96
+msgid "auto"
+msgstr ""
+
+#: admin/views/page-content.php:99
+msgid "Generate article"
+msgstr ""
+
+#: admin/views/page-content.php:104
+msgid "Generation"
+msgstr ""
+
+#: admin/views/page-content.php:108
+msgid "Starting the writer."
+msgstr ""
+
+#: admin/views/page-content.php:115
+#: includes/class-meta.php:56
+msgid "SEO title"
+msgstr ""
+
+#: admin/views/page-content.php:119
+msgid "SEO description"
+msgstr ""
+
+#: admin/views/page-content.php:123
+msgid "Open in editor"
+msgstr ""
+
+#: admin/views/page-content.php:124
+msgid "Publish now"
+msgstr ""
+
+#: admin/views/page-content.php:125
+msgid "Discard"
+msgstr ""
+
+#: admin/views/page-content.php:136
+msgid "Briefs are stored in your ACE project, so this list is empty without an account. Articles already in WordPress are on the Published tab."
+msgstr ""
+
+#: admin/views/page-content.php:140
+msgid "All statuses"
+msgstr ""
+
+#: admin/views/page-content.php:141
+msgid "Ready to publish"
+msgstr ""
+
+#: admin/views/page-content.php:144
+msgid "Search briefs"
+msgstr ""
+
+#: admin/views/page-content.php:154
+msgid "Articles in WordPress"
+msgstr ""
+
+#. translators: %s: number of products.
+#: admin/views/page-dashboard.php:38
+#, php-format
+msgid "%s product is ready to review."
+msgid_plural "%s products are ready to review."
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/views/page-dashboard.php:43
+msgid "Review now"
+msgstr ""
+
+#: admin/views/page-dashboard.php:61
+msgid "Sync now"
+msgstr ""
+
+#: admin/views/page-dashboard.php:62
+#: admin/views/page-products.php:58
+msgid "Enrich all"
+msgstr ""
+
+#: admin/views/page-dashboard.php:63
+#: admin/views/page-products.php:57
+msgid "Export CSV"
+msgstr ""
+
+#: admin/views/page-dashboard.php:65
+msgid "Generate an article"
+msgstr ""
+
+#: admin/views/page-dashboard.php:66
+msgid "Set up AI research"
+msgstr ""
+
+#: admin/views/page-dashboard.php:68
+msgid "Refresh"
+msgstr ""
+
+#: admin/views/page-dashboard.php:79
+msgid "Optimization coverage"
+msgstr ""
+
+#: admin/views/page-dashboard.php:79
+msgid "How your catalog breaks down by enrichment status. Click a slice to filter Products."
+msgstr ""
+
+#: admin/views/page-dashboard.php:79
+#: admin/views/page-dashboard.php:83
+#: admin/views/page-dashboard.php:87
+#: admin/views/page-dashboard.php:93
+#: admin/views/page-dashboard.php:105
+#: admin/views/page-dashboard.php:121
+msgid "Help"
+msgstr ""
+
+#: admin/views/page-dashboard.php:83
+msgid "AI score distribution"
+msgstr ""
+
+#: admin/views/page-dashboard.php:83
+msgid "AI quality scores for enriched products, grouped into buckets from 0 to 100."
+msgstr ""
+
+#: admin/views/page-dashboard.php:87
+msgid "Products optimized in the last 14 days"
+msgstr ""
+
+#: admin/views/page-dashboard.php:87
+msgid "Number of products you applied AI content to each day over the last 14 days."
+msgstr ""
+
+#: admin/views/page-dashboard.php:93
+msgid "AI bot hits, last 7 days"
+msgstr ""
+
+#: admin/views/page-dashboard.php:93
+msgid "Visits from AI crawlers such as GPTBot, ClaudeBot, and PerplexityBot, tracked natively on this site."
+msgstr ""
+
+#: admin/views/page-dashboard.php:99
+msgid "See the full crawler breakdown"
+msgstr ""
+
+#: admin/views/page-dashboard.php:105
+#: includes/class-assets.php:283
+msgid "Credits"
+msgstr ""
+
+#: admin/views/page-dashboard.php:105
+msgid "Your ACE service balance. Generating content for one product or one content type uses about one credit."
+msgstr ""
+
+#. translators: 1: credits used, 2: credit limit.
+#: admin/views/page-dashboard.php:111
+#: includes/class-assets.php:285
+#, php-format
+msgid "%1$s used of %2$s"
+msgstr ""
+
+#: admin/views/page-dashboard.php:121
+msgid "Share of Brand Mentions in AI answers"
+msgstr ""
+
+#: admin/views/page-dashboard.php:121
+msgid "How often AI answers mention your brand across your tracked prompts, from your AI Search research runs."
+msgstr ""
+
+#: admin/views/page-dashboard.php:124
+msgid "Open AI Search"
+msgstr ""
+
+#: admin/views/page-dashboard.php:133
+#: admin/views/page-dashboard.php:134
+#: admin/views/page-products.php:107
+#: admin/views/page-products.php:108
+#: includes/class-assets.php:234
+msgid "Choose what to enrich"
+msgstr ""
+
+#: admin/views/page-dashboard.php:139
+#: admin/views/page-products.php:113
+#: includes/class-assets.php:208
+msgid "Cancel"
+msgstr ""
+
+#: admin/views/page-dashboard.php:140
+#: admin/views/page-products.php:114
+#: includes/class-assets.php:235
+msgid "Enrich now"
+msgstr ""
+
+#: admin/views/page-products.php:22
+msgid "All"
+msgstr ""
+
+#: admin/views/page-products.php:23
+#: includes/class-admin.php:195
+#: includes/class-assets.php:255
+#: includes/class-dashboard.php:170
+msgid "Not enriched"
+msgstr ""
+
+#: admin/views/page-products.php:24
+#: includes/class-admin.php:188
+#: includes/class-assets.php:250
+#: includes/class-dashboard.php:152
+msgid "Queued"
+msgstr ""
+
+#: admin/views/page-products.php:25
+msgid "Ready"
+msgstr ""
+
+#: admin/views/page-products.php:26
+#: admin/views/page-review.php:25
+#: includes/class-admin.php:190
+#: includes/class-assets.php:252
+#: includes/class-dashboard.php:140
+msgid "Applied"
+msgstr ""
+
+#: admin/views/page-products.php:27
+#: includes/class-admin.php:192
+#: includes/class-assets.php:254
+#: includes/class-dashboard.php:158
+msgid "Failed"
+msgstr ""
+
+#: admin/views/page-products.php:33
+msgid "Filter by enrichment status"
+msgstr ""
+
+#: admin/views/page-products.php:44
+#: admin/views/page-review.php:31
+msgid "Search by name or SKU"
+msgstr ""
+
+#: admin/views/page-products.php:46
+msgid "All categories"
+msgstr ""
+
+#: admin/views/page-products.php:52
+msgid "Recently updated"
+msgstr ""
+
+#: admin/views/page-products.php:53
+msgid "Name (A to Z)"
+msgstr ""
+
+#: admin/views/page-products.php:54
+msgid "Highest score"
+msgstr ""
+
+#: admin/views/page-products.php:67
+msgid "Enrich selected"
+msgstr ""
+
+#: admin/views/page-products.php:68
+msgid "Clear"
+msgstr ""
+
+#: admin/views/page-products.php:83
+msgid "Select all rows on this page"
+msgstr ""
+
+#: admin/views/page-products.php:84
+msgid "Image"
+msgstr ""
+
+#: admin/views/page-products.php:85
+msgid "Product"
+msgstr ""
+
+#: admin/views/page-products.php:86
+msgid "SKU"
+msgstr ""
+
+#: admin/views/page-products.php:87
+msgid "Status"
+msgstr ""
+
+#: admin/views/page-products.php:88
+msgid "Score"
+msgstr ""
+
+#: admin/views/page-products.php:92
+msgid "Loading products"
+msgstr ""
+
+#: admin/views/page-products.php:98
+msgid "Previous"
+msgstr ""
+
+#: admin/views/page-products.php:100
+msgid "Next"
+msgstr ""
+
+#: admin/views/page-review.php:19
+msgid "Review queues"
+msgstr ""
+
+#: admin/views/page-review.php:21
+msgid "Pending"
+msgstr ""
+
+#: admin/views/page-review.php:33
+msgid "Approve all"
+msgstr ""
+
+#: admin/views/page-review.php:44
+msgid "Loading"
+msgstr ""
+
+#: admin/views/page-review.php:46
+#: admin/views/page-review.php:51
+#: includes/class-assets.php:210
+msgid "Load more"
+msgstr ""
+
+#: admin/views/page-settings.php:37
+msgid "AI crawler tracking"
+msgstr ""
+
+#: admin/views/page-settings.php:38
+msgid "Native, on-site logging of visits from AI crawlers such as GPTBot, ClaudeBot, and PerplexityBot. Powers the Crawlers tab on the AI Search screen."
+msgstr ""
+
+#: admin/views/page-settings.php:42
+msgid "Track AI crawler visits on this site"
+msgstr ""
+
+#: admin/views/page-settings.php:47
+msgid "Store the page path for each visit (per-page breakdowns)"
+msgstr ""
+
+#: admin/views/page-settings.php:49
+msgid "Turn this off to keep only one aggregate row per crawler per day."
+msgstr ""
+
+#: admin/views/page-settings.php:52
+msgid "Keep crawler logs for"
+msgstr ""
+
+#: admin/views/page-settings.php:54
+msgid "30 days"
+msgstr ""
+
+#: admin/views/page-settings.php:55
+msgid "90 days"
+msgstr ""
+
+#: admin/views/page-settings.php:56
+msgid "180 days"
+msgstr ""
+
+#: admin/views/page-settings.php:62
+msgid "Send daily crawler totals to my ACE project"
+msgstr ""
+
+#: admin/views/page-settings.php:65
+msgid "Optional. When enabled, ACE receives one aggregate row per crawler per day (crawler name, date, hit count). No visitor data, IP addresses, cookies, or personal information ever leave your site; regular human traffic is never logged."
+msgstr ""
+
+#: admin/views/page-settings.php:68
+msgid "Tracking, path storage, and retention all run entirely on this site and are active right now. Only the optional daily report, which sends totals to ACE, needs an account."
+msgstr ""
+
+#: admin/views/page-settings.php:74
+msgid "Content publishing"
+msgstr ""
+
+#: admin/views/page-settings.php:75
+msgid "How articles from the Content screen land in WordPress."
+msgstr ""
+
+#: admin/views/page-settings.php:79
+msgid "Default status"
+msgstr ""
+
+#: admin/views/page-settings.php:81
+msgid "Draft (review before it goes live)"
+msgstr ""
+
+#: admin/views/page-settings.php:82
+msgid "Publish immediately"
+msgstr ""
+
+#: admin/views/page-settings.php:86
+msgid "Editor format"
+msgstr ""
+
+#: admin/views/page-settings.php:88
+msgid "Block editor (Gutenberg blocks)"
+msgstr ""
+
+#: admin/views/page-settings.php:89
+msgid "Classic HTML"
+msgstr ""
+
+#: admin/views/page-settings.php:93
+msgid "Default author"
+msgstr ""
+
+#: admin/views/page-settings.php:95
+msgid "The user who publishes"
+msgstr ""
+
+#: admin/views/page-settings.php:102
+msgid "Output Article schema (JSON-LD) on published ACE articles"
+msgstr ""
+
+#: admin/views/page-settings.php:109
+msgid "Automation"
+msgstr ""
+
+#: admin/views/page-settings.php:110
+msgid "Keep your catalog and AI content moving without manual clicks."
+msgstr ""
+
+#: admin/views/page-settings.php:114
+msgid "Auto-sync my catalog on a schedule"
+msgstr ""
+
+#: admin/views/page-settings.php:118
+msgid "Frequency"
+msgstr ""
+
+#: admin/views/page-settings.php:120
+msgid "Daily"
+msgstr ""
+
+#: admin/views/page-settings.php:121
+msgid "Weekly"
+msgstr ""
+
+#: admin/views/page-settings.php:127
+msgid "Auto-apply AI suggestions without review"
+msgstr ""
+
+#: admin/views/page-settings.php:129
+msgid "When on, AI changes go live on your products automatically. You can still revert any product from the Review screen."
+msgstr ""
+
+#: admin/views/page-settings.php:131
+msgid "Scheduled sync and auto-apply send products to ACE for enrichment, so they need an account. The schema and product-page options below work on their own."
+msgstr ""
+
+#: admin/views/page-settings.php:136
+msgid "Output Product schema (JSON-LD) on product pages"
+msgstr ""
+
+#: admin/views/page-settings.php:141
+msgid "Show IRL scenarios and internal links on the product page automatically"
+msgstr ""
+
+#: admin/views/page-settings.php:143
+msgid "Or place them yourself with the [agencoen_irl] and [agencoen_internal_links] shortcodes, or the ACE editor blocks."
+msgstr ""
+
+#. translators: %s: SEO plugin name.
+#: admin/views/page-settings.php:149
+#, php-format
+msgid "Detected %s. ACE automatically suppresses its schema output when your SEO plugin already emits Product schema, to avoid duplicates."
+msgstr ""
+
+#: admin/views/page-settings.php:161
+#: includes/class-assets.php:238
+msgid "Channel feeds"
+msgstr ""
+
+#: admin/views/page-settings.php:162
+msgid "When you enrich products with a channel feed type, ACE serves the feed at these URLs."
+msgstr ""
+
+#: admin/views/page-settings.php:165
+msgid "Google Merchant"
+msgstr ""
+
+#: admin/views/page-settings.php:166
+msgid "Microsoft Bing"
+msgstr ""
+
+#: admin/views/page-settings.php:167
+msgid "Agentic Commerce"
+msgstr ""
+
+#: admin/views/page-settings.php:176
+msgid "Regenerate feed URLs"
+msgstr ""
+
+#: admin/views/page-settings.php:177
+msgid "Each URL carries a private token, so only the channels you give it to can read the feed. Regenerating invalidates the old URLs; update them in Google and Microsoft afterwards."
+msgstr ""
+
+#: admin/views/page-settings.php:183
+#: admin/views/partial-empty-state.php:42
+msgid "Advanced"
+msgstr ""
+
+#: admin/views/page-settings.php:184
+msgid "Platform endpoint, webhook, and diagnostics."
+msgstr ""
+
+#: admin/views/page-settings.php:187
+#: admin/views/partial-empty-state.php:44
+msgid "Platform URL"
+msgstr ""
+
+#: admin/views/page-settings.php:192
+msgid "Webhook URL (read-only)"
+msgstr ""
+
+#: admin/views/page-settings.php:198
+msgid "Enable debug logging"
+msgstr ""
+
+#: admin/views/page-settings.php:203
+msgid "Save settings"
+msgstr ""
+
+#. translators: %s: number of AI crawler visits recorded in the last 7 days.
+#: admin/views/partial-connect-banner.php:28
+#, php-format
+msgid "%s AI crawler visit tracked this week. Want to know what the AI engines say?"
+msgid_plural "%s AI crawler visits tracked this week. Want to know what the AI engines say?"
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/views/partial-connect-banner.php:34
+msgid "The crawler analytics, schema output, and publishing tools you are using stay free and local either way. Connecting an optional ACE account adds work this site cannot do by itself: querying the AI answer engines about your brand, writing articles, and generating product content on ACE servers."
+msgstr ""
+
+#: admin/views/partial-connect-banner.php:39
+#: admin/views/partial-header.php:47
+msgid "Connect"
+msgstr ""
+
+#: admin/views/partial-connect-banner.php:41
+#: admin/views/partial-start-here.php:50
+#: includes/class-assets.php:266
+msgid "Dismiss"
+msgstr ""
+
+#: admin/views/partial-empty-state.php:21
+msgid "Connect your site to ACE"
+msgstr ""
+
+#: admin/views/partial-empty-state.php:23
+msgid "Paste your API key from the ACE platform to add AI writing and AI search research. The crawler analytics and publishing tools on this site do not use it."
+msgstr ""
+
+#: admin/views/partial-empty-state.php:33
+msgid "Connect site"
+msgstr ""
+
+#: admin/views/partial-empty-state.php:37
+msgid "Where do I find my API key?"
+msgstr ""
+
+#: admin/views/partial-empty-state.php:52
+msgid "What the ACE service adds"
+msgstr ""
+
+#: admin/views/partial-empty-state.php:55
+msgid "AI-written product titles, descriptions, and SEO meta, with a before/after review queue"
+msgstr ""
+
+#: admin/views/partial-empty-state.php:56
+#: admin/views/partial-empty-state.php:61
+msgid "AI-drafted articles published straight into WordPress"
+msgstr ""
+
+#: admin/views/partial-empty-state.php:57
+#: admin/views/partial-empty-state.php:62
+msgid "AI search visibility research for your brand and market"
+msgstr ""
+
+#: admin/views/partial-empty-state.php:63
+msgid "AI product content is available when WooCommerce is active"
+msgstr ""
+
+#: admin/views/partial-empty-state.php:67
+msgid "Crawler analytics, Product and Article JSON-LD, the channel feed URLs, and the publishing tools are part of the plugin and stay free either way."
+msgstr ""
+
+#: admin/views/partial-header.php:34
+msgid "ACE quick links"
+msgstr ""
+
+#: admin/views/partial-header.php:35
+msgid "Open ACE app"
+msgstr ""
+
+#: admin/views/partial-header.php:36
+msgid "Docs"
+msgstr ""
+
+#: admin/views/partial-header.php:40
+msgid "Connected"
+msgstr ""
+
+#: admin/views/partial-header.php:46
+msgid "Not connected"
+msgstr ""
+
+#: admin/views/partial-requires-woo.php:18
+msgid "WooCommerce required"
+msgstr ""
+
+#: admin/views/partial-requires-woo.php:19
+msgid "Product optimization needs WooCommerce"
+msgstr ""
+
+#: admin/views/partial-requires-woo.php:21
+msgid "This screen works with your WooCommerce products, so it has nothing to show until WooCommerce is installed. Activate it and this screen starts working straight away, with no other setup."
+msgstr ""
+
+#: admin/views/partial-requires-woo.php:24
+msgid "Sync your product catalog to ACE"
+msgstr ""
+
+#: admin/views/partial-requires-woo.php:25
+msgid "Generate AI product content and approve it in a before/after review queue"
+msgstr ""
+
+#: admin/views/partial-requires-woo.php:26
+msgid "Emit enhanced Product JSON-LD on every product page"
+msgstr ""
+
+#: admin/views/partial-requires-woo.php:27
+msgid "Serve Google, Bing, and Agentic Commerce channel feeds"
+msgstr ""
+
+#: admin/views/partial-requires-woo.php:28
+msgid "Track per-product AI readiness scores"
+msgstr ""
+
+#: admin/views/partial-requires-woo.php:33
+msgid "Install WooCommerce"
+msgstr ""
+
+#: admin/views/partial-requires-woo.php:37
+msgid "Explore the Content screen"
+msgstr ""
+
+#: admin/views/partial-start-here.php:19
+msgid "Already running on this site"
+msgstr ""
+
+#: admin/views/partial-start-here.php:21
+msgid "AI crawler tracking and schema output switched on when you activated the plugin. Pick up where they lead:"
+msgstr ""
+
+#: admin/views/partial-start-here.php:25
+msgid "See which AI crawlers visit your store"
+msgstr ""
+
+#: admin/views/partial-start-here.php:25
+msgid "See which AI crawlers visit your site"
+msgstr ""
+
+#: admin/views/partial-start-here.php:29
+msgid "Browse your catalog with AI readiness scores"
+msgstr ""
+
+#: admin/views/partial-start-here.php:32
+msgid "Copy your Google and Microsoft feed URLs"
+msgstr ""
+
+#: admin/views/partial-start-here.php:36
+msgid "See the articles already on this site"
+msgstr ""
+
+#: admin/views/partial-start-here.php:40
+msgid "Choose how articles publish: drafts, blocks, author"
+msgstr ""
+
+#: admin/views/partial-start-here.php:45
+msgid "Install WooCommerce and the product tools (sync, review queue, feeds, product schema) switch on by themselves."
+msgstr ""
+
+#. translators: %s: current PHP version.
+#: agentic-commerce-engine.php:101
+#, php-format
+msgid "Agentic Commerce Engine requires PHP 8.0 or higher. You are running %s."
+msgstr ""
+
+#: includes/class-admin.php:72
+#: includes/class-admin.php:95
+msgid "Dashboard"
+msgstr ""
+
+#: includes/class-admin.php:73
+#: includes/class-admin.php:100
+msgid "Products"
+msgstr ""
+
+#: includes/class-admin.php:74
+#: includes/class-admin.php:105
+msgid "Review"
+msgstr ""
+
+#: includes/class-admin.php:75
+#: includes/class-admin.php:110
+msgid "Content"
+msgstr ""
+
+#: includes/class-admin.php:76
+#: includes/class-admin.php:115
+msgid "AI Search"
+msgstr ""
+
+#: includes/class-admin.php:77
+#: includes/class-admin.php:89
+#: includes/class-admin.php:120
+msgid "Settings"
+msgstr ""
+
+#: includes/class-admin.php:78
+#: includes/class-admin.php:125
+msgid "Connection"
+msgstr ""
+
+#: includes/class-admin.php:189
+#: includes/class-assets.php:251
+#: includes/class-dashboard.php:146
+msgid "Ready to review"
+msgstr ""
+
+#: includes/class-admin.php:191
+#: includes/class-assets.php:253
+#: includes/class-dashboard.php:164
+msgid "Dismissed"
+msgstr ""
+
+#: includes/class-ajax-aeo.php:63
+msgid "AI Search research is not enabled for this ACE deployment."
+msgstr ""
+
+#: includes/class-ajax-aeo.php:108
+msgid "Add at least one prompt (three characters or more, one per line)."
+msgstr ""
+
+#: includes/class-ajax-aeo.php:155
+msgid "Missing run id."
+msgstr ""
+
+#: includes/class-ajax-aeo.php:196
+msgid "Enter a flow name and your brand name."
+msgstr ""
+
+#: includes/class-ajax-base.php:51
+msgid "Permission denied."
+msgstr ""
+
+#: includes/class-ajax-base.php:60
+#: includes/class-bot-tracker.php:293
+msgid "Connect your site first."
+msgstr ""
+
+#: includes/class-ajax-base.php:69
+msgid "This feature needs WooCommerce."
+msgstr ""
+
+#: includes/class-ajax-content.php:64
+msgid "Give the article a title of at least 3 characters."
+msgstr ""
+
+#: includes/class-ajax-content.php:129
+msgid "Missing job id."
+msgstr ""
+
+#: includes/class-ajax-content.php:179
+#: includes/class-ajax-content.php:208
+msgid "Missing brief id."
+msgstr ""
+
+#: includes/class-ajax-content.php:290
+msgid "Missing post id."
+msgstr ""
+
+#: includes/class-ajax-content.php:294
+msgid "Could not move this post to the trash."
+msgstr ""
+
+#: includes/class-ajax.php:76
+msgid "Please paste your API key."
+msgstr ""
+
+#: includes/class-ajax.php:188
+#: includes/class-enrichment.php:47
+msgid "No products selected."
+msgstr ""
+
+#: includes/class-api-client.php:475
+msgid "No API key configured. Connect your site first."
+msgstr ""
+
+#. translators: %d: HTTP status code.
+#: includes/class-api-client.php:605
+#, php-format
+msgid "The ACE platform returned an error (HTTP %d)."
+msgstr ""
+
+#: includes/class-apply.php:53
+msgid "No pending enrichment to apply."
+msgstr ""
+
+#: includes/class-apply.php:58
+#: includes/class-apply.php:155
+msgid "Product not found."
+msgstr ""
+
+#: includes/class-apply.php:150
+msgid "No backup to revert to."
+msgstr ""
+
+#: includes/class-articles.php:169
+#: includes/class-enrichment.php:72
+msgid "The platform did not return a job id."
+msgstr ""
+
+#: includes/class-assets.php:206
+msgid "Something went wrong. Please try again."
+msgstr ""
+
+#: includes/class-assets.php:207
+msgid "No data yet"
+msgstr ""
+
+#: includes/class-assets.php:209
+msgid "Done."
+msgstr ""
+
+#: includes/class-assets.php:211
+msgid "Saving…"
+msgstr ""
+
+#: includes/class-assets.php:212
+msgid "Open your ACE account"
+msgstr ""
+
+#: includes/class-assets.php:213
+msgid "Expand"
+msgstr ""
+
+#: includes/class-assets.php:214
+msgid "just now"
+msgstr ""
+
+#. translators: %s: number of minutes.
+#: includes/class-assets.php:216
+#, php-format
+msgid "%sm ago"
+msgstr ""
+
+#. translators: %s: number of hours.
+#: includes/class-assets.php:218
+#, php-format
+msgid "%sh ago"
+msgstr ""
+
+#. translators: %s: number of days.
+#: includes/class-assets.php:220
+#, php-format
+msgid "%sd ago"
+msgstr ""
+
+#. translators: 1: number processed, 2: total number.
+#: includes/class-assets.php:222
+#, php-format
+msgid "Processing %1$s of %2$s…"
+msgstr ""
+
+#: includes/class-assets.php:225
+msgid "Connecting…"
+msgstr ""
+
+#: includes/class-assets.php:226
+msgid "Could not connect. Check your API key and try again."
+msgstr ""
+
+#: includes/class-assets.php:227
+msgid "Disconnect this site from ACE? Your API key will be removed."
+msgstr ""
+
+#: includes/class-assets.php:230
+msgid "Syncing…"
+msgstr ""
+
+#: includes/class-assets.php:231
+msgid "Sync complete."
+msgstr ""
+
+#: includes/class-assets.php:232
+msgid "Sending to AI…"
+msgstr ""
+
+#: includes/class-assets.php:233
+msgid "Queued for enrichment. Results appear as they finish."
+msgstr ""
+
+#: includes/class-assets.php:236
+msgid "Pick at least one content type."
+msgstr ""
+
+#: includes/class-assets.php:237
+msgid "On the product page"
+msgstr ""
+
+#: includes/class-assets.php:239
+msgid "Recommended"
+msgstr ""
+
+#: includes/class-assets.php:242
+msgid "No products match."
+msgstr ""
+
+#. translators: %s: number of selected products.
+#: includes/class-assets.php:244
+#, php-format
+msgid "%s selected"
+msgstr ""
+
+#. translators: %s: number of matching products.
+#: includes/class-assets.php:246
+#, php-format
+msgid "Select all %s matching"
+msgstr ""
+
+#: includes/class-assets.php:247
+msgid "Keep only the checked rows"
+msgstr ""
+
+#. translators: 1: current page, 2: total pages.
+#: includes/class-assets.php:249
+#, php-format
+msgid "Page %1$s of %2$s"
+msgstr ""
+
+#: includes/class-assets.php:258
+msgid "Nothing to review right now."
+msgstr ""
+
+#: includes/class-assets.php:259
+msgid "No applied products yet."
+msgstr ""
+
+#: includes/class-assets.php:260
+msgid "Apply every pending suggestion to your live products?"
+msgstr ""
+
+#: includes/class-assets.php:261
+msgid "Applying…"
+msgstr ""
+
+#: includes/class-assets.php:262
+msgid "Applied to your product."
+msgstr ""
+
+#: includes/class-assets.php:263
+msgid "Dismissed."
+msgstr ""
+
+#: includes/class-assets.php:264
+msgid "Reverted to the original."
+msgstr ""
+
+#: includes/class-assets.php:265
+msgid "Approve"
+msgstr ""
+
+#: includes/class-assets.php:267
+msgid "Revert to original"
+msgstr ""
+
+#: includes/class-assets.php:268
+msgid "Edit"
+msgstr ""
+
+#: includes/class-assets.php:269
+msgid "Current"
+msgstr ""
+
+#: includes/class-assets.php:270
+msgid "AI suggestion"
+msgstr ""
+
+#: includes/class-assets.php:271
+msgid "no change"
+msgstr ""
+
+#: includes/class-assets.php:272
+msgid "(empty)"
+msgstr ""
+
+#. translators: %s: AI quality score.
+#: includes/class-assets.php:274
+#, php-format
+msgid "Score %s"
+msgstr ""
+
+#. translators: %s: number of scenarios.
+#: includes/class-assets.php:276
+#, php-format
+msgid "IRL scenarios (%s)"
+msgstr ""
+
+#: includes/class-assets.php:277
+#: includes/class-content-types.php:59
+msgid "Internal links"
+msgstr ""
+
+#: includes/class-assets.php:278
+msgid "JSON-LD schema"
+msgstr ""
+
+#. translators: %s: feed channel key.
+#: includes/class-assets.php:280
+#, php-format
+msgid "%s feed"
+msgstr ""
+
+#: includes/class-assets.php:286
+msgid "credits used"
+msgstr ""
+
+#: includes/class-assets.php:287
+msgid "Products optimized"
+msgstr ""
+
+#. translators: 1: optimized count, 2: total products.
+#: includes/class-assets.php:289
+#, php-format
+msgid "%1$s of %2$s products"
+msgstr ""
+
+#: includes/class-assets.php:290
+msgid "Not installed"
+msgstr ""
+
+#: includes/class-assets.php:291
+msgid "Product optimization is available with WooCommerce."
+msgstr ""
+
+#: includes/class-assets.php:292
+msgid "Articles published"
+msgstr ""
+
+#. translators: %s: number of draft articles.
+#: includes/class-assets.php:294
+#, php-format
+msgid "%s drafts waiting"
+msgstr ""
+
+#: includes/class-assets.php:295
+msgid "AI bot hits, 7 days"
+msgstr ""
+
+#: includes/class-assets.php:296
+msgid "vs the prior 7 days"
+msgstr ""
+
+#: includes/class-assets.php:297
+msgid "Share of Brand Mentions"
+msgstr ""
+
+#: includes/class-assets.php:298
+msgid "of AI answers mention your brand"
+msgstr ""
+
+#: includes/class-assets.php:299
+msgid "Not measured yet"
+msgstr ""
+
+#: includes/class-assets.php:300
+msgid "Run AI search research to measure this."
+msgstr ""
+
+#: includes/class-assets.php:301
+msgid "optimized"
+msgstr ""
+
+#: includes/class-assets.php:302
+msgid "Products applied per day"
+msgstr ""
+
+#: includes/class-assets.php:305
+msgid "AI Search research is not set up for this ACE account yet. Finish setup in the ACE app, then reload this page. The Crawlers tab works either way."
+msgstr ""
+
+#: includes/class-assets.php:306
+msgid "Estimated cost:"
+msgstr ""
+
+#: includes/class-assets.php:309
+msgid "Settings saved."
+msgstr ""
+
+#. translators: %s: credit balance.
+#: includes/class-assets.php:311
+#, php-format
+msgid "Connection healthy. %s credits available."
+msgstr ""
+
+#. translators: 1: crawler name, 2: date, 3: hit count.
+#: includes/class-bot-tracker.php:561
+#, php-format
+msgid "%1$s, %2$s: %3$s hits"
+msgstr ""
+
+#: includes/class-content-types.php:31
+msgid "IRL scenario cards"
+msgstr ""
+
+#: includes/class-content-types.php:32
+msgid "Real-life usage scenarios shown on the product page (highest AI visibility impact)."
+msgstr ""
+
+#: includes/class-content-types.php:38
+msgid "Enhanced JSON-LD schema"
+msgstr ""
+
+#: includes/class-content-types.php:39
+msgid "Rich Product structured data (reviews, FAQ, breadcrumbs) injected into the page head."
+msgstr ""
+
+#: includes/class-content-types.php:45
+msgid "Product description"
+msgstr ""
+
+#: includes/class-content-types.php:46
+msgid "Conversion-optimized description, short description, and CTA."
+msgstr ""
+
+#: includes/class-content-types.php:52
+msgid "Meta tags & SEO"
+msgstr ""
+
+#: includes/class-content-types.php:53
+msgid "Optimized SEO title, meta description, and social tags."
+msgstr ""
+
+#: includes/class-content-types.php:60
+msgid "Semantic related-product and category link suggestions for the product page."
+msgstr ""
+
+#: includes/class-content-types.php:66
+msgid "Google Merchant feed"
+msgstr ""
+
+#: includes/class-content-types.php:67
+msgid "Google Shopping feed records, served at a feed URL."
+msgstr ""
+
+#: includes/class-content-types.php:73
+msgid "Agentic Commerce feed"
+msgstr ""
+
+#: includes/class-content-types.php:74
+msgid "OpenAI's Agentic Commerce Protocol feed for AI shopping agents."
+msgstr ""
+
+#: includes/class-content-types.php:80
+msgid "Microsoft Bing feed"
+msgstr ""
+
+#: includes/class-content-types.php:81
+msgid "Microsoft Bing Shopping feed records, served at a feed URL."
+msgstr ""
+
+#: includes/class-cron.php:87
+msgid "Once Weekly"
+msgstr ""
+
+#: includes/class-dashboard.php:318
+#: includes/class-dashboard.php:322
+msgid "Never"
+msgstr ""
+
+#. translators: %s: human-readable time difference.
+#: includes/class-dashboard.php:326
+#, php-format
+msgid "%s ago"
+msgstr ""
+
+#: includes/class-feeds.php:81
+msgid "Per-site feed token from the ACE Settings screen."
+msgstr ""
+
+#: includes/class-feeds.php:103
+msgid "Invalid or missing feed token. Copy the feed URL from the ACE Settings screen."
+msgstr ""
+
+#: includes/class-frontend.php:151
+msgid "How customers use this"
+msgstr ""
+
+#: includes/class-frontend.php:188
+msgid "Related products"
+msgstr ""
+
+#: includes/class-frontend.php:188
+msgid "You might also like"
+msgstr ""
+
+#: includes/class-meta.php:54
+msgid "Short description"
+msgstr ""
+
+#: includes/class-meta.php:55
+msgid "Description"
+msgstr ""
+
+#: includes/class-meta.php:57
+msgid "SEO meta description"
+msgstr ""
+
+#: includes/class-poller.php:71
+msgid "Some products failed to enrich."
+msgstr ""
+
+#: includes/class-poller.php:209
+msgid "Enrichment timed out."
+msgstr ""
+
+#: includes/class-publisher.php:50
+msgid "The article payload is missing its brief id."
+msgstr ""
+
+#: includes/class-publisher.php:55
+msgid "This brief has no generated article yet."
+msgstr ""
+
+#: includes/class-publisher.php:148
+msgid "This post was not created by ACE."
+msgstr ""
+
+#: includes/class-webhook.php:99
+msgid "Store not connected."
+msgstr ""
+
+#: includes/class-webhook.php:109
+msgid "Invalid signature."
+msgstr ""

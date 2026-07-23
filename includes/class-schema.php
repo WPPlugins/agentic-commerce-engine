@@ -1,0 +1,366 @@
+<?php
+/**
+ * Emits schema.org Product JSON-LD on single product pages, built from the live
+ * (post-apply, AI-optimized) product. Self-suppresses when another SEO plugin
+ * already outputs Product schema, and suppresses WooCommerce core's basic
+ * Product entity when this richer graph is emitted, so a page never carries
+ * two Product blocks.
+ *
+ * @package Agencoen
+ */
+
+namespace Agencoen;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Class Schema
+ */
+class Schema {
+
+	/** @var Plugin */
+	private $plugin;
+
+	/**
+	 * Lowercased @type slugs this plugin actually emitted on the current page.
+	 * Filled by output() (wp_head), consumed by filter_wc_types() (wp_footer).
+	 *
+	 * @var string[]
+	 */
+	private $emitted_types = array();
+
+	/**
+	 * @param Plugin $plugin Orchestrator.
+	 */
+	public function __construct( Plugin $plugin ) {
+		$this->plugin = $plugin;
+	}
+
+	/**
+	 * Hook into the storefront head.
+	 */
+	public function register() {
+		add_action( 'wp_head', array( $this, 'output' ), 99 );
+		add_filter( 'woocommerce_structured_data_type_for_page', array( $this, 'filter_wc_types' ) );
+	}
+
+	/**
+	 * Drop from WooCommerce core's structured data every entity type this
+	 * plugin already emitted on the page (Product, BreadcrumbList, ...), so the
+	 * page never carries duplicate entities. Woo types we did not emit are kept.
+	 *
+	 * @param array $types Structured-data type slugs Woo plans to output.
+	 * @return array
+	 */
+	public function filter_wc_types( $types ) {
+		return self::strip_emitted_types( (array) $types, $this->emitted_types );
+	}
+
+	/**
+	 * Pure filter body: remove the types we emitted from Woo's type list. Used
+	 * by filter_wc_types() and tests.
+	 *
+	 * @param array    $types   Structured-data type slugs Woo plans to output.
+	 * @param string[] $emitted Lowercased type slugs this plugin emitted.
+	 * @return array
+	 */
+	public static function strip_emitted_types( array $types, array $emitted ) {
+		if ( empty( $emitted ) ) {
+			return $types;
+		}
+		return array_values( array_diff( $types, $emitted ) );
+	}
+
+	/**
+	 * Collect the lowercased @type slugs present in an emitted JSON-LD array
+	 * (either a single entity or a @graph of entities). Pure.
+	 *
+	 * @param array $graph Emitted JSON-LD structure.
+	 * @return string[]
+	 */
+	public static function graph_types( array $graph ) {
+		$entities = isset( $graph['@graph'] ) && is_array( $graph['@graph'] ) ? $graph['@graph'] : array( $graph );
+		$found    = array();
+		foreach ( $entities as $entity ) {
+			if ( ! is_array( $entity ) || empty( $entity['@type'] ) ) {
+				continue;
+			}
+			foreach ( (array) $entity['@type'] as $type ) {
+				if ( is_string( $type ) && '' !== $type ) {
+					$found[] = strtolower( $type );
+				}
+			}
+		}
+		return array_values( array_unique( $found ) );
+	}
+
+	/**
+	 * Decide whether to output, then print one JSON-LD script block.
+	 */
+	public function output() {
+		if ( ! $this->should_output() ) {
+			return;
+		}
+
+		$pid = get_queried_object_id();
+
+		// Prefer the platform-generated schema graph if it has been applied.
+		$graph  = null;
+		$stored = get_post_meta( $pid, Meta::JSONLD, true );
+		if ( ! empty( $stored ) ) {
+			$decoded = is_string( $stored ) ? json_decode( $stored, true ) : $stored;
+			if ( is_array( $decoded ) && ! empty( $decoded ) ) {
+				$graph = ( isset( $decoded['@graph'] ) || isset( $decoded['@context'] ) )
+					? $decoded
+					: array( '@context' => 'https://schema.org', '@graph' => array_values( $decoded ) );
+			}
+		}
+
+		// Otherwise build locally from the live product.
+		if ( ! is_array( $graph ) || empty( $graph ) ) {
+			$product = wc_get_product( $pid );
+			if ( ! $product ) {
+				return;
+			}
+			$graph = self::build_graph( $this->context( $product ) );
+		}
+
+		if ( empty( $graph ) || ( isset( $graph['@graph'] ) && empty( $graph['@graph'] ) ) ) {
+			return;
+		}
+
+		$json = wp_json_encode( $graph, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+		if ( ! is_string( $json ) || '' === $json ) {
+			return;
+		}
+		$this->emitted_types = self::graph_types( $graph );
+		// Defense in depth: a </script> sequence inside a string value must not
+		// break out of the tag.
+		$json = str_ireplace( '</script', '<\/script', $json );
+
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_json_encode output inside a JSON-LD script tag.
+		echo "\n<script type=\"application/ld+json\">" . $json . "</script>\n";
+	}
+
+	/**
+	 * Build the JSON-LD @graph for a specific product (used by output() and tests).
+	 *
+	 * @param \WC_Product $product Product.
+	 * @return array
+	 */
+	public function graph_for( $product ) {
+		return self::build_graph( $this->context( $product ) );
+	}
+
+	/**
+	 * Output gate: enabled, on a product page, and not duplicated by an SEO plugin.
+	 *
+	 * @return bool
+	 */
+	public function should_output() {
+		$is_product = function_exists( 'is_product' ) && is_product();
+		return self::gate(
+			$this->plugin->settings()->is_schema_enabled(),
+			$is_product,
+			$this->plugin->seo()->is_emitting_product_schema()
+		);
+	}
+
+	/**
+	 * Pure output gate: emit only when enabled, on a product page, and no other
+	 * plugin already emits Product schema.
+	 *
+	 * @param bool $enabled       Schema output enabled.
+	 * @param bool $is_product    On a single product page.
+	 * @param bool $seo_emitting  An SEO plugin already emits Product schema.
+	 * @return bool
+	 */
+	public static function gate( $enabled, $is_product, $seo_emitting ) {
+		return (bool) $enabled && (bool) $is_product && ! $seo_emitting;
+	}
+
+	/**
+	 * Gather the context array from a live product (WP-coupled).
+	 *
+	 * @param \WC_Product $product Product.
+	 * @return array
+	 */
+	private function context( $product ) {
+		$description = $product->get_short_description();
+		if ( '' === $description ) {
+			$description = wp_trim_words( wp_strip_all_tags( $product->get_description() ), 50 );
+		} else {
+			$description = wp_strip_all_tags( $description );
+		}
+
+		$images = array();
+		$ids    = array_filter( array_merge( array( $product->get_image_id() ), (array) $product->get_gallery_image_ids() ) );
+		foreach ( array_unique( $ids ) as $img_id ) {
+			$src = wp_get_attachment_image_url( $img_id, 'full' );
+			if ( $src ) {
+				$images[] = $src;
+			}
+		}
+
+		$rating = null;
+		if ( (int) $product->get_rating_count() > 0 ) {
+			$rating = array(
+				'value' => (string) $product->get_average_rating(),
+				'count' => (int) $product->get_rating_count(),
+			);
+		}
+
+		// Variable products have one PDP with a price range, so represent them as
+		// an AggregateOffer rather than a single Offer (and rather than enriching
+		// each variation, which has no page of its own to optimize).
+		$price       = (string) $product->get_price();
+		$price_range = null;
+		if ( $product->is_type( 'variable' ) ) {
+			$min = $product->get_variation_price( 'min', true );
+			$max = $product->get_variation_price( 'max', true );
+			if ( '' !== (string) $min ) {
+				$price_range = array(
+					'low'   => (string) $min,
+					'high'  => (string) $max,
+					'count' => count( $product->get_children() ),
+				);
+				$price = '';
+			}
+		}
+
+		return array(
+			'name'         => $product->get_name(),
+			'description'  => $description,
+			'sku'          => $product->get_sku(),
+			'url'          => $product->get_permalink(),
+			'price'        => $price,
+			'priceRange'   => $price_range,
+			'currency'     => get_woocommerce_currency(),
+			'availability' => self::availability_url( $product->get_stock_status() ),
+			'images'       => $images,
+			'rating'       => $rating,
+		);
+	}
+
+	/* --------------------------------------------------------------------- */
+	/* Pure builder (unit-tested directly)                                   */
+	/* --------------------------------------------------------------------- */
+
+	/**
+	 * Build the schema.org @graph from a plain context array.
+	 *
+	 * @param array $ctx Context.
+	 * @return array
+	 */
+	public static function build_graph( array $ctx ) {
+		$url = isset( $ctx['url'] ) ? (string) $ctx['url'] : '';
+
+		$offer = self::strip_empty(
+			array(
+				'@type'           => 'Offer',
+				'price'           => isset( $ctx['price'] ) ? (string) $ctx['price'] : '',
+				'priceCurrency'   => isset( $ctx['currency'] ) ? (string) $ctx['currency'] : '',
+				'availability'    => isset( $ctx['availability'] ) ? (string) $ctx['availability'] : '',
+				'url'             => $url,
+				'priceValidUntil' => gmdate( 'Y-m-d', time() + YEAR_IN_SECONDS ),
+			)
+		);
+
+		$product = array(
+			'@type'       => 'Product',
+			'@id'         => $url ? $url . '#product' : null,
+			'name'        => isset( $ctx['name'] ) ? (string) $ctx['name'] : '',
+			'description' => isset( $ctx['description'] ) ? (string) $ctx['description'] : '',
+			'sku'         => isset( $ctx['sku'] ) ? (string) $ctx['sku'] : '',
+			'image'       => ! empty( $ctx['images'] ) ? array_values( (array) $ctx['images'] ) : null,
+		);
+
+		// Variable products: AggregateOffer with a price range. Simple products:
+		// a single Offer. Otherwise: no offer node.
+		$range = ( isset( $ctx['priceRange'] ) && is_array( $ctx['priceRange'] ) ) ? $ctx['priceRange'] : null;
+		if ( $range && '' !== (string) ( isset( $range['low'] ) ? $range['low'] : '' ) ) {
+			$product['offers'] = self::strip_empty(
+				array(
+					'@type'         => 'AggregateOffer',
+					'priceCurrency' => isset( $ctx['currency'] ) ? (string) $ctx['currency'] : '',
+					'lowPrice'      => (string) $range['low'],
+					'highPrice'     => (string) ( isset( $range['high'] ) ? $range['high'] : $range['low'] ),
+					'offerCount'    => isset( $range['count'] ) ? (int) $range['count'] : null,
+					'availability'  => isset( $ctx['availability'] ) ? (string) $ctx['availability'] : '',
+					'url'           => $url,
+				)
+			);
+		} elseif ( '' !== ( isset( $ctx['price'] ) ? (string) $ctx['price'] : '' ) ) {
+			$product['offers'] = $offer;
+		}
+
+		if ( ! empty( $ctx['rating'] ) && isset( $ctx['rating']['count'] ) && (int) $ctx['rating']['count'] > 0 ) {
+			$product['aggregateRating'] = array(
+				'@type'       => 'AggregateRating',
+				'ratingValue' => (string) $ctx['rating']['value'],
+				'reviewCount' => (int) $ctx['rating']['count'],
+			);
+		}
+
+		$graph = array( self::strip_empty( $product ) );
+
+		if ( ! empty( $ctx['breadcrumb'] ) && is_array( $ctx['breadcrumb'] ) ) {
+			$items = array();
+			$pos   = 1;
+			foreach ( $ctx['breadcrumb'] as $crumb ) {
+				$items[] = self::strip_empty(
+					array(
+						'@type'    => 'ListItem',
+						'position' => $pos++,
+						'name'     => isset( $crumb['name'] ) ? (string) $crumb['name'] : '',
+						'item'     => isset( $crumb['url'] ) ? (string) $crumb['url'] : '',
+					)
+				);
+			}
+			if ( ! empty( $items ) ) {
+				$graph[] = array(
+					'@type'           => 'BreadcrumbList',
+					'itemListElement' => $items,
+				);
+			}
+		}
+
+		return array(
+			'@context' => 'https://schema.org',
+			'@graph'   => $graph,
+		);
+	}
+
+	/**
+	 * Map a WooCommerce stock status onto a schema.org availability URL.
+	 *
+	 * @param string $status instock|outofstock|onbackorder.
+	 * @return string
+	 */
+	public static function availability_url( $status ) {
+		switch ( $status ) {
+			case 'outofstock':
+				return 'https://schema.org/OutOfStock';
+			case 'onbackorder':
+				return 'https://schema.org/BackOrder';
+			case 'instock':
+			default:
+				return 'https://schema.org/InStock';
+		}
+	}
+
+	/**
+	 * Remove null/'' entries from an associative array.
+	 *
+	 * @param array $arr Source.
+	 * @return array
+	 */
+	public static function strip_empty( array $arr ) {
+		return array_filter(
+			$arr,
+			function ( $value ) {
+				return null !== $value && '' !== $value && array() !== $value;
+			}
+		);
+	}
+}
