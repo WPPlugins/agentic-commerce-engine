@@ -445,6 +445,42 @@ class Api_Client {
 	 * @param array  $days     [{ date, bots: [...] }].
 	 * @return array|\WP_Error
 	 */
+	/**
+	 * Day-level human pageview aggregates. No visitor identifiers of any kind.
+	 *
+	 * @param string $store_id Store id.
+	 * @param array  $days     Day payloads.
+	 * @return array|\WP_Error
+	 */
+	public function traffic_ingest( $store_id, array $days ) {
+		return $this->request(
+			'POST',
+			'/api/v1/plugin/traffic/ingest',
+			array(
+				'storeId' => $store_id,
+				'days'    => array_values( $days ),
+			)
+		);
+	}
+
+	/**
+	 * Day-level per-product sales aggregates. No order or customer records.
+	 *
+	 * @param string $store_id Store id.
+	 * @param array  $days     Day payloads.
+	 * @return array|\WP_Error
+	 */
+	public function sales_ingest( $store_id, array $days ) {
+		return $this->request(
+			'POST',
+			'/api/v1/plugin/sales/ingest',
+			array(
+				'storeId' => $store_id,
+				'days'    => array_values( $days ),
+			)
+		);
+	}
+
 	public function bot_traffic_ingest( $store_id, array $days ) {
 		return $this->request(
 			'POST',

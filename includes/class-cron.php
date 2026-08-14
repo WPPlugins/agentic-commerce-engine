@@ -62,6 +62,18 @@ class Cron {
 		if ( $this->plugin->settings()->is_bots_report() ) {
 			$this->plugin->bots()->report_back();
 		}
+
+		// Storefront traffic and sales ride the same daily tick rather than
+		// adding two more wp-cron events: they share a retention setting and a
+		// single failure window, and one scheduled event is one thing to keep
+		// alive instead of three.
+		if ( $this->plugin->settings()->is_traffic_enabled() ) {
+			$this->plugin->traffic()->prune();
+		}
+		if ( $this->plugin->settings()->is_traffic_report() ) {
+			$this->plugin->traffic()->report_back();
+			$this->plugin->sales()->report_back();
+		}
 	}
 
 	/**

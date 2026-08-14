@@ -68,6 +68,10 @@ final class Plugin {
 	private $aeo;
 	/** @var Bot_Tracker */
 	private $bots;
+	/** @var Traffic_Tracker */
+	private $traffic;
+	/** @var Sales_Tracker */
+	private $sales;
 	/** @var Brand */
 	private $brand;
 	/** @var Cron */
@@ -135,6 +139,8 @@ final class Plugin {
 		$this->article_schema = new Article_Schema( $this );
 		$this->aeo            = new Aeo( $this );
 		$this->bots           = new Bot_Tracker( $this );
+		$this->traffic        = new Traffic_Tracker( $this );
+		$this->sales          = new Sales_Tracker( $this );
 		$this->brand          = new Brand( $this );
 		$this->cron           = new Cron( $this );
 		$this->webhook        = new Webhook( $this );
@@ -165,6 +171,9 @@ final class Plugin {
 
 		$this->article_schema->register();
 		$this->bots->register();
+		// Registered unconditionally; both gate internally on their own opt-in,
+		// so a site with the feature off pays only a boolean check per request.
+		$this->traffic->register();
 		$this->cron->register();
 		$this->webhook->register();
 
@@ -256,6 +265,14 @@ final class Plugin {
 	/** @return Bot_Tracker */
 	public function bots() {
 		return $this->bots;
+	}
+	/** @return Traffic_Tracker */
+	public function traffic() {
+		return $this->traffic;
+	}
+	/** @return Sales_Tracker */
+	public function sales() {
+		return $this->sales;
 	}
 	/** @return Brand */
 	public function brand() {

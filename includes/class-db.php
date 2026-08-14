@@ -18,7 +18,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class Db {
 
-	const TABLE_BOT_HITS = 'agencoen_bot_hits';
+	const TABLE_BOT_HITS  = 'agencoen_bot_hits';
+	const TABLE_PAGE_HITS = 'agencoen_page_hits';
 
 	/**
 	 * Full table name with the site prefix.
@@ -28,6 +29,20 @@ class Db {
 	public static function bot_hits_table() {
 		global $wpdb;
 		return $wpdb->prefix . self::TABLE_BOT_HITS;
+	}
+
+	/**
+	 * Human pageviews. A SEPARATE table, not a synthetic bot slug in
+	 * agencoen_bot_hits: that table's unique key is (day, bot, path_hash) and
+	 * every aggregate over it, the byBot chart, build_heatmap() and
+	 * report_back() all iterate its distinct bot values. A pseudo-slug would
+	 * silently pollute all of them.
+	 *
+	 * @return string
+	 */
+	public static function page_hits_table() {
+		global $wpdb;
+		return $wpdb->prefix . self::TABLE_PAGE_HITS;
 	}
 
 	/**
@@ -55,6 +70,26 @@ class Db {
 			KEY day_bot (day,bot)
 		) {$charset};";
 		dbDelta( $sql );
+
+		// Human pageviews, keyed by post id rather than path so a slug change
+		// does not split a page's history in two.
+		$pages = self::page_hits_table();
+		$pages_sql = "CREATE TABLE {$pages} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			day date NOT NULL,
+			post_id bigint(20) unsigned NOT NULL,
+			referrer varchar(120) NOT NULL default '',
+			views int(10) unsigned NOT NULL default 1,
+			PRIMARY KEY  (id),
+			UNIQUE KEY day_post_ref (day,post_id,referrer),
+			KEY day_views (day,views)
+		) {$charset};";
+		dbDelta( $pages_sql );
+
+		// New-in-4.4 defaults. Both default to 'no': storefront tracking is
+		// opt-in, and an upgrade must never silently start collecting.
+		add_option( Settings::OPT_TRAFFIC_ENABLED, 'no' );
+		add_option( Settings::OPT_TRAFFIC_REPORT, 'no' );
 
 		// New-in-4.0 defaults (never clobber existing values).
 		add_option( Settings::OPT_BOTS_ENABLED, 'yes' );

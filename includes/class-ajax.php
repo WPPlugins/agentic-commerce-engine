@@ -367,6 +367,8 @@ class Ajax extends Ajax_Base {
 			'bots_enabled'   => Settings::OPT_BOTS_ENABLED,
 			'bots_paths'     => Settings::OPT_BOTS_PATHS,
 			'bots_report'    => Settings::OPT_BOTS_REPORT,
+			'traffic_enabled' => Settings::OPT_TRAFFIC_ENABLED,
+			'traffic_report'  => Settings::OPT_TRAFFIC_REPORT,
 		);
 		foreach ( $bools as $field => $option ) {
 			if ( isset( $_POST[ $field ] ) ) {

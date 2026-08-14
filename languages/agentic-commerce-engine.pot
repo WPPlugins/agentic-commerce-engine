@@ -2,16 +2,16 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Agentic Commerce Engine 4.3.1\n"
+"Project-Id-Version: Agentic Commerce Engine 4.4.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/agentic-commerce-engine\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-21T17:32:41+00:00\n"
+"POT-Creation-Date: 2026-08-14T12:12:45+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.12.0\n"
+"X-Generator: ace-make-pot\n"
 "X-Domain: agentic-commerce-engine\n"
 
 #. Plugin Name of the plugin
@@ -453,7 +453,6 @@ msgstr ""
 msgid "Articles in WordPress"
 msgstr ""
 
-#. translators: %s: number of products.
 #: admin/views/page-dashboard.php:38
 #, php-format
 msgid "%s product is ready to review."
@@ -753,7 +752,7 @@ msgid "Send daily crawler totals to my ACE project"
 msgstr ""
 
 #: admin/views/page-settings.php:65
-msgid "Optional. When enabled, ACE receives one aggregate row per crawler per day (crawler name, date, hit count). No visitor data, IP addresses, cookies, or personal information ever leave your site; regular human traffic is never logged."
+msgid "Optional. When enabled, ACE receives one aggregate row per crawler per day (crawler name, date, hit count). No IP addresses, cookies, or personal information ever leave your site. This setting covers crawlers only; visitor pageviews are a separate setting below and are off unless you turn them on."
 msgstr ""
 
 #: admin/views/page-settings.php:68
@@ -761,159 +760,190 @@ msgid "Tracking, path storage, and retention all run entirely on this site and a
 msgstr ""
 
 #: admin/views/page-settings.php:74
-msgid "Content publishing"
+msgid "Visitor pageviews"
 msgstr ""
 
 #: admin/views/page-settings.php:75
-msgid "How articles from the Content screen land in WordPress."
+msgid "Counts how many times each published page was viewed, so ACE can show what your content changes did to real traffic."
 msgstr ""
 
 #: admin/views/page-settings.php:79
-msgid "Default status"
-msgstr ""
-
-#: admin/views/page-settings.php:81
-msgid "Draft (review before it goes live)"
+msgid "Count visitor pageviews on this site"
 msgstr ""
 
 #: admin/views/page-settings.php:82
-msgid "Publish immediately"
+msgid "Adds a small script to published pages that records one count per view. It stores no cookie, no session, and no IP address, so it cannot tell one visitor from another and reports pageviews rather than visitors. Logged-in editors and administrators are never counted, and neither are crawlers."
 msgstr ""
 
-#: admin/views/page-settings.php:86
-msgid "Editor format"
+#: admin/views/page-settings.php:85
+msgid "A script is used rather than server-side counting because page caching serves most visitors without WordPress ever running, which would undercount heavily."
 msgstr ""
 
-#: admin/views/page-settings.php:88
-msgid "Block editor (Gutenberg blocks)"
-msgstr ""
-
-#: admin/views/page-settings.php:89
-msgid "Classic HTML"
+#: admin/views/page-settings.php:90
+msgid "Send daily pageview and sales totals to my ACE project"
 msgstr ""
 
 #: admin/views/page-settings.php:93
-msgid "Default author"
+msgid "Optional, and separate from the crawler setting above. ACE receives one row per page per day (page, date, view count, and the referring site for visits from search and AI assistants), and for WooCommerce stores one row per product per day (units and revenue). No order details, customer records, names, email addresses or postal addresses are ever sent."
 msgstr ""
 
-#: admin/views/page-settings.php:95
-msgid "The user who publishes"
+#: admin/views/page-settings.php:96
+msgid "Counting works on its own with no account. Only the daily report needs one."
 msgstr ""
 
 #: admin/views/page-settings.php:102
-msgid "Output Article schema (JSON-LD) on published ACE articles"
+msgid "Content publishing"
+msgstr ""
+
+#: admin/views/page-settings.php:103
+msgid "How articles from the Content screen land in WordPress."
+msgstr ""
+
+#: admin/views/page-settings.php:107
+msgid "Default status"
 msgstr ""
 
 #: admin/views/page-settings.php:109
-msgid "Automation"
+msgid "Draft (review before it goes live)"
 msgstr ""
 
 #: admin/views/page-settings.php:110
-msgid "Keep your catalog and AI content moving without manual clicks."
+msgid "Publish immediately"
 msgstr ""
 
 #: admin/views/page-settings.php:114
-msgid "Auto-sync my catalog on a schedule"
+msgid "Editor format"
 msgstr ""
 
-#: admin/views/page-settings.php:118
-msgid "Frequency"
+#: admin/views/page-settings.php:116
+msgid "Block editor (Gutenberg blocks)"
 msgstr ""
 
-#: admin/views/page-settings.php:120
-msgid "Daily"
+#: admin/views/page-settings.php:117
+msgid "Classic HTML"
 msgstr ""
 
 #: admin/views/page-settings.php:121
+msgid "Default author"
+msgstr ""
+
+#: admin/views/page-settings.php:123
+msgid "The user who publishes"
+msgstr ""
+
+#: admin/views/page-settings.php:130
+msgid "Output Article schema (JSON-LD) on published ACE articles"
+msgstr ""
+
+#: admin/views/page-settings.php:137
+msgid "Automation"
+msgstr ""
+
+#: admin/views/page-settings.php:138
+msgid "Keep your catalog and AI content moving without manual clicks."
+msgstr ""
+
+#: admin/views/page-settings.php:142
+msgid "Auto-sync my catalog on a schedule"
+msgstr ""
+
+#: admin/views/page-settings.php:146
+msgid "Frequency"
+msgstr ""
+
+#: admin/views/page-settings.php:148
+msgid "Daily"
+msgstr ""
+
+#: admin/views/page-settings.php:149
 msgid "Weekly"
 msgstr ""
 
-#: admin/views/page-settings.php:127
+#: admin/views/page-settings.php:155
 msgid "Auto-apply AI suggestions without review"
 msgstr ""
 
-#: admin/views/page-settings.php:129
+#: admin/views/page-settings.php:157
 msgid "When on, AI changes go live on your products automatically. You can still revert any product from the Review screen."
 msgstr ""
 
-#: admin/views/page-settings.php:131
+#: admin/views/page-settings.php:159
 msgid "Scheduled sync and auto-apply send products to ACE for enrichment, so they need an account. The schema and product-page options below work on their own."
 msgstr ""
 
-#: admin/views/page-settings.php:136
+#: admin/views/page-settings.php:164
 msgid "Output Product schema (JSON-LD) on product pages"
 msgstr ""
 
-#: admin/views/page-settings.php:141
+#: admin/views/page-settings.php:169
 msgid "Show IRL scenarios and internal links on the product page automatically"
 msgstr ""
 
-#: admin/views/page-settings.php:143
+#: admin/views/page-settings.php:171
 msgid "Or place them yourself with the [agencoen_irl] and [agencoen_internal_links] shortcodes, or the ACE editor blocks."
 msgstr ""
 
 #. translators: %s: SEO plugin name.
-#: admin/views/page-settings.php:149
+#: admin/views/page-settings.php:177
 #, php-format
 msgid "Detected %s. ACE automatically suppresses its schema output when your SEO plugin already emits Product schema, to avoid duplicates."
 msgstr ""
 
-#: admin/views/page-settings.php:161
+#: admin/views/page-settings.php:189
 #: includes/class-assets.php:238
 msgid "Channel feeds"
 msgstr ""
 
-#: admin/views/page-settings.php:162
+#: admin/views/page-settings.php:190
 msgid "When you enrich products with a channel feed type, ACE serves the feed at these URLs."
 msgstr ""
 
-#: admin/views/page-settings.php:165
+#: admin/views/page-settings.php:193
 msgid "Google Merchant"
 msgstr ""
 
-#: admin/views/page-settings.php:166
+#: admin/views/page-settings.php:194
 msgid "Microsoft Bing"
 msgstr ""
 
-#: admin/views/page-settings.php:167
+#: admin/views/page-settings.php:195
 msgid "Agentic Commerce"
 msgstr ""
 
-#: admin/views/page-settings.php:176
+#: admin/views/page-settings.php:204
 msgid "Regenerate feed URLs"
 msgstr ""
 
-#: admin/views/page-settings.php:177
+#: admin/views/page-settings.php:205
 msgid "Each URL carries a private token, so only the channels you give it to can read the feed. Regenerating invalidates the old URLs; update them in Google and Microsoft afterwards."
 msgstr ""
 
-#: admin/views/page-settings.php:183
+#: admin/views/page-settings.php:211
 #: admin/views/partial-empty-state.php:42
 msgid "Advanced"
 msgstr ""
 
-#: admin/views/page-settings.php:184
+#: admin/views/page-settings.php:212
 msgid "Platform endpoint, webhook, and diagnostics."
 msgstr ""
 
-#: admin/views/page-settings.php:187
+#: admin/views/page-settings.php:215
 #: admin/views/partial-empty-state.php:44
 msgid "Platform URL"
 msgstr ""
 
-#: admin/views/page-settings.php:192
+#: admin/views/page-settings.php:220
 msgid "Webhook URL (read-only)"
 msgstr ""
 
-#: admin/views/page-settings.php:198
+#: admin/views/page-settings.php:226
 msgid "Enable debug logging"
 msgstr ""
 
-#: admin/views/page-settings.php:203
+#: admin/views/page-settings.php:231
 msgid "Save settings"
 msgstr ""
 
-#. translators: %s: number of AI crawler visits recorded in the last 7 days.
 #: admin/views/partial-connect-banner.php:28
 #, php-format
 msgid "%s AI crawler visit tracked this week. Want to know what the AI engines say?"
@@ -1187,12 +1217,12 @@ msgstr ""
 msgid "No products selected."
 msgstr ""
 
-#: includes/class-api-client.php:475
+#: includes/class-api-client.php:511
 msgid "No API key configured. Connect your site first."
 msgstr ""
 
 #. translators: %d: HTTP status code.
-#: includes/class-api-client.php:605
+#: includes/class-api-client.php:641
 #, php-format
 msgid "The ACE platform returned an error (HTTP %d)."
 msgstr ""
@@ -1243,25 +1273,21 @@ msgstr ""
 msgid "just now"
 msgstr ""
 
-#. translators: %s: number of minutes.
 #: includes/class-assets.php:216
 #, php-format
 msgid "%sm ago"
 msgstr ""
 
-#. translators: %s: number of hours.
 #: includes/class-assets.php:218
 #, php-format
 msgid "%sh ago"
 msgstr ""
 
-#. translators: %s: number of days.
 #: includes/class-assets.php:220
 #, php-format
 msgid "%sd ago"
 msgstr ""
 
-#. translators: 1: number processed, 2: total number.
 #: includes/class-assets.php:222
 #, php-format
 msgid "Processing %1$s of %2$s…"
@@ -1311,13 +1337,11 @@ msgstr ""
 msgid "No products match."
 msgstr ""
 
-#. translators: %s: number of selected products.
 #: includes/class-assets.php:244
 #, php-format
 msgid "%s selected"
 msgstr ""
 
-#. translators: %s: number of matching products.
 #: includes/class-assets.php:246
 #, php-format
 msgid "Select all %s matching"
@@ -1327,7 +1351,6 @@ msgstr ""
 msgid "Keep only the checked rows"
 msgstr ""
 
-#. translators: 1: current page, 2: total pages.
 #: includes/class-assets.php:249
 #, php-format
 msgid "Page %1$s of %2$s"
@@ -1389,13 +1412,11 @@ msgstr ""
 msgid "(empty)"
 msgstr ""
 
-#. translators: %s: AI quality score.
 #: includes/class-assets.php:274
 #, php-format
 msgid "Score %s"
 msgstr ""
 
-#. translators: %s: number of scenarios.
 #: includes/class-assets.php:276
 #, php-format
 msgid "IRL scenarios (%s)"
@@ -1410,7 +1431,6 @@ msgstr ""
 msgid "JSON-LD schema"
 msgstr ""
 
-#. translators: %s: feed channel key.
 #: includes/class-assets.php:280
 #, php-format
 msgid "%s feed"
@@ -1424,7 +1444,6 @@ msgstr ""
 msgid "Products optimized"
 msgstr ""
 
-#. translators: 1: optimized count, 2: total products.
 #: includes/class-assets.php:289
 #, php-format
 msgid "%1$s of %2$s products"
@@ -1442,7 +1461,6 @@ msgstr ""
 msgid "Articles published"
 msgstr ""
 
-#. translators: %s: number of draft articles.
 #: includes/class-assets.php:294
 #, php-format
 msgid "%s drafts waiting"
@@ -1492,7 +1510,6 @@ msgstr ""
 msgid "Settings saved."
 msgstr ""
 
-#. translators: %s: credit balance.
 #: includes/class-assets.php:311
 #, php-format
 msgid "Connection healthy. %s credits available."
@@ -1564,7 +1581,7 @@ msgstr ""
 msgid "Microsoft Bing Shopping feed records, served at a feed URL."
 msgstr ""
 
-#: includes/class-cron.php:87
+#: includes/class-cron.php:99
 msgid "Once Weekly"
 msgstr ""
 

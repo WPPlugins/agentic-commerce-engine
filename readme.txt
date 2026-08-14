@@ -4,7 +4,7 @@ Tags: ai, seo, woocommerce, ai search, content
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 4.3.1
+Stable tag: 4.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -63,6 +63,8 @@ Article generation, product enrichment, AI search research runs, credit balances
 
 * **What is sent on connect:** your site URL and title, the WordPress version, the WooCommerce version when present, and the plugin version. This registers your site and returns a store ID and a webhook secret.
 * **What is sent on sync and enrich (WooCommerce):** product data including title, description, short description, SKU, price, stock status, image URLs, categories, tags, and variation IDs, plus the content types you selected.
+* **What is sent for visitor pageviews (optional, off by default):** one row per published page per day: the page id, the date, the number of views, and the referring site's domain for visits arriving from search engines and AI assistants. No IP addresses, no cookies, no session identifiers, and nothing that could identify an individual visitor. Because nothing identifies a visitor, this reports pageviews and cannot report unique visitors.
+* **What is sent for WooCommerce sales (optional, off by default, same setting):** one row per product per day: the product id, units sold, and net revenue. No orders, no customers, no names, no email addresses, no postal addresses.
 * **What is sent for article generation:** the title, topic, keywords, locale, and options you enter, and optionally the products you link. The platform uses your project's brand voice and identity to write the article.
 * **What is sent for AI search research:** the research prompts you save, the engines and markets you pick, and, when you use prompt suggestions, catalog snippets (product titles, categories, tags). Research runs are executed by the Authoritas AI search platform.
 * **What is sent on heartbeat:** a periodic health ping containing your site URL, product counts, and version numbers.
@@ -135,6 +137,13 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 
 == Changelog ==
 
+= 4.4.0 =
+* New: optional visitor pageview counting, so ACE can show what a content change did to real traffic rather than only to AI crawlers. Off by default, with its own setting separate from the crawler report.
+* Counting uses a small script on published pages rather than server-side hooks. Page caches serve most visitors without WordPress running at all, so a server-side counter would undercount heavily on exactly the sites that are busiest.
+* No cookie, no session, no IP address, hashed or otherwise. Nothing stored can identify a visitor, which is why this reports pageviews and does not claim to report unique visitors. Logged-in editors and administrators are never counted, and neither are crawlers.
+* New: optional daily WooCommerce sales totals, one row per product per day with units and net revenue, read from WooCommerce's own analytics tables so the figures match your Analytics screen. No orders, customers, names, email addresses or postal addresses are sent.
+* The crawler setting's description now points at the new pageview setting instead of stating that human traffic is never logged, which is only true while that setting is off.
+
 = 4.3.1 =
 * A fresh install now opens on things to do, not on setup. The Dashboard leads with a dismissible "Start here" card of local actions (crawler analytics, catalog browsing, feed URLs, publishing preferences), tailored to whether WooCommerce is active.
 * No screen mentions an ACE account on a fresh install. The optional connect notice appears only after the plugin's own crawler analytics have recorded meaningful AI traffic, and it opens with what was measured. Nothing changes about what works: every local feature is on from activation, with or without an account, forever.
@@ -172,6 +181,9 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 * Product enrichment now runs on the platform's durable jobs API with webhook-accelerated polling.
 
 == Upgrade Notice ==
+
+= 4.4.0 =
+Adds optional visitor pageview counting and daily WooCommerce sales totals. Both are off by default and neither collects anything that identifies a visitor.
 
 = 4.3.1 =
 Internal security hardening: every admin-ajax handler now reads and sanitizes its own input right after its nonce check. No action needed on update.

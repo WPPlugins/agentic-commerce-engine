@@ -62,10 +62,38 @@ $agencoen_offline = empty( $connected );
 			<span><?php esc_html_e( 'Send daily crawler totals to my ACE project', 'agentic-commerce-engine' ); ?></span>
 		</label>
 		<p class="ace-help ace-indent">
-			<?php esc_html_e( 'Optional. When enabled, ACE receives one aggregate row per crawler per day (crawler name, date, hit count). No visitor data, IP addresses, cookies, or personal information ever leave your site; regular human traffic is never logged.', 'agentic-commerce-engine' ); ?>
+			<?php esc_html_e( 'Optional. When enabled, ACE receives one aggregate row per crawler per day (crawler name, date, hit count). No IP addresses, cookies, or personal information ever leave your site. This setting covers crawlers only; visitor pageviews are a separate setting below and are off unless you turn them on.', 'agentic-commerce-engine' ); ?>
 		</p>
 		<?php if ( $agencoen_offline ) : ?>
 			<p class="ace-help ace-indent"><?php esc_html_e( 'Tracking, path storage, and retention all run entirely on this site and are active right now. Only the optional daily report, which sends totals to ACE, needs an account.', 'agentic-commerce-engine' ); ?></p>
+		<?php endif; ?>
+	</div>
+
+	<!-- Storefront traffic (4.4) -->
+	<div class="ace-card">
+		<h2 class="ace-card-title"><?php esc_html_e( 'Visitor pageviews', 'agentic-commerce-engine' ); ?></h2>
+		<p class="ace-card-sub"><?php esc_html_e( 'Counts how many times each published page was viewed, so ACE can show what your content changes did to real traffic.', 'agentic-commerce-engine' ); ?></p>
+
+		<label class="ace-toggle">
+			<input type="checkbox" id="ace-traffic-enabled" <?php checked( $agencoen_settings->is_traffic_enabled() ); ?> />
+			<span><?php esc_html_e( 'Count visitor pageviews on this site', 'agentic-commerce-engine' ); ?></span>
+		</label>
+		<p class="ace-help ace-indent">
+			<?php esc_html_e( 'Adds a small script to published pages that records one count per view. It stores no cookie, no session, and no IP address, so it cannot tell one visitor from another and reports pageviews rather than visitors. Logged-in editors and administrators are never counted, and neither are crawlers.', 'agentic-commerce-engine' ); ?>
+		</p>
+		<p class="ace-help ace-indent">
+			<?php esc_html_e( 'A script is used rather than server-side counting because page caching serves most visitors without WordPress ever running, which would undercount heavily.', 'agentic-commerce-engine' ); ?>
+		</p>
+
+		<label class="ace-toggle">
+			<input type="checkbox" id="ace-traffic-report" <?php checked( $agencoen_settings->is_traffic_report() ); ?> <?php disabled( $agencoen_offline ); ?> />
+			<span><?php esc_html_e( 'Send daily pageview and sales totals to my ACE project', 'agentic-commerce-engine' ); ?></span>
+		</label>
+		<p class="ace-help ace-indent">
+			<?php esc_html_e( 'Optional, and separate from the crawler setting above. ACE receives one row per page per day (page, date, view count, and the referring site for visits from search and AI assistants), and for WooCommerce stores one row per product per day (units and revenue). No order details, customer records, names, email addresses or postal addresses are ever sent.', 'agentic-commerce-engine' ); ?>
+		</p>
+		<?php if ( $agencoen_offline ) : ?>
+			<p class="ace-help ace-indent"><?php esc_html_e( 'Counting works on its own with no account. Only the daily report needs one.', 'agentic-commerce-engine' ); ?></p>
 		<?php endif; ?>
 	</div>
 

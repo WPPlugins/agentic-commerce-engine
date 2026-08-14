@@ -46,6 +46,15 @@ class Settings {
 	/* New in 4.1 */
 	const OPT_FEED_TOKEN = 'agencoen_feed_token';
 
+	/* New in 4.4 — storefront traffic and sales.
+	 *
+	 * Deliberately SEPARATE from the bot-report opt-in. WP.org guideline 7
+	 * treats these differently and rightly so: bot hits are machine traffic,
+	 * pageviews are derived from human behaviour, and folding both under one
+	 * consent is the sort of thing that gets a plugin pulled. */
+	const OPT_TRAFFIC_ENABLED = 'agencoen_traffic_enabled';
+	const OPT_TRAFFIC_REPORT  = 'agencoen_traffic_report';
+
 	/** Per-user dismissal of the optional-connection notice. */
 	const META_CONNECT_NOTICE = 'agencoen_connect_notice_dismissed';
 	const META_START_CARD     = 'agencoen_start_card_dismissed';
@@ -477,6 +486,26 @@ class Settings {
 	 */
 	public function is_bots_report() {
 		return 'yes' === get_option( self::OPT_BOTS_REPORT, 'no' );
+	}
+
+	/**
+	 * Whether the storefront pageview beacon runs at all. Local counting only;
+	 * nothing leaves the site unless is_traffic_report() is also on.
+	 *
+	 * @return bool
+	 */
+	public function is_traffic_enabled() {
+		return 'yes' === get_option( self::OPT_TRAFFIC_ENABLED, 'no' );
+	}
+
+	/**
+	 * Whether day-level pageview and sales aggregates are sent to ACE.
+	 * Default off, and its own checkbox: see the constant above.
+	 *
+	 * @return bool
+	 */
+	public function is_traffic_report() {
+		return 'yes' === get_option( self::OPT_TRAFFIC_REPORT, 'no' );
 	}
 
 	/**

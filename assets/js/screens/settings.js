@@ -46,7 +46,9 @@
 			article_schema: 'ace-article-schema',
 			bots_enabled: 'ace-bots-enabled',
 			bots_paths: 'ace-bots-paths',
-			bots_report: 'ace-bots-report'
+			bots_report: 'ace-bots-report',
+			traffic_enabled: 'ace-traffic-enabled',
+			traffic_report: 'ace-traffic-report'
 		};
 		Object.keys( bools ).forEach( function ( field ) {
 			var v = checkboxValue( bools[ field ] );
