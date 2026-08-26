@@ -38,6 +38,9 @@ $agencoen_ab_on = $plugin->settings()->is_ab_enabled();
 		<button type="button" class="ace-tab is-active" data-tab="list">
 			<?php esc_html_e( 'Your tests', 'agentic-commerce-engine' ); ?>
 		</button>
+		<button type="button" class="ace-tab" data-tab="history">
+			<?php esc_html_e( 'History', 'agentic-commerce-engine' ); ?>
+		</button>
 		<button type="button" class="ace-tab" data-tab="new">
 			<?php esc_html_e( 'New experiment', 'agentic-commerce-engine' ); ?>
 		</button>
@@ -53,6 +56,29 @@ $agencoen_ab_on = $plugin->settings()->is_ab_enabled();
 			</div>
 		</div>
 		<div id="ace-exp-list" aria-live="polite"></div>
+	</div>
+
+	<!-- ── History: finished tests, and what testing has been worth ─────── -->
+	<?php // Nothing server-rendered here either. The ledger lives on ACE, and a ?>
+	<?php // stale local copy of "which version won" is the one thing this      ?>
+	<?php // screen must never show.                                            ?>
+	<div class="ace-panel" data-panel="history" hidden>
+		<div id="ace-exp-value" aria-live="polite"></div>
+		<div class="ace-toolbar">
+			<label class="ace-label" for="ace-exp-history-search">
+				<span class="screen-reader-text">
+					<?php esc_html_e( 'Search tests by name', 'agentic-commerce-engine' ); ?>
+				</span>
+				<input
+					type="search"
+					id="ace-exp-history-search"
+					class="ace-input"
+					placeholder="<?php esc_attr_e( 'Search by name', 'agentic-commerce-engine' ); ?>"
+				/>
+			</label>
+		</div>
+		<div id="ace-exp-history-facets"></div>
+		<div id="ace-exp-history" aria-live="polite"></div>
 	</div>
 
 	<!-- ── The cockpit, shown when a test is opened ─────────────────────── -->

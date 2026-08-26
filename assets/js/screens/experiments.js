@@ -350,11 +350,24 @@
 			if ( d.money && d.money.arms && d.money.arms.length ) {
 				html += '<h3>' + esc( t( 'whatItIsWorth', 'What each version is worth' ) ) + '</h3>';
 				html += '<p>' + esc( t( 'whatItIsWorthSub', 'Revenue divided by shoppers, counted from your own store. Only shown because real order values were reported.' ) ) + '</p>';
-				if ( typeof d.money.projectedAnnualGainMinor === 'number' ) {
-					html += '<p>' + core.chip( 'success',
-						t( 'aboutAYear', 'About' ) + ' ' +
-						money( d.money.projectedAnnualGainMinor, d.money.currency ) + ' ' +
-						t( 'aYearIfYouKeep', 'a year if you keep the winner' ) ) + '</p>';
+				/* `annualValue`, NOT `projectedAnnualGainMinor`. The latter is
+				   gains only and is kept for installs older than this one;
+				   reading it here would drop every loss avoided, which is
+				   usually the larger half of what testing is worth to a shop.
+				   The sentence arrives in the payload with a {0} where the
+				   amount goes, so this screen, the Shopify app and the web
+				   cannot word the same figure differently. */
+				if ( d.money.annualValue && typeof d.money.annualValue.minor === 'number' ) {
+					var av = d.money.annualValue;
+					html += '<p>' + core.chip(
+						av.kind === 'gain_won' ? 'success' : 'info',
+						String( av.sentence || '{0}' ).replace( '{0}', money( av.minor, d.money.currency ) )
+					) + '</p>';
+					if ( av.ruleOutSentence ) {
+						html += '<p class="ace-muted">' + esc(
+							String( av.ruleOutSentence ).replace( '{0}', money( av.loMinor, d.money.currency ) )
+						) + '</p>';
+					}
 				}
 				html += '<div class="ace-chart" id="ace-exp-money"></div>';
 				html += '<table class="ace-table"><thead><tr><th>' + esc( t( 'version', 'Version' ) ) +
@@ -376,6 +389,23 @@
 			var checks = ( d.health && d.health.checks ) || [];
 			if ( checks.length ) {
 				html += '<h3>' + esc( 'Can this be trusted?' ) + '</h3>';
+				/* The trust summary heads the section: it answers the question
+				   the heading asks, which the individual checks only answer
+				   between them. `warning`, never `error`, for a low band --
+				   low trust is a prompt to look at the setup before acting, not
+				   a statement that something failed. `health` owns failure, and
+				   giving both the same red would make a quiet concern read as
+				   an outage. Guarded because an old plugin may be talking to a
+				   platform that predates the field, or the other way round. */
+				if ( d.trust && d.trust.headline ) {
+					var trustTone = d.trust.band === 'high' ? 'success'
+						: d.trust.band === 'low' ? 'warning'
+						: d.trust.band === 'moderate' ? 'info' : 'neutral';
+					html += '<p>' + core.chip( trustTone, d.trust.headline ) + '</p>';
+					if ( d.trust.detail ) {
+						html += '<p class="ace-muted">' + esc( d.trust.detail ) + '</p>';
+					}
+				}
 				html += '<table class="ace-table"><tbody>' + checks.map( function ( c ) {
 					// `broken` is the platform's word (assessHealth). `fail` is not
 					// a state it can ever emit, and `critical` is not a chip tone --
@@ -829,16 +859,302 @@
 		}
 
 		/* ================================================================== */
+		/* History: finished tests, and what testing has been worth           */
+		/* ================================================================== */
+
+		var historyEl = byId( 'ace-exp-history' );
+		var facetsEl = byId( 'ace-exp-history-facets' );
+		var valueEl = byId( 'ace-exp-value' );
+		var historyVerdict = '';
+		var historySearch = '';
+		var historyPage = 0;
+		var historyLoaded = false;
+
+		/*
+		 * `core.chip` takes ( tone, label ) and knows five tones:
+		 * success, warning, error, info, neutral. The payload speaks the shared
+		 * vocabulary, which uses `critical` where this uses `error`. Mapping it
+		 * here rather than passing it through is deliberate: an unknown tone
+		 * falls back to `neutral`, so a BROKEN result would render in the same
+		 * quiet grey as one that passed. That exact bug shipped once already.
+		 */
+		function toneToChip( tone ) {
+			if ( tone === 'critical' ) { return 'error'; }
+			if ( tone === 'success' || tone === 'warning' || tone === 'info' ) { return tone; }
+			return 'neutral';
+		}
+
+		function renderValue( portfolio ) {
+			if ( ! valueEl ) { return; }
+			var banked = ( portfolio && portfolio.banked ) || [];
+			var counts = ( portfolio && portfolio.counts ) || {};
+
+			/* Absent, never zero. A row of zeroes reads as "testing earned you
+			   nothing", which is the opposite of "you have not finished a test
+			   yet", and those are opposite statements about a shop. */
+			if ( ! banked.length || ! counts.concluded ) {
+				valueEl.innerHTML = '';
+				return;
+			}
+
+			var primary = banked[ 0 ];
+			var html = '<div class="ace-card">';
+			html += '<h3>' + esc( t( 'worthHeading', 'What testing has been worth' ) ) + '</h3>';
+			html += '<p>' + esc(
+				t( 'worthSub', 'From' ) + ' ' + core.num( counts.concluded ) + ' ' +
+				t( 'worthSubTail', 'finished tests, counted as each one was decided.' )
+			) + '</p>';
+			html += '<div class="ace-stat-grid">';
+			html += core.statTile( {
+				label: t( 'bankedAYear', 'A year, from decisions taken' ),
+				value: money( primary.totalMinor, primary.currency ),
+				accent: 'indigo'
+			} );
+			html += core.statTile( {
+				label: t( 'wonByKeeping', 'Won by keeping a better version' ),
+				value: money( primary.gainsWonMinor, primary.currency ),
+				// Only indigo, emerald, violet, cyan and amber have a rule in
+				// admin.css. Anything else silently renders with no accent.
+				accent: 'emerald'
+			} );
+			html += core.statTile( {
+				label: t( 'keptByNotShipping', 'Kept by not shipping a worse one' ),
+				value: money( primary.lossesAvoidedMinor, primary.currency ),
+				accent: 'cyan'
+			} );
+			html += '</div>';
+			html += '<p class="ace-muted">' + esc(
+				t( 'atLeast', 'At least' ) + ' ' + money( primary.ruleOutMinor, primary.currency ) + ' ' +
+				t( 'onTheCautiousEnd', 'a year on the cautious end of every range.' )
+			) + '</p>';
+
+			/* A second currency gets its own line. Converting it would make this
+			   figure depend on today's exchange rate. */
+			for ( var i = 1; i < banked.length; i++ ) {
+				html += '<p class="ace-muted">' + esc(
+					t( 'plus', 'Plus' ) + ' ' + money( banked[ i ].totalMinor, banked[ i ].currency ) +
+					' ' + t( 'aYearIn', 'a year in' ) + ' ' + banked[ i ].currency + '.'
+				) + '</p>';
+			}
+
+			/* Running tests are a FORECAST about tests that have not finished,
+			   so they are stated separately and never added in. */
+			var pipeline = ( portfolio && portfolio.pipeline ) || [];
+			if ( pipeline.length ) {
+				html += '<p class="ace-muted">' + esc(
+					t( 'runningWouldAdd', 'Tests still running would add about' ) + ' ' +
+					money( pipeline[ 0 ].totalMinor, pipeline[ 0 ].currency ) + ' ' +
+					t( 'ifEstimateHolds', 'a year if their current estimate holds. That is not counted above, because they have not finished.' )
+				) + '</p>';
+			}
+			html += '</div>';
+			valueEl.innerHTML = html;
+		}
+
+		function renderFacets( payload ) {
+			if ( ! facetsEl ) { return; }
+			var facets = ( payload && payload.facets ) || [];
+			if ( ! facets.length ) {
+				facetsEl.innerHTML = '';
+				return;
+			}
+			var html = '<div class="ace-filter-row">';
+			html += '<button type="button" class="ace-btn ace-btn-sm ace-hist-facet' +
+				( historyVerdict === '' ? ' is-active' : '' ) +
+				'" data-verdict="">' + esc( t( 'allTests', 'All' ) ) +
+				' (' + core.num( payload.total || 0 ) + ')</button>';
+			facets.forEach( function ( f ) {
+				html += '<button type="button" class="ace-btn ace-btn-sm ace-hist-facet' +
+					( historyVerdict === f.verdict ? ' is-active' : '' ) +
+					'" data-verdict="' + esc( f.verdict ) + '">' +
+					esc( f.label ) + ' (' + core.num( f.count ) + ')</button>';
+			} );
+			html += '</div>';
+			facetsEl.innerHTML = html;
+		}
+
+		function renderHistory( payload ) {
+			if ( ! historyEl ) { return; }
+			var rows = ( payload && payload.rows ) || [];
+
+			if ( ! rows.length ) {
+				historyEl.innerHTML = '<div class="ace-empty">' + esc(
+					historyVerdict || historySearch
+						? t( 'noTestsMatch', 'No tests match that.' )
+						: t( 'noHistoryYet', 'Nothing here yet. Finished tests and what they found will collect here.' )
+				) + '</div>';
+				return;
+			}
+
+			var body = rows.map( function ( r ) {
+				var o = r.outcome;
+				var verdictCell = o
+					? core.chip( toneToChip( o.tone ), o.label )
+					: core.chip( 'neutral', t( 'stillRunning', 'Running' ) );
+
+				/* A withheld number and a measured nothing must never share a
+				   cell. `lift` is null whenever the claim gate refused. */
+				var liftCell = esc( lift( o ? o.lift : null ) );
+
+				var worthCell = ( o && o.value )
+					? esc( money( o.value.minor, o.value.currency ) + ' ' +
+						( o.value.kind === 'gain_won'
+							? t( 'won', 'won' )
+							: t( 'notLost', 'not lost' ) ) )
+					: '\u2014';
+
+				var noteId = 'ace-hist-note-' + esc( r.id );
+				var note = '<details><summary>' +
+					esc( o && o.notes ? t( 'editNote', 'Edit what you learned' ) : t( 'addNote', 'Add what you learned' ) ) +
+					'</summary>' +
+					'<textarea class="ace-input ace-hist-note" id="' + noteId + '" rows="3" maxlength="2000">' +
+					esc( ( o && o.notes ) || '' ) + '</textarea>' +
+					'<button type="button" class="ace-btn ace-btn-sm ace-hist-save" data-id="' + esc( r.id ) +
+					'" data-note="' + noteId + '">' + esc( t( 'saveNote', 'Save' ) ) + '</button>' +
+					'</details>';
+
+				return '<tr>' +
+					'<td><a href="#" class="ace-exp-open" data-id="' + esc( r.id ) + '">' + esc( r.name ) + '</a>' +
+					( o && o.plain ? '<br /><span class="ace-muted">' + esc( o.plain ) + '</span>' : '' ) +
+					note +
+					'</td>' +
+					'<td>' + verdictCell + '</td>' +
+					'<td>' + liftCell + '</td>' +
+					'<td>' + worthCell + '</td>' +
+					'<td>' + esc( o ? core.fmtDate( o.decidedAt ) : '\u2014' ) + '</td>' +
+					'</tr>';
+			} ).join( '' );
+
+			var html = '<table class="ace-table"><thead><tr>' +
+				'<th>' + esc( t( 'test', 'Test' ) ) + '</th>' +
+				'<th>' + esc( t( 'outcome', 'Outcome' ) ) + '</th>' +
+				'<th>' + esc( t( 'change', 'Change' ) ) + '</th>' +
+				'<th>' + esc( t( 'worth', 'Worth' ) ) + '</th>' +
+				'<th>' + esc( t( 'decided', 'Decided' ) ) + '</th>' +
+				'</tr></thead><tbody>' + body + '</tbody></table>';
+
+			var pages = Math.ceil( ( payload.total || 0 ) / ( payload.pageSize || 25 ) );
+			if ( pages > 1 ) {
+				html += '<div class="ace-filter-row">';
+				if ( historyPage > 0 ) {
+					html += '<button type="button" class="ace-btn ace-btn-sm ace-hist-page" data-page="' +
+						( historyPage - 1 ) + '">' + esc( t( 'previous', 'Previous' ) ) + '</button>';
+				}
+				html += '<span class="ace-muted">' + esc(
+					t( 'page', 'Page' ) + ' ' + ( historyPage + 1 ) + ' / ' + pages
+				) + '</span>';
+				if ( historyPage + 1 < pages ) {
+					html += '<button type="button" class="ace-btn ace-btn-sm ace-hist-page" data-page="' +
+						( historyPage + 1 ) + '">' + esc( t( 'next', 'Next' ) ) + '</button>';
+				}
+				html += '</div>';
+			}
+
+			historyEl.innerHTML = html;
+		}
+
+		function loadHistory() {
+			if ( ! historyEl ) { return; }
+			historyLoaded = true;
+			core.skeleton( historyEl, 'table' );
+			core.post( 'experiment_history', {
+				verdict: historyVerdict,
+				q: historySearch,
+				page: historyPage
+			} )
+				.then( function ( payload ) {
+					renderFacets( payload );
+					renderHistory( payload );
+				} )
+				.catch( function ( err ) {
+					historyEl.innerHTML = '<div class="ace-empty">' +
+						esc( ( err && err.message ) || t( 'noHistory', 'Could not load your test history.' ) ) +
+						'</div>';
+				} );
+
+			/* The portfolio total degrades on its own: losing it must not cost
+			   the merchant the history they came for. */
+			core.post( 'experiment_value', {} )
+				.then( renderValue )
+				.catch( function () {
+					if ( valueEl ) { valueEl.innerHTML = ''; }
+				} );
+		}
+
+		/* ================================================================== */
 		/* Wiring                                                             */
 		/* ================================================================== */
 
-		core.tabs( root );
+		/* `core.tabs( container, onChange )`. The history is loaded on FIRST
+		   view rather than at boot: most visits to this screen are about a
+		   running test, and paying for two extra requests every time to fill a
+		   tab nobody opened is the wrong default. */
+		core.tabs( root, function ( tab ) {
+			if ( tab === 'history' && ! historyLoaded ) { loadHistory(); }
+		} );
+
+		/* `core.tabs` fires `onChange` only on a CLICK: the hash restore it does
+		   at boot passes `silent`, deliberately, so that arriving on a tab does
+		   not look like choosing it. That means a bookmark or a reload landing
+		   on #history would show an empty panel forever. Asking the DOM which
+		   panel it actually left visible is the one answer that cannot drift
+		   from what `core.tabs` decided. */
+		var historyPanel = root.querySelector( '[data-panel="history"]' );
+		if ( historyPanel && ! historyPanel.hidden && ! historyLoaded ) {
+			loadHistory();
+		}
 
 		root.addEventListener( 'click', function ( event ) {
 			var open = event.target.closest( '.ace-exp-open' );
 			if ( open ) {
 				event.preventDefault();
 				openDetail( open.getAttribute( 'data-id' ), false );
+				return;
+			}
+
+			/* History: filter by verdict. */
+			var facet = event.target.closest( '.ace-hist-facet' );
+			if ( facet ) {
+				var next = facet.getAttribute( 'data-verdict' ) || '';
+				historyVerdict = next === historyVerdict ? '' : next;
+				historyPage = 0;
+				loadHistory();
+				return;
+			}
+
+			/* History: page. */
+			var pageBtn = event.target.closest( '.ace-hist-page' );
+			if ( pageBtn ) {
+				historyPage = parseInt( pageBtn.getAttribute( 'data-page' ), 10 ) || 0;
+				loadHistory();
+				return;
+			}
+
+			/*
+			 * History: save what the merchant learned.
+			 *
+			 * The row is NOT re-rendered on success. Reloading the table would
+			 * collapse the `<details>` they are typing in and scroll the page,
+			 * which reads as the note having been lost. A toast says it saved
+			 * and the text they can see is already what was sent.
+			 */
+			var saveNote = event.target.closest( '.ace-hist-save' );
+			if ( saveNote ) {
+				var field = byId( saveNote.getAttribute( 'data-note' ) );
+				if ( ! field ) { return; }
+				core.setBusy( saveNote, true );
+				core.post( 'experiment_note', {
+					experimentId: saveNote.getAttribute( 'data-id' ),
+					notes: field.value
+				} )
+					.then( function () {
+						core.setBusy( saveNote, false );
+						core.toast( t( 'noteSaved', 'Saved.' ) );
+					} )
+					.catch( function ( err ) {
+						core.setBusy( saveNote, false );
+						core.errorToast( ( err && err.message ) || t( 'noteNotSaved', 'Could not save that note.' ) );
+					} );
 				return;
 			}
 
@@ -911,6 +1227,17 @@
 				launchBtn.disabled = true;
 			} );
 		} );
+
+		/* Debounced through the shared helper rather than firing on every
+		   keystroke: each search is a round trip to the platform. */
+		var historySearchEl = byId( 'ace-exp-history-search' );
+		if ( historySearchEl ) {
+			historySearchEl.addEventListener( 'input', core.debounce( function () {
+				historySearch = historySearchEl.value || '';
+				historyPage = 0;
+				loadHistory();
+			}, 350 ) );
+		}
 
 		fillGoals();
 		fillCategories();

@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Agentic Commerce Engine 4.4.0\n"
+"Project-Id-Version: Agentic Commerce Engine 4.8.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/agentic-commerce-engine\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-26T10:16:18+00:00\n"
+"POT-Creation-Date: 2026-08-26T18:02:30+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: ace-make-pot\n"
 "X-Domain: agentic-commerce-engine\n"
@@ -493,7 +493,7 @@ msgid "Set up AI research"
 msgstr ""
 
 #: admin/views/page-dashboard.php:68
-#: admin/views/page-experiments.php:51
+#: admin/views/page-experiments.php:54
 msgid "Refresh"
 msgstr ""
 
@@ -609,94 +609,107 @@ msgid "Your tests"
 msgstr ""
 
 #: admin/views/page-experiments.php:42
+msgid "History"
+msgstr ""
+
+#: admin/views/page-experiments.php:45
 msgid "New experiment"
 msgstr ""
 
-#: admin/views/page-experiments.php:61
-msgid "All experiments"
+#: admin/views/page-experiments.php:70
+msgid "Search tests by name"
 msgstr ""
 
-#: admin/views/page-experiments.php:71
-msgid "1. What to split"
-msgstr ""
-
-#: admin/views/page-experiments.php:74
-msgid "Split shoppers. Some see one version of your product copy and some see another, and you compare what they bought."
-msgstr ""
-
-#: admin/views/page-experiments.php:78
-msgid "Split products. Some products get new copy and some are held back unchanged, and you compare how the pages performed."
-msgstr ""
-
-#: admin/views/page-experiments.php:83
-msgid "2. Which products"
-msgstr ""
-
-#: admin/views/page-experiments.php:84
-msgid "Category"
+#: admin/views/page-experiments.php:76
+msgid "Search by name"
 msgstr ""
 
 #: admin/views/page-experiments.php:87
-msgid "A test needs enough products behind it to tell a real change from noise, so pick a whole category rather than a handful."
+msgid "All experiments"
 msgstr ""
 
-#: admin/views/page-experiments.php:92
-msgid "3. How many versions"
-msgstr ""
-
-#: admin/views/page-experiments.php:93
-msgid "Versions to compare"
-msgstr ""
-
-#: admin/views/page-experiments.php:95
-msgid "2, your copy and one challenger"
+#: admin/views/page-experiments.php:97
+msgid "1. What to split"
 msgstr ""
 
 #: admin/views/page-experiments.php:100
-msgid "Every extra version splits your shoppers further, so more versions need more traffic to reach an answer."
+msgid "Split shoppers. Some see one version of your product copy and some see another, and you compare what they bought."
 msgstr ""
 
-#: admin/views/page-experiments.php:105
-msgid "4. What to measure"
+#: admin/views/page-experiments.php:104
+msgid "Split products. Some products get new copy and some are held back unchanged, and you compare how the pages performed."
 msgstr ""
 
-#: admin/views/page-experiments.php:106
-msgid "Goal"
+#: admin/views/page-experiments.php:109
+msgid "2. Which products"
 msgstr ""
 
-#: admin/views/page-experiments.php:108
-msgid "Days to run"
+#: admin/views/page-experiments.php:110
+msgid "Category"
 msgstr ""
 
 #: admin/views/page-experiments.php:113
+msgid "A test needs enough products behind it to tell a real change from noise, so pick a whole category rather than a handful."
+msgstr ""
+
+#: admin/views/page-experiments.php:118
+msgid "3. How many versions"
+msgstr ""
+
+#: admin/views/page-experiments.php:119
+msgid "Versions to compare"
+msgstr ""
+
+#: admin/views/page-experiments.php:121
+msgid "2, your copy and one challenger"
+msgstr ""
+
+#: admin/views/page-experiments.php:126
+msgid "Every extra version splits your shoppers further, so more versions need more traffic to reach an answer."
+msgstr ""
+
+#: admin/views/page-experiments.php:131
+msgid "4. What to measure"
+msgstr ""
+
+#: admin/views/page-experiments.php:132
+msgid "Goal"
+msgstr ""
+
+#: admin/views/page-experiments.php:134
+msgid "Days to run"
+msgstr ""
+
+#: admin/views/page-experiments.php:139
 msgid "5. Check and launch"
 msgstr ""
 
-#: admin/views/page-experiments.php:114
+#: admin/views/page-experiments.php:140
 msgid "Name this test"
 msgstr ""
 
-#: admin/views/page-experiments.php:130
+#: admin/views/page-experiments.php:156
 msgid "Lower is better. Fewer versions, or a longer run, both move this line down."
 msgstr ""
 
-#: admin/views/page-experiments.php:135
+#: admin/views/page-experiments.php:161
 msgid "Start it anyway, knowing it will take longer than planned"
 msgstr ""
 
-#: admin/views/page-experiments.php:140
+#: admin/views/page-experiments.php:166
 msgid "Check this design"
 msgstr ""
 
-#: admin/views/page-experiments.php:143
+#: admin/views/page-experiments.php:169
 msgid "Write the versions and launch"
 msgstr ""
 
-#: admin/views/page-experiments.php:148
+#: admin/views/page-experiments.php:174
 msgid "Launching writes the new versions with AI, which uses credits. Nothing is shown to a visitor until you approve it in Review and it goes live on your site."
 msgstr ""
 
 #: admin/views/page-products.php:22
+#: includes/class-assets.php:496
 msgid "All"
 msgstr ""
 
@@ -801,6 +814,7 @@ msgstr ""
 
 #: admin/views/page-products.php:98
 #: includes/class-assets.php:450
+#: includes/class-assets.php:513
 msgid "Previous"
 msgstr ""
 
@@ -1368,21 +1382,22 @@ msgstr ""
 msgid "Could not move this post to the trash."
 msgstr ""
 
-#: includes/class-ajax-experiments.php:80
+#: includes/class-ajax-experiments.php:83
+#: includes/class-ajax-experiments.php:121
 msgid "Which experiment?"
 msgstr ""
 
-#: includes/class-ajax-experiments.php:115
-#: includes/class-ajax-experiments.php:140
+#: includes/class-ajax-experiments.php:158
+#: includes/class-ajax-experiments.php:183
 msgid "Give this test a name."
 msgstr ""
 
-#: includes/class-ajax-experiments.php:133
-#: includes/class-ajax-experiments.php:157
+#: includes/class-ajax-experiments.php:176
+#: includes/class-ajax-experiments.php:200
 msgid "Nothing to do."
 msgstr ""
 
-#: includes/class-ajax-experiments.php:195
+#: includes/class-ajax-experiments.php:238
 msgid "No products matched that selection."
 msgstr ""
 
@@ -1395,12 +1410,12 @@ msgstr ""
 msgid "No products selected."
 msgstr ""
 
-#: includes/class-api-client.php:735
+#: includes/class-api-client.php:787
 msgid "No API key configured. Connect your site first."
 msgstr ""
 
 #. translators: %d: HTTP status code.
-#: includes/class-api-client.php:873
+#: includes/class-api-client.php:925
 #, php-format
 msgid "The ACE platform returned an error (HTTP %d)."
 msgstr ""
@@ -1749,6 +1764,7 @@ msgid "versions"
 msgstr ""
 
 #: includes/class-assets.php:335
+#: includes/class-assets.php:510
 msgid "Change"
 msgstr ""
 
@@ -1821,6 +1837,7 @@ msgid "No crawler visits recorded yet. Data appears as soon as an AI crawler hit
 msgstr ""
 
 #: includes/class-assets.php:357
+#: includes/class-assets.php:514
 msgid "Page"
 msgstr ""
 
@@ -1833,6 +1850,7 @@ msgid "Last seen"
 msgstr ""
 
 #: includes/class-assets.php:360
+#: includes/class-assets.php:506
 msgid "Saved."
 msgstr ""
 
@@ -2233,14 +2251,118 @@ msgid "This design cannot be checked yet"
 msgstr ""
 
 #: includes/class-assets.php:484
-msgid "Feed URLs regenerated. Update them wherever they are configured."
+msgid "What testing has been worth"
+msgstr ""
+
+#: includes/class-assets.php:485
+msgid "From"
+msgstr ""
+
+#: includes/class-assets.php:486
+msgid "finished tests, counted as each one was decided."
 msgstr ""
 
 #: includes/class-assets.php:487
-msgid "Settings saved."
+msgid "A year, from decisions taken"
+msgstr ""
+
+#: includes/class-assets.php:488
+msgid "Won by keeping a better version"
 msgstr ""
 
 #: includes/class-assets.php:489
+msgid "Kept by not shipping a worse one"
+msgstr ""
+
+#: includes/class-assets.php:490
+msgid "At least"
+msgstr ""
+
+#: includes/class-assets.php:491
+msgid "a year on the cautious end of every range."
+msgstr ""
+
+#: includes/class-assets.php:492
+msgid "Plus"
+msgstr ""
+
+#: includes/class-assets.php:493
+msgid "a year in"
+msgstr ""
+
+#: includes/class-assets.php:494
+msgid "Tests still running would add about"
+msgstr ""
+
+#: includes/class-assets.php:495
+msgid "a year if their current estimate holds. That is not counted above, because they have not finished."
+msgstr ""
+
+#: includes/class-assets.php:497
+msgid "No tests match that."
+msgstr ""
+
+#: includes/class-assets.php:498
+msgid "Nothing here yet. Finished tests and what they found will collect here."
+msgstr ""
+
+#: includes/class-assets.php:499
+msgid "Could not load your test history."
+msgstr ""
+
+#: includes/class-assets.php:500
+msgid "Running"
+msgstr ""
+
+#: includes/class-assets.php:501
+msgid "won"
+msgstr ""
+
+#: includes/class-assets.php:502
+msgid "not lost"
+msgstr ""
+
+#: includes/class-assets.php:503
+msgid "Edit what you learned"
+msgstr ""
+
+#: includes/class-assets.php:504
+msgid "Add what you learned"
+msgstr ""
+
+#: includes/class-assets.php:505
+msgid "Save"
+msgstr ""
+
+#: includes/class-assets.php:507
+msgid "Could not save that note."
+msgstr ""
+
+#: includes/class-assets.php:508
+msgid "Test"
+msgstr ""
+
+#: includes/class-assets.php:509
+msgid "Outcome"
+msgstr ""
+
+#: includes/class-assets.php:511
+msgid "Worth"
+msgstr ""
+
+#: includes/class-assets.php:512
+msgid "Decided"
+msgstr ""
+
+#: includes/class-assets.php:517
+msgid "Feed URLs regenerated. Update them wherever they are configured."
+msgstr ""
+
+#: includes/class-assets.php:520
+msgid "Settings saved."
+msgstr ""
+
+#: includes/class-assets.php:522
 #, php-format
 msgid "Connection healthy. %s credits available."
 msgstr ""
@@ -2326,11 +2448,11 @@ msgstr ""
 msgid "%s ago"
 msgstr ""
 
-#: includes/class-experiments.php:155
+#: includes/class-experiments.php:206
 msgid "That is not something you can do to an experiment."
 msgstr ""
 
-#: includes/class-experiments.php:193
+#: includes/class-experiments.php:244
 msgid "That version could not be identified."
 msgstr ""
 

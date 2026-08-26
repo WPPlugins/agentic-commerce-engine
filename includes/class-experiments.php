@@ -95,6 +95,57 @@ class Experiments {
 	}
 
 	/**
+	 * Finished tests and what they found.
+	 *
+	 * NOT cached. A merchant reaches this screen straight after deciding a
+	 * test, and a minute-old history that does not contain the decision they
+	 * just took is the one thing this view must never show. It is also filtered
+	 * and paged per request, so a single cache key could not describe it.
+	 *
+	 * @param array $query Optional verdict, q, page.
+	 * @return array|\WP_Error
+	 */
+	public function history( $query = array() ) {
+		return $this->plugin->api()->experiment_history( $this->store_id(), $query );
+	}
+
+	/**
+	 * What testing has been worth. Cached for a minute: it changes only when a
+	 * test is decided, and it is drawn above a list that is refetched anyway.
+	 *
+	 * @param bool $fresh Skip the cache.
+	 * @return array|\WP_Error
+	 */
+	public function value( $fresh = false ) {
+		if ( $fresh ) {
+			$this->plugin->cache()->forget( self::GROUP, 'value' );
+		}
+		return $this->plugin->cache()->remember(
+			self::GROUP,
+			'value',
+			MINUTE_IN_SECONDS,
+			function () {
+				return $this->plugin->api()->experiment_value( $this->store_id() );
+			},
+			30
+		);
+	}
+
+	/**
+	 * Save what the merchant learned from one finished test.
+	 *
+	 * @param string $experiment_id Experiment id.
+	 * @param string $notes         Their note. Empty clears it.
+	 * @return array|\WP_Error
+	 */
+	public function save_note( $experiment_id, $notes ) {
+		$result = $this->plugin->api()->experiment_note( $this->store_id(), $experiment_id, $notes );
+		// The history is uncached, but the portfolio total is not, and a note
+		// does not change it. Nothing to bust.
+		return $result;
+	}
+
+	/**
 	 * Products and categories a test could run over.
 	 *
 	 * @param string|null $category Optional category.

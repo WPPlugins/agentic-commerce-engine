@@ -4,7 +4,7 @@ Tags: ai, seo, woocommerce, ai search, content
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 4.7.3
+Stable tag: 4.8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -138,6 +138,12 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 
 == Changelog ==
 
+= 4.8.0 =
+* New: a History tab. Every test you have finished, what it found, and what it was worth, with a place to write down what you learned from each one. Filter by outcome, search by name.
+* New: what testing has been worth to your shop, above that list. It counts two things: money won by keeping a version that beat your original, and money kept by not rolling out a version that lost. The second is usually the larger of the two, and both are counted only where a test reached a clear answer and your store reported real order values.
+* New: a test that finished by showing your original copy was better now records what not rolling out the challenger was worth. Previously only winners carried a figure, so half of what testing gives you was invisible.
+* Fixed: a lift shown on a finished test could be understated. The figure is stored on a logarithmic scale and one of the places that read it was treating it as a plain percentage.
+
 = 4.7.3 =
 * New: an experiment now shows what each version is worth. Revenue per shopper over time, a table per version, and what keeping the winner would be worth over a year. It appears only when your store actually reported order values, so a missing panel means revenue is not being tracked rather than that you earned nothing.
 * Fixed: the progress step for going live was called "Versions live", the same name as one of the trust checks below it, and the two answer different questions. It is now "Live on your store".
@@ -229,6 +235,9 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 * Product enrichment now runs on the platform's durable jobs API with webhook-accelerated polling.
 
 == Upgrade Notice ==
+
+= 4.8.0 =
+Adds a History tab: every test you have finished, what it found, and what it was worth. It now also counts money kept by not rolling out a version that lost, which was previously invisible. Fixes a lift figure that could read lower than it should on a finished test.
 
 = 4.7.3 =
 Experiments now show revenue per version, and two labelling fixes.

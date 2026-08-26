@@ -526,6 +526,58 @@ class Api_Client {
 	}
 
 	/**
+	 * Finished tests and what each one found.
+	 *
+	 * @param string $store_id Store id.
+	 * @param array  $query    Optional verdict, q, page.
+	 * @return array|\WP_Error
+	 */
+	public function experiment_history( $store_id, $query = array() ) {
+		$args = array( 'storeId' => $store_id );
+		foreach ( array( 'verdict', 'q', 'page' ) as $key ) {
+			if ( isset( $query[ $key ] ) && '' !== $query[ $key ] ) {
+				$args[ $key ] = (string) $query[ $key ];
+			}
+		}
+		return $this->request( 'GET', '/api/v1/plugin/experiments/history', null, $args );
+	}
+
+	/**
+	 * What testing has been worth: banked value, and running tests kept apart.
+	 *
+	 * @param string $store_id Store id.
+	 * @return array|\WP_Error
+	 */
+	public function experiment_value( $store_id ) {
+		return $this->request(
+			'GET',
+			'/api/v1/plugin/experiments/value',
+			null,
+			array( 'storeId' => $store_id )
+		);
+	}
+
+	/**
+	 * Write what the merchant learned onto one finished test.
+	 *
+	 * @param string $store_id      Store id.
+	 * @param string $experiment_id Experiment id.
+	 * @param string $notes         Their note. Empty clears it.
+	 * @return array|\WP_Error
+	 */
+	public function experiment_note( $store_id, $experiment_id, $notes ) {
+		return $this->request(
+			'PATCH',
+			'/api/v1/plugin/experiments/history',
+			array(
+				'storeId'      => $store_id,
+				'experimentId' => $experiment_id,
+				'notes'        => $notes,
+			)
+		);
+	}
+
+	/**
 	 * One experiment: arms, exposures, results and the health checks.
 	 *
 	 * @param string $store_id      Store id.

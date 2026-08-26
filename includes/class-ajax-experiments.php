@@ -41,6 +41,9 @@ class Ajax_Experiments extends Ajax_Base {
 			'experiment_create'     => 'create',
 			'experiment_action'     => 'act',
 			'experiment_apply_winner' => 'apply_winner',
+			'experiment_history'    => 'history',
+			'experiment_value'      => 'value',
+			'experiment_note'       => 'save_note',
 		);
 		foreach ( $actions as $action => $method ) {
 			add_action(
@@ -81,6 +84,46 @@ class Ajax_Experiments extends Ajax_Base {
 		}
 		$fresh = ! empty( $_POST['fresh'] );
 		$this->respond( $this->plugin->experiments()->one( $id, (bool) $fresh ) );
+	}
+
+	/**
+	 * Finished tests and what each one found.
+	 */
+	public function history() {
+		check_ajax_referer( self::NONCE_ACTION, 'nonce' );
+		$this->require_manage();
+		$query = array(
+			'verdict' => isset( $_POST['verdict'] ) ? sanitize_text_field( wp_unslash( $_POST['verdict'] ) ) : '',
+			'q'       => isset( $_POST['q'] ) ? sanitize_text_field( wp_unslash( $_POST['q'] ) ) : '',
+			'page'    => isset( $_POST['page'] ) ? absint( $_POST['page'] ) : 0,
+		);
+		$this->respond( $this->plugin->experiments()->history( $query ) );
+	}
+
+	/**
+	 * What testing has been worth.
+	 */
+	public function value() {
+		check_ajax_referer( self::NONCE_ACTION, 'nonce' );
+		$this->require_manage();
+		$fresh = ! empty( $_POST['fresh'] );
+		$this->respond( $this->plugin->experiments()->value( (bool) $fresh ) );
+	}
+
+	/**
+	 * Save what the merchant learned from a finished test.
+	 */
+	public function save_note() {
+		check_ajax_referer( self::NONCE_ACTION, 'nonce' );
+		$this->require_manage();
+		$id = isset( $_POST['experimentId'] ) ? sanitize_text_field( wp_unslash( $_POST['experimentId'] ) ) : '';
+		if ( '' === $id ) {
+			wp_send_json_error( array( 'message' => __( 'Which experiment?', 'agentic-commerce-engine' ) ) );
+		}
+		// `sanitize_textarea_field`, not `sanitize_text_field`: a note is prose
+		// and its line breaks are part of what the merchant wrote.
+		$notes = isset( $_POST['notes'] ) ? sanitize_textarea_field( wp_unslash( $_POST['notes'] ) ) : '';
+		$this->respond( $this->plugin->experiments()->save_note( $id, $notes ) );
 	}
 
 	/**
