@@ -4,7 +4,7 @@ Tags: ai, seo, woocommerce, ai search, content
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 4.7.0
+Stable tag: 4.7.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -138,6 +138,12 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 
 == Changelog ==
 
+= 4.7.1 =
+* The whole plugin is now translatable. Around 120 strings across the AI Search, Content and Experiments screens were printed in English whatever your site language, because they were never passed through WordPress translation. They are now, and a test stops the same thing happening again.
+* Fixed: on an experiment, the progress strip could say every product had a second version live while the checks below said fewer than two versions were live. Both were measuring something real and neither said which. The strip now waits for the same thing the check waits for, and explains that only one version being live means both groups read the same words.
+* Fixed: the "% live" dial on an experiment had its label cut off at both ends.
+* Fixed: a range read "likely between +6.1% to +76.9%".
+
 = 4.7.0 =
 * New: the Experiments screen now shows you what is happening, not just what happened. A chart of how each version is doing day by day, a range that visibly narrows as shoppers arrive, and a projected date when the result will be readable.
 * New: a plain-English verdict at the top of every test. It says whether you have a winner, whether to keep waiting, or whether something is wrong that would make the numbers meaningless, and it will not call a winner while a check is failing.
@@ -215,6 +221,9 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 * Product enrichment now runs on the platform's durable jobs API with webhook-accelerated polling.
 
 == Upgrade Notice ==
+
+= 4.7.1 =
+The plugin is now fully translatable, and an experiment's progress strip no longer contradicts its own checks.
 
 = 4.7.0 =
 Experiments can now be read at a glance: charts of how each version is doing, a plain verdict, and one button to keep the winner for everyone.

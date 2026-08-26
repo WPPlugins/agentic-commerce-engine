@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-26T08:19:23+00:00\n"
+"POT-Creation-Date: 2026-08-26T09:15:04+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: ace-make-pot\n"
 "X-Domain: agentic-commerce-engine\n"
@@ -328,11 +328,14 @@ msgid "Generate"
 msgstr ""
 
 #: admin/views/page-content.php:34
+#: includes/class-assets.php:421
 msgid "Briefs"
 msgstr ""
 
 #: admin/views/page-content.php:35
 #: admin/views/page-content.php:142
+#: includes/class-assets.php:415
+#: includes/class-assets.php:425
 msgid "Published"
 msgstr ""
 
@@ -341,6 +344,7 @@ msgid "Writing an article is done by a language model on ACE servers, so this fo
 msgstr ""
 
 #: admin/views/page-content.php:52
+#: includes/class-assets.php:455
 #: includes/class-meta.php:53
 msgid "Title"
 msgstr ""
@@ -443,6 +447,7 @@ msgid "All statuses"
 msgstr ""
 
 #: admin/views/page-content.php:141
+#: includes/class-assets.php:414
 msgid "Ready to publish"
 msgstr ""
 
@@ -705,11 +710,14 @@ msgstr ""
 #: admin/views/page-products.php:24
 #: includes/class-admin.php:200
 #: includes/class-assets.php:251
+#: includes/class-assets.php:411
+#: includes/class-assets.php:433
 #: includes/class-dashboard.php:152
 msgid "Queued"
 msgstr ""
 
 #: admin/views/page-products.php:25
+#: includes/class-assets.php:392
 msgid "Ready"
 msgstr ""
 
@@ -778,6 +786,8 @@ msgid "SKU"
 msgstr ""
 
 #: admin/views/page-products.php:87
+#: includes/class-assets.php:397
+#: includes/class-assets.php:457
 msgid "Status"
 msgstr ""
 
@@ -790,10 +800,12 @@ msgid "Loading products"
 msgstr ""
 
 #: admin/views/page-products.php:98
+#: includes/class-assets.php:450
 msgid "Previous"
 msgstr ""
 
 #: admin/views/page-products.php:100
+#: includes/class-assets.php:451
 msgid "Next"
 msgstr ""
 
@@ -802,6 +814,7 @@ msgid "Review queues"
 msgstr ""
 
 #: admin/views/page-review.php:21
+#: includes/class-assets.php:418
 msgid "Pending"
 msgstr ""
 
@@ -1307,6 +1320,7 @@ msgid "AI Search research is not enabled for this ACE deployment."
 msgstr ""
 
 #: includes/class-ajax-aeo.php:108
+#: includes/class-assets.php:382
 msgid "Add at least one prompt (three characters or more, one per line)."
 msgstr ""
 
@@ -1315,6 +1329,7 @@ msgid "Missing run id."
 msgstr ""
 
 #: includes/class-ajax-aeo.php:196
+#: includes/class-assets.php:386
 msgid "Enter a flow name and your brand name."
 msgstr ""
 
@@ -1332,6 +1347,7 @@ msgid "This feature needs WooCommerce."
 msgstr ""
 
 #: includes/class-ajax-content.php:64
+#: includes/class-assets.php:439
 msgid "Give the article a title of at least 3 characters."
 msgstr ""
 
@@ -1757,7 +1773,7 @@ msgid "Left unchanged"
 msgstr ""
 
 #: includes/class-assets.php:342
-msgid "% of products live"
+msgid "% live"
 msgstr ""
 
 #: includes/class-assets.php:343
@@ -1772,11 +1788,423 @@ msgstr ""
 msgid "That did not go through."
 msgstr ""
 
-#: includes/class-assets.php:348
-msgid "Settings saved."
+#: includes/class-assets.php:349
+msgid "vs previous period"
 msgstr ""
 
 #: includes/class-assets.php:350
+msgid "Crawler hits"
+msgstr ""
+
+#: includes/class-assets.php:351
+msgid "Active crawlers"
+msgstr ""
+
+#: includes/class-assets.php:352
+msgid "Top crawler"
+msgstr ""
+
+#: includes/class-assets.php:353
+msgid "None yet"
+msgstr ""
+
+#: includes/class-assets.php:354
+msgid "Days with activity"
+msgstr ""
+
+#: includes/class-assets.php:355
+msgid "Other"
+msgstr ""
+
+#: includes/class-assets.php:356
+msgid "No crawler visits recorded yet. Data appears as soon as an AI crawler hits your site."
+msgstr ""
+
+#: includes/class-assets.php:357
+msgid "Page"
+msgstr ""
+
+#: includes/class-assets.php:358
+msgid "Hits"
+msgstr ""
+
+#: includes/class-assets.php:359
+msgid "Last seen"
+msgstr ""
+
+#: includes/class-assets.php:360
+msgid "Saved."
+msgstr ""
+
+#: includes/class-assets.php:361
+msgid "Crawler summary sent to ACE."
+msgstr ""
+
+#: includes/class-assets.php:362
+msgid "vs previous run"
+msgstr ""
+
+#: includes/class-assets.php:363
+msgid "Share of answers"
+msgstr ""
+
+#: includes/class-assets.php:364
+msgid "Prompts tracked"
+msgstr ""
+
+#: includes/class-assets.php:365
+msgid "AI responses"
+msgstr ""
+
+#: includes/class-assets.php:366
+msgid "Latest run"
+msgstr ""
+
+#: includes/class-assets.php:367
+msgid "Brand mention rate"
+msgstr ""
+
+#: includes/class-assets.php:368
+msgid "Mention your brand"
+msgstr ""
+
+#: includes/class-assets.php:369
+msgid "No brand mention"
+msgstr ""
+
+#: includes/class-assets.php:370
+msgid "No prompts match your filter."
+msgstr ""
+
+#: includes/class-assets.php:371
+msgid "No prompts saved yet. Add prompts from the Runs tab."
+msgstr ""
+
+#: includes/class-assets.php:372
+msgid "Prompt"
+msgstr ""
+
+#: includes/class-assets.php:373
+msgid "Tags"
+msgstr ""
+
+#: includes/class-assets.php:374
+msgid "No entity data yet. Launch a research run from the Runs tab first."
+msgstr ""
+
+#: includes/class-assets.php:375
+msgid "Brand"
+msgstr ""
+
+#: includes/class-assets.php:376
+msgid "Answer mentions"
+msgstr ""
+
+#: includes/class-assets.php:377
+msgid "Your brand"
+msgstr ""
+
+#: includes/class-assets.php:378
+msgid "prompts saved on your research flow."
+msgstr ""
+
+#: includes/class-assets.php:379
+msgid "Flow default"
+msgstr ""
+
+#: includes/class-assets.php:380
+msgid "No suggestions came back. Try adding a topic."
+msgstr ""
+
+#: includes/class-assets.php:381
+msgid "suggested prompts added to the editor."
+msgstr ""
+
+#: includes/class-assets.php:383
+msgid "Replace all saved prompts with the lines in the editor?"
+msgstr ""
+
+#: includes/class-assets.php:384
+msgid "Prompts saved."
+msgstr ""
+
+#: includes/class-assets.php:385
+msgid "Run launched. Results usually arrive within a few minutes."
+msgstr ""
+
+#: includes/class-assets.php:387
+msgid "Research flow created."
+msgstr ""
+
+#: includes/class-assets.php:388
+msgid "Estimate:"
+msgstr ""
+
+#: includes/class-assets.php:389
+msgid "The estimate came back empty. You can launch the run directly."
+msgstr ""
+
+#: includes/class-assets.php:390
+msgid "Completed"
+msgstr ""
+
+#: includes/class-assets.php:391
+#: includes/class-assets.php:449
+msgid "Unknown"
+msgstr ""
+
+#: includes/class-assets.php:393
+msgid "Building"
+msgstr ""
+
+#: includes/class-assets.php:394
+msgid "After run"
+msgstr ""
+
+#: includes/class-assets.php:395
+msgid "No research runs yet. Configure your prompts above and launch the first run."
+msgstr ""
+
+#: includes/class-assets.php:396
+msgid "Run"
+msgstr ""
+
+#: includes/class-assets.php:398
+msgid "Started"
+msgstr ""
+
+#: includes/class-assets.php:399
+msgid "Ended"
+msgstr ""
+
+#: includes/class-assets.php:400
+msgid "Results"
+msgstr ""
+
+#: includes/class-assets.php:401
+#: includes/class-assets.php:459
+msgid "View"
+msgstr ""
+
+#: includes/class-assets.php:402
+msgid "The results snapshot is still building. Check back in a minute."
+msgstr ""
+
+#: includes/class-assets.php:403
+msgid "No per prompt results are available for this run yet."
+msgstr ""
+
+#: includes/class-assets.php:404
+msgid "Engine"
+msgstr ""
+
+#: includes/class-assets.php:405
+msgid "Citations"
+msgstr ""
+
+#: includes/class-assets.php:406
+msgid "Top entities"
+msgstr ""
+
+#: includes/class-assets.php:407
+msgid "Mentioned"
+msgstr ""
+
+#: includes/class-assets.php:408
+msgid "Not mentioned"
+msgstr ""
+
+#: includes/class-assets.php:412
+msgid "Generating"
+msgstr ""
+
+#: includes/class-assets.php:413
+msgid "With editor"
+msgstr ""
+
+#: includes/class-assets.php:416
+msgid "Live"
+msgstr ""
+
+#: includes/class-assets.php:417
+msgid "Draft"
+msgstr ""
+
+#: includes/class-assets.php:419
+msgid "Scheduled"
+msgstr ""
+
+#: includes/class-assets.php:420
+msgid "Private"
+msgstr ""
+
+#: includes/class-assets.php:422
+msgid "In your ACE project"
+msgstr ""
+
+#: includes/class-assets.php:423
+msgid "WP drafts"
+msgstr ""
+
+#: includes/class-assets.php:424
+msgid "Waiting to go live"
+msgstr ""
+
+#: includes/class-assets.php:426
+msgid "Live on this site"
+msgstr ""
+
+#: includes/class-assets.php:427
+msgid "Add a brand voice in ACE"
+msgstr ""
+
+#: includes/class-assets.php:428
+#, php-format
+msgid "Writing as %s."
+msgstr ""
+
+#: includes/class-assets.php:429
+msgid "Built in"
+msgstr ""
+
+#: includes/class-assets.php:430
+msgid "Presets"
+msgstr ""
+
+#: includes/class-assets.php:431
+msgid "Custom"
+msgstr ""
+
+#: includes/class-assets.php:432
+msgid "Standard article"
+msgstr ""
+
+#: includes/class-assets.php:434
+msgid "Working"
+msgstr ""
+
+#: includes/class-assets.php:435
+#, php-format
+msgid "%s words"
+msgstr ""
+
+#: includes/class-assets.php:436
+msgid "None"
+msgstr ""
+
+#: includes/class-assets.php:437
+msgid "Article ready"
+msgstr ""
+
+#: includes/class-assets.php:438
+msgid "Generation failed. Please try again."
+msgstr ""
+
+#: includes/class-assets.php:440
+msgid "Writing has started. This usually takes a minute or two."
+msgstr ""
+
+#: includes/class-assets.php:441
+msgid "Could not start the article."
+msgstr ""
+
+#: includes/class-assets.php:442
+msgid "Published. The article is live."
+msgstr ""
+
+#: includes/class-assets.php:443
+msgid "Draft created."
+msgstr ""
+
+#: includes/class-assets.php:444
+msgid "View the live article"
+msgstr ""
+
+#: includes/class-assets.php:445
+msgid "Could not publish the article."
+msgstr ""
+
+#: includes/class-assets.php:446
+msgid "Move this draft to the trash?"
+msgstr ""
+
+#: includes/class-assets.php:447
+msgid "Draft moved to the trash."
+msgstr ""
+
+#: includes/class-assets.php:448
+msgid "Could not discard the draft."
+msgstr ""
+
+#: includes/class-assets.php:452
+msgid "No briefs yet. Generate your first article to get started."
+msgstr ""
+
+#: includes/class-assets.php:453
+msgid "Publish"
+msgstr ""
+
+#: includes/class-assets.php:454
+msgid "Create draft"
+msgstr ""
+
+#: includes/class-assets.php:456
+msgid "Type"
+msgstr ""
+
+#: includes/class-assets.php:458
+msgid "Updated"
+msgstr ""
+
+#: includes/class-assets.php:460
+msgid "Could not load briefs."
+msgstr ""
+
+#: includes/class-assets.php:461
+msgid "No ACE articles in WordPress yet. Generated drafts will appear here."
+msgstr ""
+
+#: includes/class-assets.php:462
+msgid "Date"
+msgstr ""
+
+#: includes/class-assets.php:463
+msgid "Republish latest"
+msgstr ""
+
+#: includes/class-assets.php:464
+msgid "Could not load articles."
+msgstr ""
+
+#: includes/class-assets.php:465
+msgid "Updated with the latest version from ACE."
+msgstr ""
+
+#: includes/class-assets.php:466
+msgid "Draft updated with the latest version."
+msgstr ""
+
+#: includes/class-assets.php:469
+msgid "and"
+msgstr ""
+
+#: includes/class-assets.php:470
+msgid "of"
+msgstr ""
+
+#: includes/class-assets.php:471
+msgid "products have a second version live"
+msgstr ""
+
+#: includes/class-assets.php:474
+msgid "Feed URLs regenerated. Update them wherever they are configured."
+msgstr ""
+
+#: includes/class-assets.php:477
+msgid "Settings saved."
+msgstr ""
+
+#: includes/class-assets.php:479
 #, php-format
 msgid "Connection healthy. %s credits available."
 msgstr ""

@@ -249,9 +249,17 @@
 				// waiting" verdict has earned no figure, and printing the
 				// current best guess beside it would be read as the answer.
 				if ( decision.basis && typeof decision.basis.point === 'number' ) {
-					var band = interval( decision.basis.lo, decision.basis.hi );
+					// "between X to Y" is not English. `interval()` joins with
+					// "to", which is right on its own and wrong after "between",
+					// so the pair is built here rather than reused.
+					var lo = decision.basis.lo;
+					var hi = decision.basis.hi;
+					var band = ( typeof lo === 'number' && typeof hi === 'number' )
+						? t( 'likelyBetween', 'likely between' ) + ' ' + lift( lo ) + ' ' +
+							t( 'andBetween', 'and' ) + ' ' + lift( hi )
+						: '';
 					html += '<p><strong>' + esc( lift( decision.basis.point ) ) + '</strong>' +
-						( band ? ' ' + esc( t( 'likelyBetween', 'likely between' ) + ' ' + band ) : '' ) + '</p>';
+						( band ? ' ' + esc( band ) : '' ) + '</p>';
 				}
 				if ( decision.action && decision.action.kind === 'apply_winner' && decision.arm ) {
 					html += '<p><button type="button" class="ace-btn ace-btn-primary ace-exp-apply" data-arm="' +
@@ -307,7 +315,8 @@
 			html += '<h3>' + esc( t( 'measuredProperly', 'Is this being measured properly?' ) ) + '</h3>';
 			html += '<div class="ace-grid-2">';
 			html += '<div class="ace-chart" id="ace-exp-split"></div>';
-			html += '<div class="ace-chart" id="ace-exp-coverage"></div>';
+			html += '<div><div class="ace-chart" id="ace-exp-coverage"></div>';
+			html += '<p class="ace-card-sub" id="ace-exp-coverage-note" hidden></p></div>';
 			html += '</div>';
 			if ( d.split && d.split.unattributedVisitors > 0 ) {
 				html += '<p>' + esc( core.num( d.split.unattributedVisitors ) + ' ' +
@@ -523,11 +532,22 @@
 			var coverageEl = byId( 'ace-exp-coverage' );
 			var cov = d.coverage || {};
 			if ( coverageEl && cov.enrolledProducts > 0 ) {
+				/* The label sits INSIDE a 140px circle, so it has room for about
+				   ten characters. "% of products live" overflowed it at both
+				   ends and rendered as "% OF PRODUCTS LIV". The count belongs
+				   under the chart, where there is a whole line for it. */
 				charts.ring( coverageEl, {
 					value: Math.round( ( cov.liveProducts / cov.enrolledProducts ) * 100 ),
-					label: t( 'percentLive', '% of products live' ),
+					label: t( 'percentLive', '% live' ),
 					size: 140
 				} );
+				var covNote = byId( 'ace-exp-coverage-note' );
+				if ( covNote ) {
+					covNote.textContent = core.num( cov.liveProducts ) + ' ' +
+						t( 'ofProductsLive', 'of' ) + ' ' + core.num( cov.enrolledProducts ) + ' ' +
+						t( 'productsLive', 'products have a second version live' );
+					covNote.hidden = false;
+				}
 			}
 
 			/* 5. The results, as whiskers. A row still touching zero has not
