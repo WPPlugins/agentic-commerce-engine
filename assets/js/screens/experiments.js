@@ -51,6 +51,25 @@
 			abandoned: { label: 'Discarded', tone: 'neutral' }
 		};
 
+		/**
+		 * Health states, verbatim from the platform's `HealthState` union.
+		 * `broken` is its word for a failed check; there is no `fail`. `unknown`
+		 * is a GAP and takes the neutral tone precisely so it cannot read as a
+		 * tick -- a check that has not run has not passed.
+		 */
+		var HEALTH_TONE = {
+			ok: 'success',
+			warn: 'warning',
+			broken: 'error',
+			unknown: 'neutral'
+		};
+		var HEALTH_WORD = {
+			ok: 'Fine',
+			warn: 'Needs attention',
+			broken: 'Broken',
+			unknown: 'Not checked yet'
+		};
+
 		/* Which lifecycle actions a status allows. Mirrors the platform table. */
 		var ACTIONS = {
 			draft: [ 'start', 'abandon' ],
@@ -124,7 +143,7 @@
 				var products = ( e.treatedUnits || 0 ) + ( e.controlUnits || 0 );
 				return '<tr>' +
 					'<td><a href="#" class="ace-exp-open" data-id="' + esc( e.id ) + '">' + esc( e.name ) + '</a></td>' +
-					'<td>' + core.chip( chip.label, chip.tone ) + '</td>' +
+					'<td>' + core.chip( chip.tone, chip.label ) + '</td>' +
 					'<td>' + esc( design ) + '</td>' +
 					'<td>' + core.num( products ) + '</td>' +
 					'<td>' + esc( day ) + '</td>' +
@@ -137,7 +156,7 @@
 		}
 
 		function loadList( fresh ) {
-			listEl.innerHTML = core.skeleton( 3 );
+			core.skeleton( listEl, 'table' );
 			core.post( 'experiments_list', { fresh: fresh ? 1 : '' } )
 				.then( function ( payload ) {
 					renderList( ( payload && payload.experiments ) || [] );
@@ -167,7 +186,7 @@
 			var cov = d.coverage || {};
 			var html = '';
 
-			html += '<h2>' + esc( e.name || '' ) + ' ' + core.chip( chip.label, chip.tone ) + '</h2>';
+			html += '<h2>' + esc( e.name || '' ) + ' ' + core.chip( chip.tone, chip.label ) + '</h2>';
 			html += '<p>' + esc( ( d.designSummaries || [] ).join( ' ' ) ) + '</p>';
 
 			if ( e.status === 'draft' ) {
@@ -200,13 +219,13 @@
 			if ( checks.length ) {
 				html += '<h3>' + esc( 'Can this be trusted?' ) + '</h3>';
 				html += '<table class="ace-table"><tbody>' + checks.map( function ( c ) {
-					var tone = c.state === 'ok' ? 'success'
-						: c.state === 'warn' ? 'warning'
-						: c.state === 'fail' ? 'critical'
-						// A check that has not run is a GAP, never a tick.
-						: 'neutral';
-					var label = c.state === 'unknown' ? 'Not yet' : c.state;
-					return '<tr><td>' + esc( c.label ) + '</td><td>' + core.chip( label, tone ) +
+					// `broken` is the platform's word (assessHealth). `fail` is not
+					// a state it can ever emit, and `critical` is not a chip tone --
+					// together they put a BROKEN check in neutral grey, which is the
+					// one rendering this file's header forbids.
+					var tone = HEALTH_TONE[ c.state ] || 'neutral';
+					var label = HEALTH_WORD[ c.state ] || c.state;
+					return '<tr><td>' + esc( c.label ) + '</td><td>' + core.chip( tone, label ) +
 						'</td><td>' + esc( c.detail ) + '</td></tr>';
 				} ).join( '' ) + '</tbody></table>';
 			}
@@ -244,7 +263,7 @@
 		function openDetail( id, fresh ) {
 			openId = id;
 			panel( 'detail' );
-			detailEl.innerHTML = core.skeleton( 4 );
+			core.skeleton( detailEl, 'table' );
 			core.post( 'experiment_get', { experimentId: id, fresh: fresh ? 1 : '' } )
 				.then( renderDetail )
 				.catch( function ( err ) {
@@ -302,11 +321,11 @@
 
 		function showVerdict( report ) {
 			var verdict = report && report.report ? report.report.verdict : null;
-			var tone = verdict === 'impossible' ? 'critical'
+			var tone = verdict === 'impossible' ? 'error'
 				: verdict === 'slow' ? 'warning'
 				: verdict === 'ready' ? 'success' : 'info';
 			verdictEl.hidden = false;
-			verdictEl.className = 'ace-verdict ace-verdict-' + tone;
+			verdictEl.className = 'ace-banner ace-banner-' + tone;
 			verdictEl.innerHTML = '<strong>' + esc( report.headline || '' ) + '</strong>' +
 				'<p>' + esc( report.detail || '' ) + '</p>';
 

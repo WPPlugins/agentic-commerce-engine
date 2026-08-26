@@ -24,7 +24,7 @@ $agencoen_ab_on = $plugin->settings()->is_ab_enabled();
 	<?php if ( ! $agencoen_ab_on ) : ?>
 		<?php // Not an error. Splitting visitors is off by default on every site, ?>
 		<?php // including upgrades, and it stays off until someone turns it on. ?>
-		<div class="ace-notice ace-notice-info">
+		<div class="ace-banner ace-banner-info">
 			<p>
 				<?php esc_html_e( 'Splitting visitors is switched off for this site, so a test can be set up here but nobody will be shown a different version.', 'agentic-commerce-engine' ); ?>
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=agencoen-settings' ) ); ?>">
@@ -52,7 +52,7 @@ $agencoen_ab_on = $plugin->settings()->is_ab_enabled();
 				</button>
 			</div>
 		</div>
-		<div id="ace-exp-list" class="ace-list" aria-live="polite"></div>
+		<div id="ace-exp-list" aria-live="polite"></div>
 	</div>
 
 	<!-- ── The cockpit, shown when a test is opened ─────────────────────── -->
@@ -65,22 +65,22 @@ $agencoen_ab_on = $plugin->settings()->is_ab_enabled();
 
 	<!-- ── The wizard ───────────────────────────────────────────────────── -->
 	<div class="ace-panel" data-panel="new" hidden>
-		<form id="ace-exp-form" class="ace-form">
+		<form id="ace-exp-form">
 
-			<fieldset class="ace-fieldset">
-				<legend><?php esc_html_e( '1. What to split', 'agentic-commerce-engine' ); ?></legend>
-				<label class="ace-radio">
+			<fieldset class="ace-card">
+				<legend class="ace-card-title"><?php esc_html_e( '1. What to split', 'agentic-commerce-engine' ); ?></legend>
+				<label class="ace-label">
 					<input type="radio" name="type" value="visitor_split" checked />
 					<span><?php esc_html_e( 'Split shoppers. Some see one version of your product copy and some see another, and you compare what they bought.', 'agentic-commerce-engine' ); ?></span>
 				</label>
-				<label class="ace-radio">
+				<label class="ace-label">
 					<input type="radio" name="type" value="product_holdout" />
 					<span><?php esc_html_e( 'Split products. Some products get new copy and some are held back unchanged, and you compare how the pages performed.', 'agentic-commerce-engine' ); ?></span>
 				</label>
 			</fieldset>
 
-			<fieldset class="ace-fieldset">
-				<legend><?php esc_html_e( '2. Which products', 'agentic-commerce-engine' ); ?></legend>
+			<fieldset class="ace-card">
+				<legend class="ace-card-title"><?php esc_html_e( '2. Which products', 'agentic-commerce-engine' ); ?></legend>
 				<label for="ace-exp-category"><?php esc_html_e( 'Category', 'agentic-commerce-engine' ); ?></label>
 				<select id="ace-exp-category" name="category" class="ace-input"></select>
 				<p class="description">
@@ -88,8 +88,8 @@ $agencoen_ab_on = $plugin->settings()->is_ab_enabled();
 				</p>
 			</fieldset>
 
-			<fieldset class="ace-fieldset">
-				<legend><?php esc_html_e( '3. How many versions', 'agentic-commerce-engine' ); ?></legend>
+			<fieldset class="ace-card">
+				<legend class="ace-card-title"><?php esc_html_e( '3. How many versions', 'agentic-commerce-engine' ); ?></legend>
 				<label for="ace-exp-levels"><?php esc_html_e( 'Versions to compare', 'agentic-commerce-engine' ); ?></label>
 				<select id="ace-exp-levels" name="levels" class="ace-input">
 					<option value="2"><?php esc_html_e( '2, your copy and one challenger', 'agentic-commerce-engine' ); ?></option>
@@ -101,22 +101,22 @@ $agencoen_ab_on = $plugin->settings()->is_ab_enabled();
 				</p>
 			</fieldset>
 
-			<fieldset class="ace-fieldset">
-				<legend><?php esc_html_e( '4. What to measure', 'agentic-commerce-engine' ); ?></legend>
+			<fieldset class="ace-card">
+				<legend class="ace-card-title"><?php esc_html_e( '4. What to measure', 'agentic-commerce-engine' ); ?></legend>
 				<label for="ace-exp-goal"><?php esc_html_e( 'Goal', 'agentic-commerce-engine' ); ?></label>
 				<select id="ace-exp-goal" name="goal" class="ace-input"></select>
 				<label for="ace-exp-days"><?php esc_html_e( 'Days to run', 'agentic-commerce-engine' ); ?></label>
 				<input type="number" id="ace-exp-days" name="days" class="ace-input" value="28" min="7" max="180" />
 			</fieldset>
 
-			<fieldset class="ace-fieldset">
-				<legend><?php esc_html_e( '5. Check and launch', 'agentic-commerce-engine' ); ?></legend>
+			<fieldset class="ace-card">
+				<legend class="ace-card-title"><?php esc_html_e( '5. Check and launch', 'agentic-commerce-engine' ); ?></legend>
 				<label for="ace-exp-name"><?php esc_html_e( 'Name this test', 'agentic-commerce-engine' ); ?></label>
 				<input type="text" id="ace-exp-name" name="name" class="ace-input" maxlength="120" />
 
-				<div id="ace-exp-verdict" class="ace-verdict" hidden aria-live="polite"></div>
+				<div id="ace-exp-verdict" hidden aria-live="polite"></div>
 
-				<label class="ace-checkbox" id="ace-exp-accept-slow" hidden>
+				<label class="ace-toggle" id="ace-exp-accept-slow" hidden>
 					<input type="checkbox" name="acceptSlow" />
 					<span><?php esc_html_e( 'Start it anyway, knowing it will take longer than planned', 'agentic-commerce-engine' ); ?></span>
 				</label>

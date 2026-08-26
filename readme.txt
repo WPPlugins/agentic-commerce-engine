@@ -4,7 +4,7 @@ Tags: ai, seo, woocommerce, ai search, content
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 4.6.0
+Stable tag: 4.6.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -138,6 +138,10 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 
 == Changelog ==
 
+= 4.6.1 =
+* Fixed: the Experiments screen was blank. It loaded its tabs and then stopped before asking for your tests, so the page sat empty with nothing to click and no error to explain it. It now lists your experiments as intended.
+* Fixed: status labels on that screen showed an internal word instead of the real one, and a failed check was coloured the same calm grey as one that passed. A problem with a running test now looks like a problem.
+
 = 4.6.0 =
 * New: an Experiments screen. Set up a test, see which version is winning, and start, pause or stop it, without leaving WordPress. Needs WooCommerce.
 * Before you commit any credits, the screen tells you whether your traffic can actually settle the test you have designed. An answer that would never arrive is refused up front rather than after four weeks.
@@ -200,6 +204,9 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 * Product enrichment now runs on the platform's durable jobs API with webhook-accelerated polling.
 
 == Upgrade Notice ==
+
+= 4.6.1 =
+Fixes a blank Experiments screen in 4.6.0. If you opened Experiments and saw nothing, this is the fix. Nothing else changes and no setting is touched.
 
 = 4.6.0 =
 Adds an Experiments screen for WooCommerce stores, and fixes the reason tests could not run: content approved in ACE now reaches this site, and ACE is told when it lands. This is what A/B testing needed in order to run here at all. Nothing new is collected and no setting changes.
