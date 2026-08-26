@@ -4,7 +4,7 @@ Tags: ai, seo, woocommerce, ai search, content
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 4.6.1
+Stable tag: 4.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -138,6 +138,17 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 
 == Changelog ==
 
+= 4.7.0 =
+* New: the Experiments screen now shows you what is happening, not just what happened. A chart of how each version is doing day by day, a range that visibly narrows as shoppers arrive, and a projected date when the result will be readable.
+* New: a plain-English verdict at the top of every test. It says whether you have a winner, whether to keep waiting, or whether something is wrong that would make the numbers meaningless, and it will not call a winner while a check is failing.
+* New: keep the winning version for every shopper with one button. It finishes the test, returns everyone to a single version, and queues the winning copy to replace your original.
+* New: a five-step progress strip that names whatever is holding a test up, so "I set this up and nothing is happening" has an answer on the screen.
+* New: a drop-off chart per version, so you can see whether a version wins at the basket and loses at checkout rather than reading one number.
+* New: before you commit credits, the setup screen draws how small a change your traffic could actually detect against how long the test runs. More versions means a longer wait, and now you can see it.
+* New: a short glossary of the five terms this screen cannot avoid using.
+* Fixed: a chart line no longer drops to zero on a day your site reported nothing. A gap in the data now reads as a gap.
+* Fixed: a finished test now takes its settings off your products instead of leaving them there.
+
 = 4.6.1 =
 * Fixed: the Experiments screen was blank. It loaded its tabs and then stopped before asking for your tests, so the page sat empty with nothing to click and no error to explain it. It now lists your experiments as intended.
 * Fixed: status labels on that screen showed an internal word instead of the real one, and a failed check was coloured the same calm grey as one that passed. A problem with a running test now looks like a problem.
@@ -204,6 +215,9 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 * Product enrichment now runs on the platform's durable jobs API with webhook-accelerated polling.
 
 == Upgrade Notice ==
+
+= 4.7.0 =
+Experiments can now be read at a glance: charts of how each version is doing, a plain verdict, and one button to keep the winner for everyone.
 
 = 4.6.1 =
 Fixes a blank Experiments screen in 4.6.0. If you opened Experiments and saw nothing, this is the fix. Nothing else changes and no setting is touched.

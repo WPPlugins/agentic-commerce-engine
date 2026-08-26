@@ -268,11 +268,44 @@
 			return {
 				name: s.name || '',
 				color: s.color || PALETTE[ i % PALETTE.length ],
+				/*
+				 * A null y is UNMEASURED and must stay null all the way to the
+				 * path. `Number( p.y ) || 0` used to turn it into a zero, which
+				 * draws the line down to the axis and reads as "this version
+				 * stopped converting" for a day a source simply did not report.
+				 * Zero is a measurement; null is the absence of one.
+				 */
 				points: ( s.points || [] ).map( function ( p ) {
-					return { x: String( p.x ), y: Number( p.y ) || 0 };
+					var n = ( p.y === null || p.y === undefined ) ? null : Number( p.y );
+					return { x: String( p.x ), y: ( n === null || ! isFinite( n ) ) ? null : n };
 				} )
 			};
 		} );
+	}
+
+	/*
+	 * Split a series into runs of consecutive MEASURED points, so a gap breaks
+	 * the stroke instead of being drawn straight through. Mirrors
+	 * `measuredRuns` in src/components/charts/impactGeometry.ts, which is the
+	 * single sanctioned home of this rule in the app.
+	 */
+	function measuredRuns( points ) {
+		var runs = [];
+		var current = [];
+		points.forEach( function ( p ) {
+			if ( p.y === null || p.y === undefined || ! isFinite( p.y ) ) {
+				if ( current.length ) {
+					runs.push( current );
+				}
+				current = [];
+				return;
+			}
+			current.push( p );
+		} );
+		if ( current.length ) {
+			runs.push( current );
+		}
+		return runs;
 	}
 
 	function unionKeys( series ) {
@@ -386,6 +419,9 @@
 		var hi = -Infinity;
 		series.forEach( function ( s ) {
 			s.points.forEach( function ( p ) {
+				if ( p.y === null ) {
+					return;
+				}
 				if ( p.y < lo ) {
 					lo = p.y;
 				}
@@ -421,13 +457,15 @@
 				map[ p.x ] = p.y;
 			} );
 			maps.push( map );
-			var d = s.points.map( function ( p, idx ) {
-				return ( idx ? 'L ' : 'M ' ) + xPos( p.x ) + ' ' + yScale( p.y );
-			} ).join( ' ' );
-			svg.appendChild( el( 'path', {
-				d: d, fill: 'none', stroke: s.color, 'stroke-width': 2,
-				'stroke-linejoin': 'round', 'stroke-linecap': 'round'
-			} ) );
+			measuredRuns( s.points ).forEach( function ( run ) {
+				var d = run.map( function ( p, idx ) {
+					return ( idx ? 'L ' : 'M ' ) + xPos( p.x ) + ' ' + yScale( p.y );
+				} ).join( ' ' );
+				svg.appendChild( el( 'path', {
+					d: d, fill: 'none', stroke: s.color, 'stroke-width': 2,
+					'stroke-linejoin': 'round', 'stroke-linecap': 'round'
+				} ) );
+			} );
 		} );
 
 		if ( false !== opts.unified ) {
@@ -442,7 +480,12 @@
 						name: s.name,
 						color: s.color,
 						yAt: function ( k ) {
-							return Object.prototype.hasOwnProperty.call( maps[ si ], k ) ? yScale( maps[ si ][ k ] ) : null;
+							if ( ! Object.prototype.hasOwnProperty.call( maps[ si ], k ) ) {
+								return null;
+							}
+							/* A gap has no dot. One placed at zero would put a
+							   point on the axis for a day nothing was measured. */
+							return maps[ si ][ k ] === null ? null : yScale( maps[ si ][ k ] );
 						},
 						valueAt: function ( k ) {
 							var v = maps[ si ][ k ];
@@ -1136,6 +1179,343 @@
 		target.innerHTML = html;
 	}
 
+
+	/* ------------------------------------------------------------------ */
+	/* band: a central estimate with its uncertainty range                 */
+	/* ------------------------------------------------------------------ */
+
+	/*
+	 * The "when will I know" chart. `data` is
+	 *   { keys: [...], line: [{x, y|null}], band: [{x, lo|null, hi|null}] }
+	 * with y in whatever unit the caller is showing (percent, here).
+	 *
+	 * ONE BAND, NOT SEVERAL. Nested bands imply several confidence levels and
+	 * the estimator produces exactly one: the always-valid interval, which is
+	 * the only interval that stays correct when a merchant reads it every
+	 * morning. Drawing a second, narrower band would promise a precision that
+	 * does not exist.
+	 *
+	 * The zero rule drawn here IS the reading: while the band touches it, the
+	 * versions cannot be told apart.
+	 */
+	function renderBand( target, data, opts ) {
+		opts = opts || {};
+		target.innerHTML = '';
+		data = data || {};
+		var keys = ( data.keys || [] ).map( String );
+		var line = ( data.line || [] ).map( function ( p ) {
+			var n = ( p.y === null || p.y === undefined ) ? null : Number( p.y );
+			return { x: String( p.x ), y: ( n === null || ! isFinite( n ) ) ? null : n };
+		} );
+		var band = ( data.band || [] ).map( function ( p ) {
+			return {
+				x: String( p.x ),
+				lo: ( p.lo === null || p.lo === undefined ) ? null : Number( p.lo ),
+				hi: ( p.hi === null || p.hi === undefined ) ? null : Number( p.hi )
+			};
+		} );
+
+		if ( ! keys.length || ! line.some( function ( p ) { return p.y !== null; } ) ) {
+			renderEmpty( target );
+			return;
+		}
+
+		var w = widthOf( target );
+		var h = opts.height || 260;
+		var margin = { top: 12, right: 16, bottom: 28, left: 52 };
+		var innerW = Math.max( 0, w - margin.left - margin.right );
+		var innerH = Math.max( 0, h - margin.top - margin.bottom );
+
+		var lo = 0;
+		var hi = 0;
+		function widen( v ) {
+			if ( v === null || ! isFinite( v ) ) {
+				return;
+			}
+			if ( v < lo ) {
+				lo = v;
+			}
+			if ( v > hi ) {
+				hi = v;
+			}
+		}
+		line.forEach( function ( p ) { widen( p.y ); } );
+		band.forEach( function ( p ) { widen( p.lo ); widen( p.hi ); } );
+		if ( hi === lo ) {
+			hi = lo + 1;
+		}
+
+		var ticks = niceTicks( lo, hi, 5 );
+		var domainLo = Math.min( lo, ticks.length ? ticks[ 0 ] : lo );
+		var domainHi = Math.max( hi, ticks.length ? ticks[ ticks.length - 1 ] : hi );
+		var xPos = pointScale( keys, [ margin.left, margin.left + innerW ] );
+		var yScale = linearScale( [ domainLo, domainHi ], [ margin.top + innerH, margin.top ] );
+		var positions = keys.map( xPos );
+		var color = opts.color || PALETTE[ 0 ];
+
+		var svg = el( 'svg', { viewBox: '0 0 ' + w + ' ' + h, width: '100%', height: h } );
+		yAxis( svg, yScale, ticks, margin, innerW, opts.yFmt );
+		xLabels( svg, keys, positions, h - 8, 6 );
+
+		/* The band, as one closed polygon per measured run. */
+		var runs = measuredRuns( band.map( function ( p ) {
+			return { x: p.x, y: ( p.lo === null || p.hi === null ) ? null : p.lo, lo: p.lo, hi: p.hi };
+		} ) );
+		runs.forEach( function ( run ) {
+			if ( run.length < 2 ) {
+				return;
+			}
+			var top = run.map( function ( p ) {
+				return xPos( p.x ) + ' ' + yScale( p.hi );
+			} );
+			var bottom = run.slice().reverse().map( function ( p ) {
+				return xPos( p.x ) + ' ' + yScale( p.lo );
+			} );
+			svg.appendChild( el( 'path', {
+				d: 'M ' + top.join( ' L ' ) + ' L ' + bottom.join( ' L ' ) + ' Z',
+				fill: color, 'fill-opacity': 0.18, stroke: 'none'
+			} ) );
+		} );
+
+		/* The zero rule. Solid and darker than the grid: it is the reading. */
+		if ( domainLo < 0 && domainHi > 0 ) {
+			svg.appendChild( el( 'line', {
+				x1: margin.left, x2: margin.left + innerW,
+				y1: yScale( 0 ), y2: yScale( 0 ),
+				stroke: '#6b7280', 'stroke-width': 1
+			} ) );
+		}
+
+		measuredRuns( line ).forEach( function ( run ) {
+			var d = run.map( function ( p, idx ) {
+				return ( idx ? 'L ' : 'M ' ) + xPos( p.x ) + ' ' + yScale( p.y );
+			} ).join( ' ' );
+			svg.appendChild( el( 'path', {
+				d: d, fill: 'none', stroke: color, 'stroke-width': 2,
+				'stroke-linejoin': 'round', 'stroke-linecap': 'round'
+			} ) );
+		} );
+
+		var lineMap = {};
+		line.forEach( function ( p ) { lineMap[ p.x ] = p.y; } );
+		var bandMap = {};
+		band.forEach( function ( p ) { bandMap[ p.x ] = p; } );
+
+		unifiedHover( svg, {
+			keys: keys, positions: positions, margin: margin, innerW: innerW, innerH: innerH,
+			dotSpecs: [ {
+				name: opts.valueLabel || i18nStr( 'difference', 'Difference' ),
+				color: color,
+				yAt: function ( k ) {
+					return ( lineMap[ k ] === null || lineMap[ k ] === undefined ) ? null : yScale( lineMap[ k ] );
+				},
+				valueAt: function ( k ) {
+					var v = lineMap[ k ];
+					var b = bandMap[ k ];
+					var head = opts.yFmt ? opts.yFmt( v ) : fmtNum( v );
+					if ( ! b || b.lo === null || b.hi === null ) {
+						return head;
+					}
+					var loTxt = opts.yFmt ? opts.yFmt( b.lo ) : fmtNum( b.lo );
+					var hiTxt = opts.yFmt ? opts.yFmt( b.hi ) : fmtNum( b.hi );
+					return head + ' (' + loTxt + ' to ' + hiTxt + ')';
+				}
+			} ]
+		} );
+
+		target.appendChild( svg );
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* forest: one estimate and its interval per row                       */
+	/* ------------------------------------------------------------------ */
+
+	/*
+	 * `rows` is [{ label, estimate, lo, hi, conclusive }].
+	 *
+	 * The instrument that shows a result is NOT yet a result: a row whose whisker
+	 * crosses the zero rule has not separated the versions, and that is visible
+	 * at a glance in a way a p-value in a table is not. Rows are drawn muted
+	 * until they clear zero, so "not yet" and "yes" never look alike.
+	 */
+	function renderForest( target, rows, opts ) {
+		opts = opts || {};
+		target.innerHTML = '';
+		rows = ( rows || [] ).filter( function ( r ) {
+			return r && isFinite( Number( r.estimate ) ) && isFinite( Number( r.lo ) ) && isFinite( Number( r.hi ) );
+		} );
+		if ( ! rows.length ) {
+			renderEmpty( target );
+			return;
+		}
+
+		var w = widthOf( target );
+		var rowH = opts.rowHeight || 34;
+		var labelW = Math.min( 220, Math.max( 96, opts.labelWidth || 140 ) );
+		var margin = { top: 12, right: 16, bottom: 28, left: labelW };
+		var h = margin.top + margin.bottom + rows.length * rowH;
+		var innerW = Math.max( 0, w - margin.left - margin.right );
+
+		var lo = 0;
+		var hi = 0;
+		rows.forEach( function ( r ) {
+			lo = Math.min( lo, Number( r.lo ) );
+			hi = Math.max( hi, Number( r.hi ) );
+		} );
+		if ( hi === lo ) {
+			hi = lo + 1;
+		}
+		var ticks = niceTicks( lo, hi, 5 );
+		var domainLo = Math.min( lo, ticks.length ? ticks[ 0 ] : lo );
+		var domainHi = Math.max( hi, ticks.length ? ticks[ ticks.length - 1 ] : hi );
+		var xScale = linearScale( [ domainLo, domainHi ], [ margin.left, margin.left + innerW ] );
+
+		var svg = el( 'svg', { viewBox: '0 0 ' + w + ' ' + h, width: '100%', height: h } );
+
+		ticks.forEach( function ( tk ) {
+			var x = xScale( tk );
+			svg.appendChild( el( 'line', {
+				x1: x, x2: x, y1: margin.top, y2: h - margin.bottom, 'class': 'ace-grid-line'
+			} ) );
+			var label = el( 'text', { x: x, y: h - 10, 'text-anchor': 'middle', 'class': 'ace-axis-label' } );
+			label.textContent = opts.xFmt ? opts.xFmt( tk ) : fmtNum( tk );
+			svg.appendChild( label );
+		} );
+
+		/* The zero rule, darker than the grid: crossing it is the whole reading. */
+		if ( domainLo < 0 && domainHi > 0 ) {
+			svg.appendChild( el( 'line', {
+				x1: xScale( 0 ), x2: xScale( 0 ), y1: margin.top, y2: h - margin.bottom,
+				stroke: '#6b7280', 'stroke-width': 1
+			} ) );
+		}
+
+		rows.forEach( function ( r, i ) {
+			var y = margin.top + i * rowH + rowH / 2;
+			var conclusive = !! r.conclusive;
+			var color = conclusive ? ( opts.color || PALETTE[ 1 ] ) : '#9ca3af';
+
+			var label = el( 'text', {
+				x: margin.left - 10, y: y + 4, 'text-anchor': 'end', 'class': 'ace-axis-label'
+			} );
+			label.textContent = r.label == null ? '' : String( r.label );
+			svg.appendChild( label );
+
+			svg.appendChild( el( 'line', {
+				x1: xScale( Number( r.lo ) ), x2: xScale( Number( r.hi ) ), y1: y, y2: y,
+				stroke: color, 'stroke-width': 2, 'stroke-linecap': 'round'
+			} ) );
+			svg.appendChild( el( 'circle', {
+				cx: xScale( Number( r.estimate ) ), cy: y, r: conclusive ? 5 : 4, fill: color
+			} ) );
+
+			var hit = el( 'rect', {
+				x: margin.left, y: margin.top + i * rowH, width: innerW, height: rowH, fill: 'transparent'
+			} );
+			var body = '<b>' + esc( r.label ) + '</b>' +
+				tipRow( color, opts.valueLabel || i18nStr( 'change', 'Change' ),
+					( opts.xFmt ? opts.xFmt( r.estimate ) : fmtNum( r.estimate ) ) +
+					' (' + ( opts.xFmt ? opts.xFmt( r.lo ) : fmtNum( r.lo ) ) + ' to ' +
+					( opts.xFmt ? opts.xFmt( r.hi ) : fmtNum( r.hi ) ) + ')' ) +
+				( r.detail ? tipRow( color, '', String( r.detail ) ) : '' );
+			hit.addEventListener( 'mousemove', function ( evt ) {
+				showTip( body, evt.clientX, evt.clientY );
+			} );
+			hit.addEventListener( 'mouseleave', hideTip );
+			svg.appendChild( hit );
+		} );
+
+		target.appendChild( svg );
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* funnel: the same steps, one column per version                      */
+	/* ------------------------------------------------------------------ */
+
+	/*
+	 * `data` is [{ name, color, stages: [{ label, value }] }].
+	 *
+	 * Bars are scaled against the LARGEST value across every series, so two
+	 * versions can be compared by width. Shares within a version are the
+	 * caller's business: this draws counted shoppers, and a counted shopper is
+	 * a fact rather than a rate.
+	 */
+	function renderFunnel( target, data, opts ) {
+		opts = opts || {};
+		target.innerHTML = '';
+		var series = ( data || [] ).map( function ( s, i ) {
+			return {
+				name: s.name || '',
+				color: s.color || PALETTE[ i % PALETTE.length ],
+				stages: ( s.stages || [] ).map( function ( st ) {
+					return { label: String( st.label == null ? '' : st.label ), value: Number( st.value ) || 0 };
+				} )
+			};
+		} );
+		var stageLabels = series.length ? series[ 0 ].stages.map( function ( s ) { return s.label; } ) : [];
+		if ( ! stageLabels.length ) {
+			renderEmpty( target );
+			return;
+		}
+
+		var w = widthOf( target );
+		var labelW = Math.min( 200, Math.max( 90, opts.labelWidth || 130 ) );
+		var margin = { top: 12, right: 16, bottom: 12, left: labelW };
+		var stageH = opts.stageHeight || 46;
+		var h = margin.top + margin.bottom + stageLabels.length * stageH;
+		var innerW = Math.max( 0, w - margin.left - margin.right );
+
+		var max = 1;
+		series.forEach( function ( s ) {
+			s.stages.forEach( function ( st ) {
+				if ( st.value > max ) {
+					max = st.value;
+				}
+			} );
+		} );
+
+		var svg = el( 'svg', { viewBox: '0 0 ' + w + ' ' + h, width: '100%', height: h } );
+		var barH = Math.max( 6, ( stageH - 10 ) / Math.max( 1, series.length ) - 3 );
+
+		stageLabels.forEach( function ( label, si ) {
+			var top = margin.top + si * stageH;
+			var text = el( 'text', {
+				x: margin.left - 10, y: top + stageH / 2 + 4, 'text-anchor': 'end', 'class': 'ace-axis-label'
+			} );
+			text.textContent = label;
+			svg.appendChild( text );
+
+			series.forEach( function ( s, i ) {
+				var stage = s.stages[ si ];
+				if ( ! stage ) {
+					return;
+				}
+				var y = top + 5 + i * ( barH + 3 );
+				var width = Math.max( 0, ( stage.value / max ) * innerW );
+				svg.appendChild( el( 'rect', {
+					x: margin.left, y: y, width: width, height: barH, rx: 3, fill: s.color
+				} ) );
+
+				var hit = el( 'rect', {
+					x: margin.left, y: y, width: innerW, height: barH, fill: 'transparent'
+				} );
+				var body = '<b>' + esc( label ) + '</b>' + tipRow( s.color, s.name, fmtNum( stage.value ) );
+				hit.addEventListener( 'mousemove', function ( evt ) {
+					showTip( body, evt.clientX, evt.clientY );
+				} );
+				hit.addEventListener( 'mouseleave', hideTip );
+				svg.appendChild( hit );
+			} );
+		} );
+
+		target.appendChild( svg );
+		if ( series.length > 1 ) {
+			target.insertAdjacentHTML( 'beforeend', legendHtml( series.map( function ( s ) {
+				return { label: s.name, color: s.color };
+			} ) ) );
+		}
+	}
+
 	/* ------------------------------------------------------------------ */
 	/* Public API (every chart re-renders on container resize)             */
 	/* ------------------------------------------------------------------ */
@@ -1161,6 +1541,9 @@
 		donut: responsive( renderDonut ),
 		gauge: responsive( renderGauge ),
 		ring: responsive( renderRing ),
-		heatmap: responsive( renderHeatmap )
+		heatmap: responsive( renderHeatmap ),
+		band: responsive( renderBand ),
+		forest: responsive( renderForest ),
+		funnel: responsive( renderFunnel )
 	};
 } )();

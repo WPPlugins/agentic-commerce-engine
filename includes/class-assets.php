@@ -306,6 +306,44 @@ class Assets {
 			'aeoNotConfigured'  => __( 'AI Search research is not set up for this ACE account yet. Finish setup in the ACE app, then reload this page. The Crawlers tab works either way.', 'agentic-commerce-engine' ),
 			'estimatePrefix'    => __( 'Estimated cost:', 'agentic-commerce-engine' ),
 
+			/*
+			 * Experiments
+			 *
+			 * This screen used to hardcode its English, the only one that did,
+			 * so nothing on it could be translated even though the rest of the
+			 * plugin could. The strings below are the ones the screen script
+			 * asks for by key; anything it cannot find falls back to the English
+			 * written beside the call, so a missing key degrades to the current
+			 * behaviour rather than to an empty label.
+			 */
+			'progress'          => __( 'Progress', 'agentic-commerce-engine' ),
+			'step_done'         => __( 'Done', 'agentic-commerce-engine' ),
+			'step_active'       => __( 'Now', 'agentic-commerce-engine' ),
+			'step_blocked'      => __( 'Needs you', 'agentic-commerce-engine' ),
+			'step_pending'      => __( 'Later', 'agentic-commerce-engine' ),
+			'howEachVersion'    => __( 'How each version is doing', 'agentic-commerce-engine' ),
+			'whenWillIKnow'     => __( 'When will I know?', 'agentic-commerce-engine' ),
+			'projectionPending' => __( 'Once both versions have been seen by enough shoppers, this shows the range narrowing and projects the day it becomes readable.', 'agentic-commerce-engine' ),
+			'whereDropOff'      => __( 'Where shoppers drop off', 'agentic-commerce-engine' ),
+			'measuredProperly'  => __( 'Is this being measured properly?', 'agentic-commerce-engine' ),
+			'unattributed'      => __( 'shoppers could not be tied to this test because another split was running at the same time, so they are left out rather than guessed at.', 'agentic-commerce-engine' ),
+			'whatItFound'       => __( 'What it found', 'agentic-commerce-engine' ),
+			'nothingComputed'   => __( 'Nothing has been computed yet. Results are worked out overnight, once there is enough traffic for a comparison to mean anything.', 'agentic-commerce-engine' ),
+			'whatWordsMean'     => __( 'What these words mean', 'agentic-commerce-engine' ),
+			'version'           => __( 'Version', 'agentic-commerce-engine' ),
+			'versions'          => __( 'versions', 'agentic-commerce-engine' ),
+			'change'            => __( 'Change', 'agentic-commerce-engine' ),
+			'range'             => __( 'Range', 'agentic-commerce-engine' ),
+			'reading'           => __( 'Reading', 'agentic-commerce-engine' ),
+			'differenceLabel'   => __( 'Against your original copy', 'agentic-commerce-engine' ),
+			'likelyBetween'     => __( 'likely between', 'agentic-commerce-engine' ),
+			'newContent'        => __( 'New content', 'agentic-commerce-engine' ),
+			'leftUnchanged'     => __( 'Left unchanged', 'agentic-commerce-engine' ),
+			'percentLive'       => __( '% of products live', 'agentic-commerce-engine' ),
+			'applyWinnerConfirm' => __( 'This finishes the test and makes the winning version the copy every shopper sees. It cannot be resumed afterwards.', 'agentic-commerce-engine' ),
+			'applyWinnerDone'   => __( 'The winning version is on its way to your store.', 'agentic-commerce-engine' ),
+			'didNotGoThrough'   => __( 'That did not go through.', 'agentic-commerce-engine' ),
+
 			/* Settings */
 			'settingsSaved'     => __( 'Settings saved.', 'agentic-commerce-engine' ),
 			/* translators: %s: credit balance. */

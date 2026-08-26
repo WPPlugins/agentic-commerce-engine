@@ -116,6 +116,20 @@ $agencoen_ab_on = $plugin->settings()->is_ab_enabled();
 
 				<div id="ace-exp-verdict" hidden aria-live="polite"></div>
 
+				<?php
+				/*
+				 * The smallest change this design could spot, against how long
+				 * it runs. Filled by the screen script from the platform's own
+				 * power check, so the picture and the verdict above it cannot
+				 * disagree. Hidden until there is a curve to draw: an empty axis
+				 * would read as a measurement of nothing.
+				 */
+				?>
+				<div class="ace-chart" id="ace-exp-sizing" hidden></div>
+				<p class="ace-card-sub" id="ace-exp-sizing-note" hidden>
+					<?php esc_html_e( 'Lower is better. Fewer versions, or a longer run, both move this line down.', 'agentic-commerce-engine' ); ?>
+				</p>
+
 				<label class="ace-toggle" id="ace-exp-accept-slow" hidden>
 					<input type="checkbox" name="acceptSlow" />
 					<span><?php esc_html_e( 'Start it anyway, knowing it will take longer than planned', 'agentic-commerce-engine' ); ?></span>

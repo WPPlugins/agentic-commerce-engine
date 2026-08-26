@@ -23,11 +23,20 @@
 	function boot() {
 		var agencoen = window.agencoen || {};
 		var core = agencoen.core;
+		var charts = agencoen.charts;
 		var root = document.getElementById( 'ace-experiments' );
 		if ( ! core || ! root ) { return; }
 
 		var byId = function ( id ) { return document.getElementById( id ); };
 		var esc = core.esc;
+
+		/*
+		 * Translation, the same way every other screen does it. This screen was
+		 * the only one that hardcoded its English, so nothing on it could be
+		 * translated through the .pot even though the rest of the plugin could.
+		 */
+		var i18n = ( window.agencoenConfig || {} ).i18n || {};
+		function t( key, fallback ) { return i18n[ key ] || fallback; }
 
 		/* Goals the platform can actually measure, per design. */
 		var GOALS = {
@@ -71,6 +80,36 @@
 		};
 
 		/* Which lifecycle actions a status allows. Mirrors the platform table. */
+		/**
+		 * Banner tone per decision, verbatim from the platform's union.
+		 *
+		 * `critical` is the platform's word and is NOT a banner tone here, so it
+		 * is mapped explicitly to `error`. An unmapped verdict falling through
+		 * to neutral is exactly how a BROKEN health check once rendered in the
+		 * same grey as one that passed, on two of the three surfaces.
+		 */
+		var DECISION_TONE = {
+			success: 'success',
+			warning: 'warning',
+			critical: 'error',
+			info: 'info',
+			neutral: 'neutral'
+		};
+
+		/** Step states, verbatim from the platform's `StageState` union. */
+		var STEP_TONE = {
+			done: 'success',
+			active: 'info',
+			blocked: 'warning',
+			pending: 'neutral'
+		};
+		var STEP_WORD = {
+			done: 'Done',
+			active: 'Now',
+			blocked: 'Needs you',
+			pending: 'Later'
+		};
+
 		var ACTIONS = {
 			draft: [ 'start', 'abandon' ],
 			running: [ 'pause', 'stop', 'abandon' ],
@@ -189,13 +228,50 @@
 			html += '<h2>' + esc( e.name || '' ) + ' ' + core.chip( chip.tone, chip.label ) + '</h2>';
 			html += '<p>' + esc( ( d.designSummaries || [] ).join( ' ' ) ) + '</p>';
 
-			if ( e.status === 'draft' ) {
-				html += '<p>' + esc(
-					cov.liveProducts > 0
-						? 'A second version is live on ' + core.num( cov.liveProducts ) + ' of ' +
-							core.num( cov.enrolledProducts ) + ' products. It starts on its own as the rest are pushed, or you can start it now.'
-						: 'Nothing is being split and no days are counting. It starts by itself the moment the first product’s second version is approved and pushed live, because until then both groups would read the same words.'
-				) + '</p>';
+			/*
+			 * WHAT TO DO, FIRST.
+			 *
+			 * This is the health panel's conclusion when a check is broken: the
+			 * platform's `decideExperiment` reads health BEFORE it reads any
+			 * interval, so a merchant who reads only this line has still been
+			 * told the thing that would have changed their mind. Every word and
+			 * every button label comes from the platform, shared with the web
+			 * app and the Shopify app, so all three cannot phrase a refusal
+			 * differently and let the softest one through.
+			 */
+			var decision = d.decision;
+			if ( decision ) {
+				var tone = DECISION_TONE[ decision.tone ] || 'info';
+				html += '<div class="ace-banner ace-banner-' + tone + '">';
+				html += '<strong>' + esc( decision.headline ) + '</strong>';
+				html += '<p>' + esc( decision.detail ) + '</p>';
+				// The number, only when the verdict rests on one. A "keep
+				// waiting" verdict has earned no figure, and printing the
+				// current best guess beside it would be read as the answer.
+				if ( decision.basis && typeof decision.basis.point === 'number' ) {
+					var band = interval( decision.basis.lo, decision.basis.hi );
+					html += '<p><strong>' + esc( lift( decision.basis.point ) ) + '</strong>' +
+						( band ? ' ' + esc( t( 'likelyBetween', 'likely between' ) + ' ' + band ) : '' ) + '</p>';
+				}
+				if ( decision.action && decision.action.kind === 'apply_winner' && decision.arm ) {
+					html += '<p><button type="button" class="ace-btn ace-btn-primary ace-exp-apply" data-arm="' +
+						esc( decision.arm ) + '" data-confirm="' + esc( decision.action.confirm || '' ) + '">' +
+						esc( decision.action.label ) + '</button></p>';
+				}
+				html += '</div>';
+			}
+
+			/* Five steps, so "where is this and what is holding it up" needs no
+			   reading. A blocked step names the thing to go and do. */
+			var stage = d.stage;
+			if ( stage && stage.steps && stage.steps.length ) {
+				html += '<h3>' + esc( t( 'progress', 'Progress' ) ) + '</h3>';
+				html += '<table class="ace-table"><tbody>' + stage.steps.map( function ( s ) {
+					var stepTone = STEP_TONE[ s.state ] || 'neutral';
+					var stepWord = t( 'step_' + s.state, STEP_WORD[ s.state ] || s.state );
+					return '<tr><td>' + esc( s.label ) + '</td><td>' + core.chip( stepTone, stepWord ) +
+						'</td><td>' + esc( s.detail ) + '</td></tr>';
+				} ).join( '' ) + '</tbody></table>';
 			} else if ( cov.enrolledProducts > 0 && cov.liveProducts < cov.enrolledProducts ) {
 				html += '<p>' + esc( 'A second version is live on ' + core.num( cov.liveProducts ) +
 					' of ' + core.num( cov.enrolledProducts ) + ' products.' ) + '</p>';
@@ -214,7 +290,32 @@
 				} ).join( ' ' ) + '</div>';
 			}
 
-			/* HEALTH FIRST: a broken split still produces a confident interval. */
+			/* The drawn half. Containers only: `drawDetailCharts` fills them
+			   after this HTML is in the DOM, because the kit measures the
+			   container's width to size itself. */
+			html += '<h3>' + esc( t( 'howEachVersion', 'How each version is doing' ) ) + '</h3>';
+			html += '<div class="ace-chart" id="ace-exp-trend"><div class="ace-skeleton-chart"></div></div>';
+
+			html += '<h3>' + esc( t( 'whenWillIKnow', 'When will I know?' ) ) + '</h3>';
+			html += '<p>' + esc( ( d.projection && d.projection.detail ) ||
+				t( 'projectionPending', 'Once both versions have been seen by enough shoppers, this shows the range narrowing and projects the day it becomes readable.' ) ) + '</p>';
+			html += '<div class="ace-chart" id="ace-exp-band"></div>';
+
+			html += '<h3>' + esc( t( 'whereDropOff', 'Where shoppers drop off' ) ) + '</h3>';
+			html += '<div class="ace-chart" id="ace-exp-funnel"></div>';
+
+			html += '<h3>' + esc( t( 'measuredProperly', 'Is this being measured properly?' ) ) + '</h3>';
+			html += '<div class="ace-grid-2">';
+			html += '<div class="ace-chart" id="ace-exp-split"></div>';
+			html += '<div class="ace-chart" id="ace-exp-coverage"></div>';
+			html += '</div>';
+			if ( d.split && d.split.unattributedVisitors > 0 ) {
+				html += '<p>' + esc( core.num( d.split.unattributedVisitors ) + ' ' +
+					t( 'unattributed', 'shoppers could not be tied to this test because another split was running at the same time, so they are left out rather than guessed at.' ) ) + '</p>';
+			}
+
+			/* HEALTH DETAIL. The banner already carried the verdict; this is the
+			   working, kept below it so the five checks stay auditable. */
 			var checks = ( d.health && d.health.checks ) || [];
 			if ( checks.length ) {
 				html += '<h3>' + esc( 'Can this be trusted?' ) + '</h3>';
@@ -242,11 +343,17 @@
 			}
 
 			var results = d.results || [];
-			html += '<h3>' + esc( 'What it found' ) + '</h3>';
+			html += '<h3>' + esc( t( 'whatItFound', 'What it found' ) ) + '</h3>';
 			if ( ! results.length ) {
-				html += '<p>' + esc( 'Nothing has been computed yet. Results are worked out overnight, once there is enough traffic for a comparison to mean anything.' ) + '</p>';
+				html += '<p>' + esc( t( 'nothingComputed', 'Nothing has been computed yet. Results are worked out overnight, once there is enough traffic for a comparison to mean anything.' ) ) + '</p>';
 			} else {
-				html += '<table class="ace-table"><thead><tr><th>Version</th><th>Change</th><th>Range</th><th>Reading</th></tr></thead><tbody>' +
+				/* Plotted separately from the table: a result with no interval
+				   cannot be a whisker. It still appears below, with its reason. */
+				html += '<div class="ace-chart" id="ace-exp-forest"></div>';
+				html += '<table class="ace-table"><thead><tr><th>' + esc( t( 'version', 'Version' ) ) +
+					'</th><th>' + esc( t( 'change', 'Change' ) ) +
+					'</th><th>' + esc( t( 'range', 'Range' ) ) +
+					'</th><th>' + esc( t( 'reading', 'Reading' ) ) + '</th></tr></thead><tbody>' +
 					results.map( function ( r ) {
 						var range = interval( r.lo, r.hi );
 						return '<tr><td>' + esc( r.armLabel || ( r.arm ? 'Version ' + String( r.arm ).toUpperCase() : 'Test group' ) ) +
@@ -257,7 +364,192 @@
 					} ).join( '' ) + '</tbody></table>';
 			}
 
+			/*
+			 * The five words this feature cannot avoid, explained.
+			 *
+			 * Shipped by the platform rather than written here, so this screen
+			 * and the two other surfaces cannot end up explaining a confidence
+			 * interval three different ways, with the shortest and most
+			 * confident one winning. Last on the page: reference material, not
+			 * a finding.
+			 */
+			var glossary = d.glossary || [];
+			if ( glossary.length ) {
+				html += '<details class="ace-card"><summary class="ace-card-title">' +
+					esc( t( 'whatWordsMean', 'What these words mean' ) ) + '</summary>';
+				html += '<table class="ace-table"><tbody>' + glossary.map( function ( g ) {
+					return '<tr><td>' + esc( g.term ) + '</td><td>' + esc( g.plain ) + '</td></tr>';
+				} ).join( '' ) + '</tbody></table></details>';
+			}
+
 			detailEl.innerHTML = html;
+			drawDetailCharts( d );
+		}
+
+		/* ------------------------------------------------------------------ */
+		/* The drawn half                                                      */
+		/* ------------------------------------------------------------------ */
+
+		/**
+		 * Every chart on the cockpit, from the payload the platform already
+		 * shaped. Nothing here computes a rate, an interval or a verdict: those
+		 * live in src/lib/experiments/, shared with the web app and the Shopify
+		 * app, precisely so this file cannot quietly disagree with them.
+		 *
+		 * A container with nothing to draw is LEFT ALONE rather than handed an
+		 * empty axis. `renderEmpty` in the kit says "no data yet"; an axis with
+		 * no line on it says the measurement came back as nothing, which is the
+		 * one thing this feature exists not to say.
+		 */
+		function drawDetailCharts( d ) {
+			if ( ! charts ) { return; }
+
+			var exposures = d.exposures || [];
+			function armLabel( arm ) {
+				for ( var i = 0; i < exposures.length; i++ ) {
+					if ( exposures[ i ].arm === arm ) {
+						return exposures[ i ].armLabel || ( 'Version ' + String( arm ).toUpperCase() );
+					}
+				}
+				return 'Version ' + String( arm ).toUpperCase();
+			}
+			function pctFmt( v ) {
+				if ( typeof v !== 'number' || ! isFinite( v ) ) { return 'n/a'; }
+				return ( Math.round( v * 10 ) / 10 ) + '%';
+			}
+
+			/* 1. Trend. Cumulative, not daily: a few hundred shoppers a day
+			      makes the daily rate swing on noise alone, and a merchant
+			      watching that swing will stop a healthy test. */
+			var trendEl = byId( 'ace-exp-trend' );
+			var timeline = d.timeline || {};
+			var visitor = timeline.visitor;
+			var holdout = timeline.holdout;
+			if ( trendEl && visitor && visitor.hasTraffic ) {
+				charts.line( trendEl, {
+					series: ( visitor.arms || [] ).map( function ( a, i ) {
+						return {
+							name: armLabel( a.arm ),
+							color: charts.palette[ i % charts.palette.length ],
+							points: ( visitor.dates || [] ).map( function ( x, di ) {
+								var v = a.cumulativeRate[ di ];
+								return { x: x, y: ( v === null || v === undefined ) ? null : v * 100 };
+							} )
+						};
+					} )
+				}, { height: 240, yFmt: pctFmt } );
+			} else if ( trendEl && holdout && holdout.hasTraffic ) {
+				charts.line( trendEl, {
+					series: ( holdout.series || [] ).map( function ( s, i ) {
+						return {
+							name: s.arm === 'treated'
+								? t( 'newContent', 'New content' )
+								: t( 'leftUnchanged', 'Left unchanged' ),
+							color: charts.palette[ i % charts.palette.length ],
+							points: ( holdout.dates || [] ).map( function ( x, di ) {
+								return { x: x, y: s.values[ di ] };
+							} )
+						};
+					} )
+				}, { height: 240 } );
+			}
+
+			/* 2. When will I know. The band narrowing IS the argument: while it
+			      touches zero the versions cannot be told apart. */
+			var bandEl = byId( 'ace-exp-band' );
+			var traj = d.trajectory;
+			var arm = null;
+			if ( traj && traj.arms ) {
+				for ( var i = 0; i < traj.arms.length; i++ ) {
+					var hasPoint = traj.arms[ i ].points.some( function ( p ) { return p.point !== null; } );
+					if ( hasPoint ) { arm = traj.arms[ i ]; break; }
+				}
+			}
+			if ( bandEl && arm ) {
+				charts.band( bandEl, {
+					keys: traj.dates,
+					line: arm.points.map( function ( p ) {
+						return { x: p.date, y: p.point === null ? null : p.point * 100 };
+					} ),
+					band: arm.points.map( function ( p ) {
+						return {
+							x: p.date,
+							lo: p.lo === null ? null : p.lo * 100,
+							hi: p.hi === null ? null : p.hi * 100
+						};
+					} )
+				}, {
+					height: 240,
+					yFmt: pctFmt,
+					valueLabel: t( 'differenceLabel', 'Against your original copy' )
+				} );
+			}
+
+			/* 3. Where shoppers drop off. */
+			var funnelEl = byId( 'ace-exp-funnel' );
+			var funnels = d.funnels || [];
+			var anyFunnel = funnels.some( function ( f ) {
+				return f.stages && f.stages.length && f.stages[ 0 ].visitors > 0;
+			} );
+			if ( funnelEl && anyFunnel ) {
+				charts.funnel( funnelEl, funnels.map( function ( f, i ) {
+					return {
+						name: armLabel( f.arm ),
+						color: charts.palette[ i % charts.palette.length ],
+						stages: f.stages.map( function ( s ) {
+							return { label: s.label, value: s.visitors };
+						} )
+					};
+				} ), { height: 240 } );
+			}
+
+			/* 4. Is the split even, and how much of the test is actually live. */
+			var splitEl = byId( 'ace-exp-split' );
+			var split = d.split || { arms: [] };
+			if ( splitEl && split.arms.length ) {
+				charts.barsH( splitEl, split.arms.map( function ( a, i ) {
+					return {
+						label: a.armLabel || ( 'Version ' + String( a.arm ).toUpperCase() ),
+						value: a.observed,
+						color: charts.palette[ i % charts.palette.length ]
+					};
+				} ), { height: Math.max( 120, split.arms.length * 42 ) } );
+			}
+
+			/* `ring`, not `gauge`. The gauge renderer colours a HIGH fraction
+			   red because it was built for a usage meter, where filling up is
+			   the bad news. Coverage is the opposite: live on all of what you
+			   enrolled is the good outcome, and `ring` greens as it fills. */
+			var coverageEl = byId( 'ace-exp-coverage' );
+			var cov = d.coverage || {};
+			if ( coverageEl && cov.enrolledProducts > 0 ) {
+				charts.ring( coverageEl, {
+					value: Math.round( ( cov.liveProducts / cov.enrolledProducts ) * 100 ),
+					label: t( 'percentLive', '% of products live' ),
+					size: 140
+				} );
+			}
+
+			/* 5. The results, as whiskers. A row still touching zero has not
+			      separated the versions, which a table of numbers hides. */
+			var forestEl = byId( 'ace-exp-forest' );
+			if ( forestEl ) {
+				var plottable = ( d.results || [] ).filter( function ( r ) {
+					return typeof r.point === 'number' && typeof r.lo === 'number' && typeof r.hi === 'number';
+				} );
+				if ( plottable.length ) {
+					charts.forest( forestEl, plottable.map( function ( r ) {
+						return {
+							label: r.armLabel || ( r.arm ? 'Version ' + String( r.arm ).toUpperCase() : 'Test group' ),
+							estimate: r.point * 100,
+							lo: r.lo * 100,
+							hi: r.hi * 100,
+							conclusive: !! r.conclusive,
+							detail: r.claimChip || ''
+						};
+					} ), { height: 200, xFmt: pctFmt } );
+				}
+			}
 		}
 
 		function openDetail( id, fresh ) {
@@ -333,6 +625,54 @@
 			// checkbox is how they make it.
 			launchBtn.disabled = verdict === 'impossible';
 			slowEl.hidden = verdict !== 'slow';
+
+			drawSizing( report );
+		}
+
+		/**
+		 * The picture that makes the version-count trade visible.
+		 *
+		 * More versions feels like more learning and is actually less: the same
+		 * shoppers are cut into more pieces, so every comparison gets weaker and
+		 * the wait gets longer. That is invisible in prose and obvious in a
+		 * curve. The curve itself is computed by the platform, with the same
+		 * function that produced the verdict above, so this file cannot promise
+		 * a sensitivity the estimator will not deliver.
+		 */
+		function drawSizing( report ) {
+			var el = byId( 'ace-exp-sizing' );
+			if ( ! el || ! charts ) { return; }
+			var points = ( report && report.sensitivity ) || [];
+			var note = byId( 'ace-exp-sizing-note' );
+			if ( ! points.length ) {
+				el.innerHTML = '';
+				el.hidden = true;
+				if ( note ) { note.hidden = true; }
+				return;
+			}
+			el.hidden = false;
+			if ( note ) { note.hidden = false; }
+			charts.line( el, {
+				series: [ {
+					name: ( report.arms || 2 ) + ' ' + t( 'versions', 'versions' ),
+					color: charts.palette[ 0 ],
+					points: points.map( function ( s ) {
+						return {
+							x: String( s.days ),
+							// A refusal is a gap: at that length this design
+							// resolves nothing, which is not the same as
+							// resolving everything.
+							y: ( s.mde === null || s.mde === undefined ) ? null : Math.min( 200, s.mde * 100 )
+						};
+					} )
+				} ]
+			}, {
+				height: 180,
+				showLegend: false,
+				yFmt: function ( v ) {
+					return ( Math.round( v * 10 ) / 10 ) + '%';
+				}
+			} );
 		}
 
 		function runPreflight() {
@@ -384,6 +724,35 @@
 			if ( open ) {
 				event.preventDefault();
 				openDetail( open.getAttribute( 'data-id' ), false );
+				return;
+			}
+
+			/*
+			 * Keep the winning version for everybody.
+			 *
+			 * The confirmation text comes from the platform's decision, not from
+			 * here, so all three surfaces warn with the same words. The platform
+			 * also RECOMPUTES the verdict and refuses if the evidence has moved,
+			 * which is what makes it safe to leave this tab open overnight.
+			 */
+			var apply = event.target.closest( '.ace-exp-apply' );
+			if ( apply && openId ) {
+				var arm = apply.getAttribute( 'data-arm' );
+				var confirmText = apply.getAttribute( 'data-confirm' ) ||
+					t( 'applyWinnerConfirm', 'This finishes the test and makes the winning version the copy every shopper sees. It cannot be resumed afterwards.' );
+				if ( ! window.confirm( confirmText ) ) { return; }
+				core.setBusy( apply, true );
+				core.post( 'experiment_apply_winner', { experimentId: openId, arm: arm } )
+					.then( function () {
+						core.setBusy( apply, false );
+						core.toast( t( 'applyWinnerDone', 'The winning version is on its way to your store.' ) );
+						openDetail( openId, true );
+						loadList( true );
+					} )
+					.catch( function ( err ) {
+						core.setBusy( apply, false );
+						core.errorToast( ( err && err.message ) || t( 'didNotGoThrough', 'That did not go through.' ) );
+					} );
 				return;
 			}
 

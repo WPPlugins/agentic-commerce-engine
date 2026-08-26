@@ -617,6 +617,30 @@ class Api_Client {
 	}
 
 	/**
+	 * Keep the winning version for every shopper, and finish the test.
+	 *
+	 * A separate endpoint rather than a sixth action, because it does not only
+	 * change a status: it republishes the winner's copy to this site's own
+	 * products. ACE recomputes the verdict and refuses if the evidence no
+	 * longer supports the arm named here, so this plugin never has to decide.
+	 *
+	 * @param string $store_id      Store id.
+	 * @param string $experiment_id Experiment id.
+	 * @param string $arm           The winning arm key.
+	 * @return array|\WP_Error
+	 */
+	public function experiment_apply_winner( $store_id, $experiment_id, $arm ) {
+		return $this->request(
+			'POST',
+			'/api/v1/plugin/experiments/' . rawurlencode( $experiment_id ) . '/apply-winner',
+			array(
+				'storeId' => $store_id,
+				'arm'     => $arm,
+			)
+		);
+	}
+
+	/**
 	 * Content ACE has approved and is waiting for this site to apply.
 	 *
 	 * The same endpoint the Shopify app pulls. Entries are per FIELD, not per

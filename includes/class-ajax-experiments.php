@@ -40,6 +40,7 @@ class Ajax_Experiments extends Ajax_Base {
 			'experiment_preflight'  => 'preflight',
 			'experiment_create'     => 'create',
 			'experiment_action'     => 'act',
+			'experiment_apply_winner' => 'apply_winner',
 		);
 		foreach ( $actions as $action => $method ) {
 			add_action(
@@ -142,6 +143,21 @@ class Ajax_Experiments extends Ajax_Base {
 		}
 
 		$this->respond( $this->plugin->experiments()->act( $id, $action, $extra ) );
+	}
+
+	/**
+	 * Keep the winning version for every shopper.
+	 */
+	public function apply_winner() {
+		check_ajax_referer( self::NONCE_ACTION, 'nonce' );
+		$this->require_manage();
+		$id  = isset( $_POST['experimentId'] ) ? sanitize_text_field( wp_unslash( $_POST['experimentId'] ) ) : '';
+		$arm = isset( $_POST['arm'] ) ? sanitize_text_field( wp_unslash( $_POST['arm'] ) ) : '';
+		if ( '' === $id || '' === $arm ) {
+			wp_send_json_error( array( 'message' => __( 'Nothing to do.', 'agentic-commerce-engine' ) ) );
+		}
+
+		$this->respond( $this->plugin->experiments()->apply_winner( $id, $arm ) );
 	}
 
 	/* --------------------------------------------------------------------- */

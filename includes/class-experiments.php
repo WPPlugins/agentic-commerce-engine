@@ -174,6 +174,42 @@ class Experiments {
 		return $result;
 	}
 
+	/**
+	 * Keep the winning version for every shopper, and finish the test.
+	 *
+	 * The arm is a hint. ACE rebuilds the verdict from the same shaping layer
+	 * this screen rendered and refuses if it disagrees, so a merchant who left
+	 * the page open overnight cannot publish a version the evidence has since
+	 * stopped supporting.
+	 *
+	 * @param string $experiment_id Experiment id.
+	 * @param string $arm           The winning arm key.
+	 * @return array|\WP_Error
+	 */
+	public function apply_winner( $experiment_id, $arm ) {
+		if ( ! preg_match( '/^[a-z0-9]{1,8}$/', (string) $arm ) ) {
+			return new \WP_Error(
+				'agencoen_bad_arm',
+				__( 'That version could not be identified.', 'agentic-commerce-engine' )
+			);
+		}
+
+		$result = $this->plugin->api()->experiment_apply_winner(
+			$this->store_id(),
+			$experiment_id,
+			$arm
+		);
+
+		if ( ! is_wp_error( $result ) ) {
+			// The test is over, so the cached payload and the list row are both
+			// wrong. Pull the storefront configs straight away as well: the
+			// split has to stop now, not on the next daily tick.
+			$this->plugin->cache()->bust( self::GROUP );
+			$this->plugin->ab_test()->sync_configs();
+		}
+		return $result;
+	}
+
 	/* --------------------------------------------------------------------- */
 
 	/**
