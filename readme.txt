@@ -4,7 +4,7 @@ Tags: ai, seo, woocommerce, ai search, content
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 4.7.2
+Stable tag: 4.7.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -138,6 +138,11 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 
 == Changelog ==
 
+= 4.7.3 =
+* New: an experiment now shows what each version is worth. Revenue per shopper over time, a table per version, and what keeping the winner would be worth over a year. It appears only when your store actually reported order values, so a missing panel means revenue is not being tracked rather than that you earned nothing.
+* Fixed: the progress step for going live was called "Versions live", the same name as one of the trust checks below it, and the two answer different questions. It is now "Live on your store".
+* Fixed: the last two dates on a chart's bottom axis could overlap into one another.
+
 = 4.7.2 =
 * Fixed: on the New experiment tab, "Check this design" could appear to do nothing. When the answer was a refusal, such as no products having reached ACE yet, it flashed in a notice that disappeared after a few seconds. The reason now stays on the page until you change the design.
 
@@ -224,6 +229,9 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 * Product enrichment now runs on the platform's durable jobs API with webhook-accelerated polling.
 
 == Upgrade Notice ==
+
+= 4.7.3 =
+Experiments now show revenue per version, and two labelling fixes.
 
 = 4.7.2 =
 "Check this design" no longer appears to do nothing when the answer is a refusal.

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-26T09:23:32+00:00\n"
+"POT-Creation-Date: 2026-08-26T10:16:18+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: ace-make-pot\n"
 "X-Domain: agentic-commerce-engine\n"
@@ -2197,22 +2197,50 @@ msgid "products have a second version live"
 msgstr ""
 
 #: includes/class-assets.php:473
-msgid "Could not check that design."
+msgid "What each version is worth"
 msgstr ""
 
 #: includes/class-assets.php:474
-msgid "This design cannot be checked yet"
+msgid "Revenue divided by shoppers, counted from your own store. Only shown because real order values were reported."
+msgstr ""
+
+#: includes/class-assets.php:475
+msgid "About"
+msgstr ""
+
+#: includes/class-assets.php:476
+msgid "a year if you keep the winner"
 msgstr ""
 
 #: includes/class-assets.php:477
-msgid "Feed URLs regenerated. Update them wherever they are configured."
+msgid "Shoppers"
+msgstr ""
+
+#: includes/class-assets.php:478
+msgid "Revenue"
+msgstr ""
+
+#: includes/class-assets.php:479
+msgid "Per shopper"
 msgstr ""
 
 #: includes/class-assets.php:480
+msgid "Could not check that design."
+msgstr ""
+
+#: includes/class-assets.php:481
+msgid "This design cannot be checked yet"
+msgstr ""
+
+#: includes/class-assets.php:484
+msgid "Feed URLs regenerated. Update them wherever they are configured."
+msgstr ""
+
+#: includes/class-assets.php:487
 msgid "Settings saved."
 msgstr ""
 
-#: includes/class-assets.php:482
+#: includes/class-assets.php:489
 #, php-format
 msgid "Connection healthy. %s credits available."
 msgstr ""

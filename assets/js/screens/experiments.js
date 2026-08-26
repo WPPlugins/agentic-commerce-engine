@@ -147,6 +147,27 @@
 			return lift( lo ) + ' to ' + lift( hi );
 		}
 
+		/**
+		 * Minor units to a readable amount, in the MERCHANT's currency.
+		 *
+		 * The currency comes from the payload rather than from a site setting:
+		 * it is whatever the storefront actually reported alongside the orders,
+		 * and printing a different symbol over the same number would be a claim
+		 * about money that nothing measured.
+		 */
+		function money( minor, currency ) {
+			if ( typeof minor !== 'number' || ! isFinite( minor ) ) { return 'n/a'; }
+			try {
+				return ( minor / 100 ).toLocaleString( undefined, {
+					style: 'currency',
+					currency: currency || 'USD',
+					maximumFractionDigits: 0
+				} );
+			} catch ( e ) {
+				return ( Math.round( minor / 100 ) ) + ' ' + ( currency || '' );
+			}
+		}
+
 		function rate( value ) {
 			if ( typeof value !== 'number' || ! isFinite( value ) ) { return 'n/a'; }
 			return ( Math.round( value * 1000 ) / 10 ) + '%';
@@ -321,6 +342,33 @@
 			if ( d.split && d.split.unattributedVisitors > 0 ) {
 				html += '<p>' + esc( core.num( d.split.unattributedVisitors ) + ' ' +
 					t( 'unattributed', 'shoppers could not be tied to this test because another split was running at the same time, so they are left out rather than guessed at.' ) ) + '</p>';
+			}
+
+			/* Money, and only when the platform sent it. `money` is null unless
+			   revenue was genuinely observed, so a missing panel here means
+			   "your store does not report order value", not "you earned zero". */
+			if ( d.money && d.money.arms && d.money.arms.length ) {
+				html += '<h3>' + esc( t( 'whatItIsWorth', 'What each version is worth' ) ) + '</h3>';
+				html += '<p>' + esc( t( 'whatItIsWorthSub', 'Revenue divided by shoppers, counted from your own store. Only shown because real order values were reported.' ) ) + '</p>';
+				if ( typeof d.money.projectedAnnualGainMinor === 'number' ) {
+					html += '<p>' + core.chip( 'success',
+						t( 'aboutAYear', 'About' ) + ' ' +
+						money( d.money.projectedAnnualGainMinor, d.money.currency ) + ' ' +
+						t( 'aYearIfYouKeep', 'a year if you keep the winner' ) ) + '</p>';
+				}
+				html += '<div class="ace-chart" id="ace-exp-money"></div>';
+				html += '<table class="ace-table"><thead><tr><th>' + esc( t( 'version', 'Version' ) ) +
+					'</th><th>' + esc( t( 'shoppers', 'Shoppers' ) ) +
+					'</th><th>' + esc( t( 'revenue', 'Revenue' ) ) +
+					'</th><th>' + esc( t( 'perShopper', 'Per shopper' ) ) + '</th></tr></thead><tbody>' +
+					d.money.arms.map( function ( a ) {
+						return '<tr><td>' + esc( a.armLabel || ( 'Version ' + String( a.arm ).toUpperCase() ) ) +
+							'</td><td>' + core.num( a.visitors ) +
+							'</td><td>' + esc( money( a.revenueMinor, d.money.currency ) ) +
+							'</td><td>' + esc( a.revenuePerVisitor === null || a.revenuePerVisitor === undefined
+								? '\u2014'
+								: money( a.revenuePerVisitor, d.money.currency ) ) + '</td></tr>';
+					} ).join( '' ) + '</tbody></table>';
 			}
 
 			/* HEALTH DETAIL. The banner already carried the verdict; this is the
@@ -548,6 +596,26 @@
 						t( 'productsLive', 'products have a second version live' );
 					covNote.hidden = false;
 				}
+			}
+
+			/* Money over time, on the same date axis as everything else. */
+			var moneyEl = byId( 'ace-exp-money' );
+			if ( moneyEl && d.money && d.money.arms && d.money.arms.length && visitor ) {
+				charts.line( moneyEl, {
+					series: d.money.arms.map( function ( a, i ) {
+						return {
+							name: a.armLabel || ( 'Version ' + String( a.arm ).toUpperCase() ),
+							color: charts.palette[ i % charts.palette.length ],
+							points: ( visitor.dates || [] ).map( function ( x, di ) {
+								var v = a.series[ di ];
+								return { x: x, y: ( v === null || v === undefined ) ? null : v / 100 };
+							} )
+						};
+					} )
+				}, {
+					height: 220,
+					yFmt: function ( v ) { return money( v * 100, d.money.currency ); }
+				} );
 			}
 
 			/* 5. The results, as whiskers. A row still touching zero has not

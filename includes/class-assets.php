@@ -470,6 +470,13 @@ class Assets {
 			'ofProductsLive' => __( 'of', 'agentic-commerce-engine' ),
 			'productsLive'   => __( 'products have a second version live', 'agentic-commerce-engine' ),
 
+			'whatItIsWorth'    => __( 'What each version is worth', 'agentic-commerce-engine' ),
+			'whatItIsWorthSub' => __( 'Revenue divided by shoppers, counted from your own store. Only shown because real order values were reported.', 'agentic-commerce-engine' ),
+			'aboutAYear'       => __( 'About', 'agentic-commerce-engine' ),
+			'aYearIfYouKeep'   => __( 'a year if you keep the winner', 'agentic-commerce-engine' ),
+			'shoppers'         => __( 'Shoppers', 'agentic-commerce-engine' ),
+			'revenue'          => __( 'Revenue', 'agentic-commerce-engine' ),
+			'perShopper'       => __( 'Per shopper', 'agentic-commerce-engine' ),
 			'preflightFailed'  => __( 'Could not check that design.', 'agentic-commerce-engine' ),
 			'preflightRefused' => __( 'This design cannot be checked yet', 'agentic-commerce-engine' ),
 
