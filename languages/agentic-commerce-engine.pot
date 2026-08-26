@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Agentic Commerce Engine 4.4.0\n"
+"Project-Id-Version: Agentic Commerce Engine 4.6.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/agentic-commerce-engine\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-14T12:12:45+00:00\n"
+"POT-Creation-Date: 2026-08-26T05:38:25+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: ace-make-pot\n"
 "X-Domain: agentic-commerce-engine\n"
@@ -487,6 +487,7 @@ msgid "Set up AI research"
 msgstr ""
 
 #: admin/views/page-dashboard.php:68
+#: admin/views/page-experiments.php:51
 msgid "Refresh"
 msgstr ""
 
@@ -536,7 +537,7 @@ msgid "See the full crawler breakdown"
 msgstr ""
 
 #: admin/views/page-dashboard.php:105
-#: includes/class-assets.php:283
+#: includes/class-assets.php:284
 msgid "Credits"
 msgstr ""
 
@@ -546,7 +547,7 @@ msgstr ""
 
 #. translators: 1: credits used, 2: credit limit.
 #: admin/views/page-dashboard.php:111
-#: includes/class-assets.php:285
+#: includes/class-assets.php:286
 #, php-format
 msgid "%1$s used of %2$s"
 msgstr ""
@@ -567,20 +568,122 @@ msgstr ""
 #: admin/views/page-dashboard.php:134
 #: admin/views/page-products.php:107
 #: admin/views/page-products.php:108
-#: includes/class-assets.php:234
+#: includes/class-assets.php:235
 msgid "Choose what to enrich"
 msgstr ""
 
 #: admin/views/page-dashboard.php:139
 #: admin/views/page-products.php:113
-#: includes/class-assets.php:208
+#: includes/class-assets.php:209
 msgid "Cancel"
 msgstr ""
 
 #: admin/views/page-dashboard.php:140
 #: admin/views/page-products.php:114
-#: includes/class-assets.php:235
+#: includes/class-assets.php:236
 msgid "Enrich now"
+msgstr ""
+
+#: admin/views/page-experiments.php:29
+msgid "Splitting visitors is switched off for this site, so a test can be set up here but nobody will be shown a different version."
+msgstr ""
+
+#: admin/views/page-experiments.php:31
+msgid "Turn it on in Settings"
+msgstr ""
+
+#: admin/views/page-experiments.php:37
+#: includes/class-admin.php:77
+#: includes/class-admin.php:127
+msgid "Experiments"
+msgstr ""
+
+#: admin/views/page-experiments.php:39
+msgid "Your tests"
+msgstr ""
+
+#: admin/views/page-experiments.php:42
+msgid "New experiment"
+msgstr ""
+
+#: admin/views/page-experiments.php:61
+msgid "All experiments"
+msgstr ""
+
+#: admin/views/page-experiments.php:71
+msgid "1. What to split"
+msgstr ""
+
+#: admin/views/page-experiments.php:74
+msgid "Split shoppers. Some see one version of your product copy and some see another, and you compare what they bought."
+msgstr ""
+
+#: admin/views/page-experiments.php:78
+msgid "Split products. Some products get new copy and some are held back unchanged, and you compare how the pages performed."
+msgstr ""
+
+#: admin/views/page-experiments.php:83
+msgid "2. Which products"
+msgstr ""
+
+#: admin/views/page-experiments.php:84
+msgid "Category"
+msgstr ""
+
+#: admin/views/page-experiments.php:87
+msgid "A test needs enough products behind it to tell a real change from noise, so pick a whole category rather than a handful."
+msgstr ""
+
+#: admin/views/page-experiments.php:92
+msgid "3. How many versions"
+msgstr ""
+
+#: admin/views/page-experiments.php:93
+msgid "Versions to compare"
+msgstr ""
+
+#: admin/views/page-experiments.php:95
+msgid "2, your copy and one challenger"
+msgstr ""
+
+#: admin/views/page-experiments.php:100
+msgid "Every extra version splits your shoppers further, so more versions need more traffic to reach an answer."
+msgstr ""
+
+#: admin/views/page-experiments.php:105
+msgid "4. What to measure"
+msgstr ""
+
+#: admin/views/page-experiments.php:106
+msgid "Goal"
+msgstr ""
+
+#: admin/views/page-experiments.php:108
+msgid "Days to run"
+msgstr ""
+
+#: admin/views/page-experiments.php:113
+msgid "5. Check and launch"
+msgstr ""
+
+#: admin/views/page-experiments.php:114
+msgid "Name this test"
+msgstr ""
+
+#: admin/views/page-experiments.php:121
+msgid "Start it anyway, knowing it will take longer than planned"
+msgstr ""
+
+#: admin/views/page-experiments.php:126
+msgid "Check this design"
+msgstr ""
+
+#: admin/views/page-experiments.php:129
+msgid "Write the versions and launch"
+msgstr ""
+
+#: admin/views/page-experiments.php:134
+msgid "Launching writes the new versions with AI, which uses credits. Nothing is shown to a visitor until you approve it in Review and it goes live on your site."
 msgstr ""
 
 #: admin/views/page-products.php:22
@@ -588,15 +691,15 @@ msgid "All"
 msgstr ""
 
 #: admin/views/page-products.php:23
-#: includes/class-admin.php:195
-#: includes/class-assets.php:255
+#: includes/class-admin.php:207
+#: includes/class-assets.php:256
 #: includes/class-dashboard.php:170
 msgid "Not enriched"
 msgstr ""
 
 #: admin/views/page-products.php:24
-#: includes/class-admin.php:188
-#: includes/class-assets.php:250
+#: includes/class-admin.php:200
+#: includes/class-assets.php:251
 #: includes/class-dashboard.php:152
 msgid "Queued"
 msgstr ""
@@ -607,15 +710,15 @@ msgstr ""
 
 #: admin/views/page-products.php:26
 #: admin/views/page-review.php:25
-#: includes/class-admin.php:190
-#: includes/class-assets.php:252
+#: includes/class-admin.php:202
+#: includes/class-assets.php:253
 #: includes/class-dashboard.php:140
 msgid "Applied"
 msgstr ""
 
 #: admin/views/page-products.php:27
-#: includes/class-admin.php:192
-#: includes/class-assets.php:254
+#: includes/class-admin.php:204
+#: includes/class-assets.php:255
 #: includes/class-dashboard.php:158
 msgid "Failed"
 msgstr ""
@@ -707,7 +810,7 @@ msgstr ""
 
 #: admin/views/page-review.php:46
 #: admin/views/page-review.php:51
-#: includes/class-assets.php:210
+#: includes/class-assets.php:211
 msgid "Load more"
 msgstr ""
 
@@ -792,155 +895,191 @@ msgid "Counting works on its own with no account. Only the daily report needs on
 msgstr ""
 
 #: admin/views/page-settings.php:102
-msgid "Content publishing"
+msgid "A/B test your product copy"
 msgstr ""
 
 #: admin/views/page-settings.php:103
-msgid "How articles from the Content screen land in WordPress."
+msgid "Shows different versions of a product description to different visitors and measures which one sells better. Experiments are set up in ACE; this switch decides whether this site takes part."
 msgstr ""
 
 #: admin/views/page-settings.php:107
-msgid "Default status"
-msgstr ""
-
-#: admin/views/page-settings.php:109
-msgid "Draft (review before it goes live)"
+msgid "Split visitors between versions on this site"
 msgstr ""
 
 #: admin/views/page-settings.php:110
-msgid "Publish immediately"
+msgid "This is the one feature here that stores a cookie. To remember which version a visitor saw, it keeps a random id in their browser. Nothing happens without their consent: it uses the WordPress Consent API, so your cookie banner decides. If you have no consent plugin, nothing is stored and every visitor sees your normal copy."
 msgstr ""
 
-#: admin/views/page-settings.php:114
-msgid "Editor format"
+#: admin/views/page-settings.php:113
+msgid "Search engines and AI crawlers always see your normal copy. They carry no cookie and give no consent, so they are never put into a test, and your page never contains more than one version of its description."
 msgstr ""
 
-#: admin/views/page-settings.php:116
-msgid "Block editor (Gutenberg blocks)"
-msgstr ""
-
-#: admin/views/page-settings.php:117
-msgid "Classic HTML"
+#: admin/views/page-settings.php:118
+msgid "Send results to my ACE project"
 msgstr ""
 
 #: admin/views/page-settings.php:121
-msgid "Default author"
+msgid "Separate from the switch above, because a test can run without the result leaving this site. ACE receives which version was shown and whether that visitor reached checkout, against a scrambled id that is unique to this site and cannot be linked back to a person or matched with any other site. No names, email addresses, order details or IP addresses are ever sent."
 msgstr ""
 
-#: admin/views/page-settings.php:123
-msgid "The user who publishes"
+#: admin/views/page-settings.php:125
+msgid "Description block selector"
 msgstr ""
 
-#: admin/views/page-settings.php:130
-msgid "Output Article schema (JSON-LD) on published ACE articles"
+#: admin/views/page-settings.php:129
+msgid "Leave blank for the standard WooCommerce layout. On another theme, put the CSS selector for the block holding your product description. If it does not match your theme, the test will run and change nothing, and it will report no difference."
 msgstr ""
 
-#: admin/views/page-settings.php:137
-msgid "Automation"
+#: admin/views/page-settings.php:135
+msgid "Content publishing"
 msgstr ""
 
-#: admin/views/page-settings.php:138
-msgid "Keep your catalog and AI content moving without manual clicks."
+#: admin/views/page-settings.php:136
+msgid "How articles from the Content screen land in WordPress."
+msgstr ""
+
+#: admin/views/page-settings.php:140
+msgid "Default status"
 msgstr ""
 
 #: admin/views/page-settings.php:142
-msgid "Auto-sync my catalog on a schedule"
+msgid "Draft (review before it goes live)"
 msgstr ""
 
-#: admin/views/page-settings.php:146
-msgid "Frequency"
+#: admin/views/page-settings.php:143
+msgid "Publish immediately"
 msgstr ""
 
-#: admin/views/page-settings.php:148
-msgid "Daily"
+#: admin/views/page-settings.php:147
+msgid "Editor format"
 msgstr ""
 
 #: admin/views/page-settings.php:149
-msgid "Weekly"
+msgid "Block editor (Gutenberg blocks)"
 msgstr ""
 
-#: admin/views/page-settings.php:155
-msgid "Auto-apply AI suggestions without review"
+#: admin/views/page-settings.php:150
+msgid "Classic HTML"
 msgstr ""
 
-#: admin/views/page-settings.php:157
-msgid "When on, AI changes go live on your products automatically. You can still revert any product from the Review screen."
+#: admin/views/page-settings.php:154
+msgid "Default author"
 msgstr ""
 
-#: admin/views/page-settings.php:159
-msgid "Scheduled sync and auto-apply send products to ACE for enrichment, so they need an account. The schema and product-page options below work on their own."
+#: admin/views/page-settings.php:156
+msgid "The user who publishes"
 msgstr ""
 
-#: admin/views/page-settings.php:164
-msgid "Output Product schema (JSON-LD) on product pages"
+#: admin/views/page-settings.php:163
+msgid "Output Article schema (JSON-LD) on published ACE articles"
 msgstr ""
 
-#: admin/views/page-settings.php:169
-msgid "Show IRL scenarios and internal links on the product page automatically"
+#: admin/views/page-settings.php:170
+msgid "Automation"
 msgstr ""
 
 #: admin/views/page-settings.php:171
+msgid "Keep your catalog and AI content moving without manual clicks."
+msgstr ""
+
+#: admin/views/page-settings.php:175
+msgid "Auto-sync my catalog on a schedule"
+msgstr ""
+
+#: admin/views/page-settings.php:179
+msgid "Frequency"
+msgstr ""
+
+#: admin/views/page-settings.php:181
+msgid "Daily"
+msgstr ""
+
+#: admin/views/page-settings.php:182
+msgid "Weekly"
+msgstr ""
+
+#: admin/views/page-settings.php:188
+msgid "Auto-apply AI suggestions without review"
+msgstr ""
+
+#: admin/views/page-settings.php:190
+msgid "When on, AI changes go live on your products automatically. You can still revert any product from the Review screen."
+msgstr ""
+
+#: admin/views/page-settings.php:192
+msgid "Scheduled sync and auto-apply send products to ACE for enrichment, so they need an account. The schema and product-page options below work on their own."
+msgstr ""
+
+#: admin/views/page-settings.php:197
+msgid "Output Product schema (JSON-LD) on product pages"
+msgstr ""
+
+#: admin/views/page-settings.php:202
+msgid "Show IRL scenarios and internal links on the product page automatically"
+msgstr ""
+
+#: admin/views/page-settings.php:204
 msgid "Or place them yourself with the [agencoen_irl] and [agencoen_internal_links] shortcodes, or the ACE editor blocks."
 msgstr ""
 
 #. translators: %s: SEO plugin name.
-#: admin/views/page-settings.php:177
+#: admin/views/page-settings.php:210
 #, php-format
 msgid "Detected %s. ACE automatically suppresses its schema output when your SEO plugin already emits Product schema, to avoid duplicates."
 msgstr ""
 
-#: admin/views/page-settings.php:189
-#: includes/class-assets.php:238
+#: admin/views/page-settings.php:222
+#: includes/class-assets.php:239
 msgid "Channel feeds"
 msgstr ""
 
-#: admin/views/page-settings.php:190
+#: admin/views/page-settings.php:223
 msgid "When you enrich products with a channel feed type, ACE serves the feed at these URLs."
 msgstr ""
 
-#: admin/views/page-settings.php:193
+#: admin/views/page-settings.php:226
 msgid "Google Merchant"
 msgstr ""
 
-#: admin/views/page-settings.php:194
+#: admin/views/page-settings.php:227
 msgid "Microsoft Bing"
 msgstr ""
 
-#: admin/views/page-settings.php:195
+#: admin/views/page-settings.php:228
 msgid "Agentic Commerce"
 msgstr ""
 
-#: admin/views/page-settings.php:204
+#: admin/views/page-settings.php:237
 msgid "Regenerate feed URLs"
 msgstr ""
 
-#: admin/views/page-settings.php:205
+#: admin/views/page-settings.php:238
 msgid "Each URL carries a private token, so only the channels you give it to can read the feed. Regenerating invalidates the old URLs; update them in Google and Microsoft afterwards."
 msgstr ""
 
-#: admin/views/page-settings.php:211
+#: admin/views/page-settings.php:244
 #: admin/views/partial-empty-state.php:42
 msgid "Advanced"
 msgstr ""
 
-#: admin/views/page-settings.php:212
+#: admin/views/page-settings.php:245
 msgid "Platform endpoint, webhook, and diagnostics."
 msgstr ""
 
-#: admin/views/page-settings.php:215
+#: admin/views/page-settings.php:248
 #: admin/views/partial-empty-state.php:44
 msgid "Platform URL"
 msgstr ""
 
-#: admin/views/page-settings.php:220
+#: admin/views/page-settings.php:253
 msgid "Webhook URL (read-only)"
 msgstr ""
 
-#: admin/views/page-settings.php:226
+#: admin/views/page-settings.php:259
 msgid "Enable debug logging"
 msgstr ""
 
-#: admin/views/page-settings.php:231
+#: admin/views/page-settings.php:264
 msgid "Save settings"
 msgstr ""
 
@@ -962,7 +1101,7 @@ msgstr ""
 
 #: admin/views/partial-connect-banner.php:41
 #: admin/views/partial-start-here.php:50
-#: includes/class-assets.php:266
+#: includes/class-assets.php:267
 msgid "Dismiss"
 msgstr ""
 
@@ -1111,49 +1250,49 @@ msgid "Agentic Commerce Engine requires PHP 8.0 or higher. You are running %s."
 msgstr ""
 
 #: includes/class-admin.php:72
-#: includes/class-admin.php:95
+#: includes/class-admin.php:96
 msgid "Dashboard"
 msgstr ""
 
 #: includes/class-admin.php:73
-#: includes/class-admin.php:100
+#: includes/class-admin.php:101
 msgid "Products"
 msgstr ""
 
 #: includes/class-admin.php:74
-#: includes/class-admin.php:105
+#: includes/class-admin.php:106
 msgid "Review"
 msgstr ""
 
 #: includes/class-admin.php:75
-#: includes/class-admin.php:110
+#: includes/class-admin.php:111
 msgid "Content"
 msgstr ""
 
 #: includes/class-admin.php:76
-#: includes/class-admin.php:115
+#: includes/class-admin.php:116
 msgid "AI Search"
 msgstr ""
 
-#: includes/class-admin.php:77
-#: includes/class-admin.php:89
-#: includes/class-admin.php:120
+#: includes/class-admin.php:78
+#: includes/class-admin.php:90
+#: includes/class-admin.php:132
 msgid "Settings"
 msgstr ""
 
-#: includes/class-admin.php:78
-#: includes/class-admin.php:125
+#: includes/class-admin.php:79
+#: includes/class-admin.php:137
 msgid "Connection"
 msgstr ""
 
-#: includes/class-admin.php:189
-#: includes/class-assets.php:251
+#: includes/class-admin.php:201
+#: includes/class-assets.php:252
 #: includes/class-dashboard.php:146
 msgid "Ready to review"
 msgstr ""
 
-#: includes/class-admin.php:191
-#: includes/class-assets.php:253
+#: includes/class-admin.php:203
+#: includes/class-assets.php:254
 #: includes/class-dashboard.php:164
 msgid "Dismissed"
 msgstr ""
@@ -1208,6 +1347,23 @@ msgstr ""
 msgid "Could not move this post to the trash."
 msgstr ""
 
+#: includes/class-ajax-experiments.php:79
+msgid "Which experiment?"
+msgstr ""
+
+#: includes/class-ajax-experiments.php:114
+#: includes/class-ajax-experiments.php:139
+msgid "Give this test a name."
+msgstr ""
+
+#: includes/class-ajax-experiments.php:132
+msgid "Nothing to do."
+msgstr ""
+
+#: includes/class-ajax-experiments.php:179
+msgid "No products matched that selection."
+msgstr ""
+
 #: includes/class-ajax.php:76
 msgid "Please paste your API key."
 msgstr ""
@@ -1217,12 +1373,12 @@ msgstr ""
 msgid "No products selected."
 msgstr ""
 
-#: includes/class-api-client.php:511
+#: includes/class-api-client.php:711
 msgid "No API key configured. Connect your site first."
 msgstr ""
 
 #. translators: %d: HTTP status code.
-#: includes/class-api-client.php:641
+#: includes/class-api-client.php:849
 #, php-format
 msgid "The ACE platform returned an error (HTTP %d)."
 msgstr ""
@@ -1245,272 +1401,272 @@ msgstr ""
 msgid "The platform did not return a job id."
 msgstr ""
 
-#: includes/class-assets.php:206
+#: includes/class-assets.php:207
 msgid "Something went wrong. Please try again."
 msgstr ""
 
-#: includes/class-assets.php:207
+#: includes/class-assets.php:208
 msgid "No data yet"
 msgstr ""
 
-#: includes/class-assets.php:209
+#: includes/class-assets.php:210
 msgid "Done."
 msgstr ""
 
-#: includes/class-assets.php:211
+#: includes/class-assets.php:212
 msgid "Saving…"
 msgstr ""
 
-#: includes/class-assets.php:212
+#: includes/class-assets.php:213
 msgid "Open your ACE account"
 msgstr ""
 
-#: includes/class-assets.php:213
+#: includes/class-assets.php:214
 msgid "Expand"
 msgstr ""
 
-#: includes/class-assets.php:214
+#: includes/class-assets.php:215
 msgid "just now"
 msgstr ""
 
-#: includes/class-assets.php:216
+#: includes/class-assets.php:217
 #, php-format
 msgid "%sm ago"
 msgstr ""
 
-#: includes/class-assets.php:218
+#: includes/class-assets.php:219
 #, php-format
 msgid "%sh ago"
 msgstr ""
 
-#: includes/class-assets.php:220
+#: includes/class-assets.php:221
 #, php-format
 msgid "%sd ago"
 msgstr ""
 
-#: includes/class-assets.php:222
+#: includes/class-assets.php:223
 #, php-format
 msgid "Processing %1$s of %2$s…"
 msgstr ""
 
-#: includes/class-assets.php:225
+#: includes/class-assets.php:226
 msgid "Connecting…"
 msgstr ""
 
-#: includes/class-assets.php:226
+#: includes/class-assets.php:227
 msgid "Could not connect. Check your API key and try again."
 msgstr ""
 
-#: includes/class-assets.php:227
+#: includes/class-assets.php:228
 msgid "Disconnect this site from ACE? Your API key will be removed."
 msgstr ""
 
-#: includes/class-assets.php:230
+#: includes/class-assets.php:231
 msgid "Syncing…"
 msgstr ""
 
-#: includes/class-assets.php:231
+#: includes/class-assets.php:232
 msgid "Sync complete."
 msgstr ""
 
-#: includes/class-assets.php:232
+#: includes/class-assets.php:233
 msgid "Sending to AI…"
 msgstr ""
 
-#: includes/class-assets.php:233
+#: includes/class-assets.php:234
 msgid "Queued for enrichment. Results appear as they finish."
 msgstr ""
 
-#: includes/class-assets.php:236
+#: includes/class-assets.php:237
 msgid "Pick at least one content type."
 msgstr ""
 
-#: includes/class-assets.php:237
+#: includes/class-assets.php:238
 msgid "On the product page"
 msgstr ""
 
-#: includes/class-assets.php:239
+#: includes/class-assets.php:240
 msgid "Recommended"
 msgstr ""
 
-#: includes/class-assets.php:242
+#: includes/class-assets.php:243
 msgid "No products match."
 msgstr ""
 
-#: includes/class-assets.php:244
+#: includes/class-assets.php:245
 #, php-format
 msgid "%s selected"
 msgstr ""
 
-#: includes/class-assets.php:246
+#: includes/class-assets.php:247
 #, php-format
 msgid "Select all %s matching"
 msgstr ""
 
-#: includes/class-assets.php:247
+#: includes/class-assets.php:248
 msgid "Keep only the checked rows"
 msgstr ""
 
-#: includes/class-assets.php:249
+#: includes/class-assets.php:250
 #, php-format
 msgid "Page %1$s of %2$s"
 msgstr ""
 
-#: includes/class-assets.php:258
+#: includes/class-assets.php:259
 msgid "Nothing to review right now."
 msgstr ""
 
-#: includes/class-assets.php:259
+#: includes/class-assets.php:260
 msgid "No applied products yet."
 msgstr ""
 
-#: includes/class-assets.php:260
+#: includes/class-assets.php:261
 msgid "Apply every pending suggestion to your live products?"
 msgstr ""
 
-#: includes/class-assets.php:261
+#: includes/class-assets.php:262
 msgid "Applying…"
 msgstr ""
 
-#: includes/class-assets.php:262
+#: includes/class-assets.php:263
 msgid "Applied to your product."
 msgstr ""
 
-#: includes/class-assets.php:263
+#: includes/class-assets.php:264
 msgid "Dismissed."
 msgstr ""
 
-#: includes/class-assets.php:264
+#: includes/class-assets.php:265
 msgid "Reverted to the original."
 msgstr ""
 
-#: includes/class-assets.php:265
+#: includes/class-assets.php:266
 msgid "Approve"
 msgstr ""
 
-#: includes/class-assets.php:267
+#: includes/class-assets.php:268
 msgid "Revert to original"
 msgstr ""
 
-#: includes/class-assets.php:268
+#: includes/class-assets.php:269
 msgid "Edit"
 msgstr ""
 
-#: includes/class-assets.php:269
+#: includes/class-assets.php:270
 msgid "Current"
 msgstr ""
 
-#: includes/class-assets.php:270
+#: includes/class-assets.php:271
 msgid "AI suggestion"
 msgstr ""
 
-#: includes/class-assets.php:271
+#: includes/class-assets.php:272
 msgid "no change"
 msgstr ""
 
-#: includes/class-assets.php:272
+#: includes/class-assets.php:273
 msgid "(empty)"
 msgstr ""
 
-#: includes/class-assets.php:274
+#: includes/class-assets.php:275
 #, php-format
 msgid "Score %s"
 msgstr ""
 
-#: includes/class-assets.php:276
+#: includes/class-assets.php:277
 #, php-format
 msgid "IRL scenarios (%s)"
 msgstr ""
 
-#: includes/class-assets.php:277
+#: includes/class-assets.php:278
 #: includes/class-content-types.php:59
 msgid "Internal links"
 msgstr ""
 
-#: includes/class-assets.php:278
+#: includes/class-assets.php:279
 msgid "JSON-LD schema"
 msgstr ""
 
-#: includes/class-assets.php:280
+#: includes/class-assets.php:281
 #, php-format
 msgid "%s feed"
 msgstr ""
 
-#: includes/class-assets.php:286
+#: includes/class-assets.php:287
 msgid "credits used"
 msgstr ""
 
-#: includes/class-assets.php:287
+#: includes/class-assets.php:288
 msgid "Products optimized"
 msgstr ""
 
-#: includes/class-assets.php:289
+#: includes/class-assets.php:290
 #, php-format
 msgid "%1$s of %2$s products"
 msgstr ""
 
-#: includes/class-assets.php:290
+#: includes/class-assets.php:291
 msgid "Not installed"
 msgstr ""
 
-#: includes/class-assets.php:291
+#: includes/class-assets.php:292
 msgid "Product optimization is available with WooCommerce."
 msgstr ""
 
-#: includes/class-assets.php:292
+#: includes/class-assets.php:293
 msgid "Articles published"
 msgstr ""
 
-#: includes/class-assets.php:294
+#: includes/class-assets.php:295
 #, php-format
 msgid "%s drafts waiting"
 msgstr ""
 
-#: includes/class-assets.php:295
+#: includes/class-assets.php:296
 msgid "AI bot hits, 7 days"
 msgstr ""
 
-#: includes/class-assets.php:296
+#: includes/class-assets.php:297
 msgid "vs the prior 7 days"
 msgstr ""
 
-#: includes/class-assets.php:297
+#: includes/class-assets.php:298
 msgid "Share of Brand Mentions"
 msgstr ""
 
-#: includes/class-assets.php:298
+#: includes/class-assets.php:299
 msgid "of AI answers mention your brand"
 msgstr ""
 
-#: includes/class-assets.php:299
+#: includes/class-assets.php:300
 msgid "Not measured yet"
 msgstr ""
 
-#: includes/class-assets.php:300
+#: includes/class-assets.php:301
 msgid "Run AI search research to measure this."
 msgstr ""
 
-#: includes/class-assets.php:301
+#: includes/class-assets.php:302
 msgid "optimized"
 msgstr ""
 
-#: includes/class-assets.php:302
+#: includes/class-assets.php:303
 msgid "Products applied per day"
 msgstr ""
 
-#: includes/class-assets.php:305
+#: includes/class-assets.php:306
 msgid "AI Search research is not set up for this ACE account yet. Finish setup in the ACE app, then reload this page. The Crawlers tab works either way."
 msgstr ""
 
-#: includes/class-assets.php:306
+#: includes/class-assets.php:307
 msgid "Estimated cost:"
 msgstr ""
 
-#: includes/class-assets.php:309
+#: includes/class-assets.php:310
 msgid "Settings saved."
 msgstr ""
 
-#: includes/class-assets.php:311
+#: includes/class-assets.php:312
 #, php-format
 msgid "Connection healthy. %s credits available."
 msgstr ""
@@ -1581,7 +1737,7 @@ msgstr ""
 msgid "Microsoft Bing Shopping feed records, served at a feed URL."
 msgstr ""
 
-#: includes/class-cron.php:99
+#: includes/class-cron.php:115
 msgid "Once Weekly"
 msgstr ""
 
@@ -1594,6 +1750,10 @@ msgstr ""
 #: includes/class-dashboard.php:326
 #, php-format
 msgid "%s ago"
+msgstr ""
+
+#: includes/class-experiments.php:155
+msgid "That is not something you can do to an experiment."
 msgstr ""
 
 #: includes/class-feeds.php:81

@@ -48,7 +48,9 @@
 			bots_paths: 'ace-bots-paths',
 			bots_report: 'ace-bots-report',
 			traffic_enabled: 'ace-traffic-enabled',
-			traffic_report: 'ace-traffic-report'
+			traffic_report: 'ace-traffic-report',
+			ab_enabled: 'ace-ab-enabled',
+			ab_report: 'ace-ab-report'
 		};
 		Object.keys( bools ).forEach( function ( field ) {
 			var v = checkboxValue( bools[ field ] );
@@ -72,6 +74,13 @@
 		var base = $( '#ace-base-url-setting' );
 		if ( base && base.value.trim() ) {
 			payload.base_url = base.value.trim();
+		}
+		// Sent even when blank, unlike base_url above: blank is a real choice
+		// here ("use the default selector"), and skipping it would make the
+		// field impossible to clear once set.
+		var abSel = $( '#ace-ab-selector' );
+		if ( abSel ) {
+			payload.ab_selector = abSel.value.trim();
 		}
 		return payload;
 	}

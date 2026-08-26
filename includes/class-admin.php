@@ -74,6 +74,7 @@ class Admin {
 		add_submenu_page( self::SLUG, __( 'Review', 'agentic-commerce-engine' ), __( 'Review', 'agentic-commerce-engine' ), $cap, 'agencoen-review', array( $this, 'render_review' ) );
 		add_submenu_page( self::SLUG, __( 'Content', 'agentic-commerce-engine' ), __( 'Content', 'agentic-commerce-engine' ), $cap, 'agencoen-content', array( $this, 'render_content' ) );
 		add_submenu_page( self::SLUG, __( 'AI Search', 'agentic-commerce-engine' ), __( 'AI Search', 'agentic-commerce-engine' ), $cap, 'agencoen-aisearch', array( $this, 'render_aisearch' ) );
+		add_submenu_page( self::SLUG, __( 'Experiments', 'agentic-commerce-engine' ), __( 'Experiments', 'agentic-commerce-engine' ), $cap, 'agencoen-experiments', array( $this, 'render_experiments' ) );
 		add_submenu_page( self::SLUG, __( 'Settings', 'agentic-commerce-engine' ), __( 'Settings', 'agentic-commerce-engine' ), $cap, 'agencoen-settings', array( $this, 'render_settings' ) );
 		add_submenu_page( self::SLUG, __( 'Connection', 'agentic-commerce-engine' ), __( 'Connection', 'agentic-commerce-engine' ), $cap, 'agencoen-connection', array( $this, 'render_connection' ) );
 	}
@@ -113,6 +114,17 @@ class Admin {
 	/** Render: AI Search. */
 	public function render_aisearch() {
 		$this->render( 'page-aisearch.php', __( 'AI Search', 'agentic-commerce-engine' ) );
+	}
+
+	/**
+	 * Render: Experiments (WooCommerce only).
+	 *
+	 * The third argument is the Woo gate, so a Woo-less site sees the same
+	 * "install WooCommerce" state Products and Review show rather than an empty
+	 * screen that looks broken. Every subject is a WooCommerce product.
+	 */
+	public function render_experiments() {
+		$this->render( 'page-experiments.php', __( 'Experiments', 'agentic-commerce-engine' ), true );
 	}
 
 	/** Render: Settings (local preferences only). */

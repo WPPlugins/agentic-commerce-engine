@@ -4,7 +4,7 @@ Tags: ai, seo, woocommerce, ai search, content
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 4.4.0
+Stable tag: 4.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -65,6 +65,7 @@ Article generation, product enrichment, AI search research runs, credit balances
 * **What is sent on sync and enrich (WooCommerce):** product data including title, description, short description, SKU, price, stock status, image URLs, categories, tags, and variation IDs, plus the content types you selected.
 * **What is sent for visitor pageviews (optional, off by default):** one row per published page per day: the page id, the date, the number of views, and the referring site's domain for visits arriving from search engines and AI assistants. No IP addresses, no cookies, no session identifiers, and nothing that could identify an individual visitor. Because nothing identifies a visitor, this reports pageviews and cannot report unique visitors.
 * **What is sent for WooCommerce sales (optional, off by default, same setting):** one row per product per day: the product id, units sold, and net revenue. No orders, no customers, no names, no email addresses, no postal addresses.
+* **What is sent for A/B testing (optional, off by default):** which version of a product description a visitor was shown, which test that version belonged to, and whether that visitor reached checkout, against a scrambled visitor id. This is the ONLY feature in the plugin that stores a cookie: to show a visitor the same version twice, a random id is kept in their browser. It does nothing at all without the visitor's consent, read through the WordPress Consent API, so your cookie banner decides; with no consent plugin installed nothing is stored and every visitor sees your normal copy. The id is scrambled with a secret unique to your site before anything is sent, so it cannot be linked back to a person, and the same visitor on another site produces a completely different value. No IP addresses, user agents, names, email addresses, order details or customer records are sent. Search engines and AI crawlers are never put into a test, because they carry no cookie and give no consent.
 * **What is sent for article generation:** the title, topic, keywords, locale, and options you enter, and optionally the products you link. The platform uses your project's brand voice and identity to write the article.
 * **What is sent for AI search research:** the research prompts you save, the engines and markets you pick, and, when you use prompt suggestions, catalog snippets (product titles, categories, tags). Research runs are executed by the Authoritas AI search platform.
 * **What is sent on heartbeat:** a periodic health ping containing your site URL, product counts, and version numbers.
@@ -137,6 +138,24 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 
 == Changelog ==
 
+= 4.6.0 =
+* New: an Experiments screen. Set up a test, see which version is winning, and start, pause or stop it, without leaving WordPress. Needs WooCommerce.
+* Before you commit any credits, the screen tells you whether your traffic can actually settle the test you have designed. An answer that would never arrive is refused up front rather than after four weeks.
+* Setting up a test does not switch on visitor splitting. That stays a separate, deliberate choice in Settings, and it stays off until you make it.
+* Fixed: content you approve in ACE now actually reaches this site, and ACE is told when it does. Until now the plugin applied only what it had generated locally and never reported the result, so ACE had no record of anything this site published.
+* This is why A/B testing could not run here. On the ACE side a version counts as live only once it has been reported as published, so tests set up for a WooCommerce store never received their settings and never started. Nothing looked wrong from either end.
+* Your Published view in ACE will now show WooCommerce alongside other channels, rather than being empty for stores that had in fact published.
+* Checking happens hourly rather than daily, so approving a version in ACE and seeing it live on your store is a matter of minutes rather than the next day.
+* No new data leaves your site. The report says which item was applied and whether it worked, and nothing else.
+
+= 4.5.0 =
+* New: optional per-visitor A/B testing of product descriptions, so an experiment set up in ACE can run on this site and be measured against real customers rather than only against crawler activity. Off by default on every site, including upgrades.
+* This is the only feature in the plugin that stores a cookie, and it is gated on the WordPress Consent API rather than on a setting alone. With no consent plugin installed it does nothing: nothing is stored, nothing is sent, and every visitor sees your normal copy.
+* The version a visitor sees is decided in the browser, not on the server. On a cached site WordPress often does not run at all, so a server-rendered version would be written into the page cache and then served to everyone, including crawlers. Your page therefore always contains exactly one description, and a visitor in a test fetches theirs separately.
+* Crawlers are never put into a test. They carry no cookie and give no consent, which is the same rule applied to a first-time visitor: no user agent is examined anywhere.
+* Visitor ids are scrambled with a secret generated for your site alone before anything leaves it. The same visitor on another site produces an unrelated value, so nothing can be joined across sites.
+* New setting for the description block's CSS selector, for themes that do not use the standard WooCommerce layout. A selector that matches nothing means the test changes nothing, so this is worth checking before starting one.
+
 = 4.4.0 =
 * New: optional visitor pageview counting, so ACE can show what a content change did to real traffic rather than only to AI crawlers. Off by default, with its own setting separate from the crawler report.
 * Counting uses a small script on published pages rather than server-side hooks. Page caches serve most visitors without WordPress running at all, so a server-side counter would undercount heavily on exactly the sites that are busiest.
@@ -181,6 +200,12 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 * Product enrichment now runs on the platform's durable jobs API with webhook-accelerated polling.
 
 == Upgrade Notice ==
+
+= 4.6.0 =
+Adds an Experiments screen for WooCommerce stores, and fixes the reason tests could not run: content approved in ACE now reaches this site, and ACE is told when it lands. This is what A/B testing needed in order to run here at all. Nothing new is collected and no setting changes.
+
+= 4.5.0 =
+Adds optional per-visitor A/B testing. It is off by default and stays off after this upgrade. It is the only part of this plugin that stores a cookie, and it does nothing without visitor consent through the WordPress Consent API.
 
 = 4.4.0 =
 Adds optional visitor pageview counting and daily WooCommerce sales totals. Both are off by default and neither collects anything that identifies a visitor.

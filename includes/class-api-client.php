@@ -481,6 +481,206 @@ class Api_Client {
 		);
 	}
 
+	/**
+	 * Which of this store's products are running an A/B test, and their configs.
+	 *
+	 * The FULL current state, not a changes feed. A product that has dropped off
+	 * this list is running no test, and that is the only signal a stopped test
+	 * produces -- there is no "experiment ended" event to listen for.
+	 *
+	 * @param string $store_id Store id.
+	 * @return array|\WP_Error
+	 */
+	public function experiment_configs( $store_id ) {
+		return $this->request(
+			'GET',
+			'/api/v1/plugin/experiments',
+			null,
+			array( 'storeId' => $store_id )
+		);
+	}
+
+	/* --------------------------------------------------------------------- */
+	/* Experiments                                                           */
+	/*                                                                       */
+	/* SIBLING PATHS to /plugin/experiments, which is the config-reconcile    */
+	/* feed this plugin has polled since 4.5.0. That endpoint's contract is   */
+	/* "a product absent from this list is running no test", and it runs      */
+	/* unattended on sites that cannot be force-upgraded, so nothing is added */
+	/* to its payload.                                                       */
+	/* --------------------------------------------------------------------- */
+
+	/**
+	 * Every experiment on this site's project.
+	 *
+	 * @param string $store_id Store id.
+	 * @return array|\WP_Error
+	 */
+	public function experiments_list( $store_id ) {
+		return $this->request(
+			'GET',
+			'/api/v1/plugin/experiments/list',
+			null,
+			array( 'storeId' => $store_id )
+		);
+	}
+
+	/**
+	 * One experiment: arms, exposures, results and the health checks.
+	 *
+	 * @param string $store_id      Store id.
+	 * @param string $experiment_id Experiment id.
+	 * @return array|\WP_Error
+	 */
+	public function experiment( $store_id, $experiment_id ) {
+		return $this->request(
+			'GET',
+			'/api/v1/plugin/experiments/' . rawurlencode( $experiment_id ),
+			null,
+			array( 'storeId' => $store_id )
+		);
+	}
+
+	/**
+	 * Products a test could run over, and the categories to choose between.
+	 *
+	 * Both in one call: a test needs roughly 150 products behind it, so the
+	 * wizard picks a whole category rather than products one at a time.
+	 *
+	 * @param string      $store_id Store id.
+	 * @param string|null $category Optional category filter.
+	 * @return array|\WP_Error
+	 */
+	public function experiment_subjects( $store_id, $category = null ) {
+		$query = array( 'storeId' => $store_id );
+		if ( is_string( $category ) && '' !== $category ) {
+			$query['category'] = $category;
+		}
+		return $this->request( 'GET', '/api/v1/plugin/experiments/subjects', null, $query );
+	}
+
+	/**
+	 * The costless power check. Spends nothing and creates nothing.
+	 *
+	 * @param array $body Design and product set.
+	 * @return array|\WP_Error
+	 */
+	public function experiment_preflight( array $body ) {
+		return $this->request( 'POST', '/api/v1/plugin/experiments/preflight', $body );
+	}
+
+	/**
+	 * Create an experiment and start the run that writes its versions.
+	 *
+	 * THIS SPENDS CREDITS, which is why it is the one experiment call on the
+	 * background profile: a slow success reported as a failure would leave the
+	 * merchant with an experiment they cannot see and a retry the one-split
+	 * guard refuses.
+	 *
+	 * @param array $body Design, products, goal.
+	 * @return array|\WP_Error
+	 */
+	public function experiment_create( array $body ) {
+		return $this->request(
+			'POST',
+			'/api/v1/plugin/experiments/create',
+			$body,
+			null,
+			array(
+				'timeout'  => self::TIMEOUT,
+				'attempts' => 1,
+			)
+		);
+	}
+
+	/**
+	 * Start, pause, resume, stop, abandon or rename.
+	 *
+	 * @param string $store_id      Store id.
+	 * @param string $experiment_id Experiment id.
+	 * @param string $action        Lifecycle action.
+	 * @param array  $extra         Extra fields (rename carries a name).
+	 * @return array|\WP_Error
+	 */
+	public function experiment_action( $store_id, $experiment_id, $action, array $extra = array() ) {
+		return $this->request(
+			'PATCH',
+			'/api/v1/plugin/experiments/' . rawurlencode( $experiment_id ),
+			array_merge(
+				array(
+					'storeId' => $store_id,
+					'action'  => $action,
+				),
+				$extra
+			)
+		);
+	}
+
+	/**
+	 * Content ACE has approved and is waiting for this site to apply.
+	 *
+	 * The same endpoint the Shopify app pulls. Entries are per FIELD, not per
+	 * product, and the A/B config rides the same batch as the challenger copy
+	 * that makes a test possible -- which is why it can only ever be emitted
+	 * once, alongside that copy.
+	 *
+	 * @param string $store_id Store id.
+	 * @return array|\WP_Error
+	 */
+	public function apply_queue( $store_id ) {
+		return $this->request(
+			'GET',
+			'/api/v1/plugin/apply-queue',
+			null,
+			array( 'storeId' => $store_id )
+		);
+	}
+
+	/**
+	 * Report what landed.
+	 *
+	 * This is the half that was missing until 4.6.0. An "applied" result is
+	 * what stamps `pushed_at` on the ACE side, which is what removes the entry
+	 * from the next pull, what makes a version count as live for an A/B test,
+	 * and what puts the push on the merchant's Published screen.
+	 *
+	 * @param string $store_id Store id.
+	 * @param array  $results  [{ id, status: applied|failed, error? }].
+	 * @return array|\WP_Error
+	 */
+	public function apply_queue_ack( $store_id, array $results ) {
+		return $this->request(
+			'POST',
+			'/api/v1/plugin/apply-queue/ack',
+			array(
+				'storeId' => $store_id,
+				'results' => array_values( $results ),
+			)
+		);
+	}
+
+	/**
+	 * Per-visitor A/B exposures.
+	 *
+	 * The ONLY payload this client sends that carries a per-visitor value, and
+	 * it is a salted hash computed on the site, not the cookie itself. Every
+	 * other ingest here is day-level aggregate.
+	 *
+	 * @param string $store_id Store id.
+	 * @param array  $events   Exposure and conversion events.
+	 * @return array|\WP_Error
+	 */
+	public function ab_events_ingest( $store_id, array $events ) {
+		return $this->request(
+			'POST',
+			'/api/v1/plugin/ab-events/ingest',
+			array(
+				'storeId' => $store_id,
+				'events'  => array_values( $events ),
+			)
+		);
+	}
+
 	public function bot_traffic_ingest( $store_id, array $days ) {
 		return $this->request(
 			'POST',
@@ -505,7 +705,7 @@ class Api_Client {
 	 * @param array|null $query  Query parameters.
 	 * @return array|\WP_Error
 	 */
-	private function request( $method, $path, $body = null, $query = null ) {
+	private function request( $method, $path, $body = null, $query = null, array $overrides = array() ) {
 		$key = $this->settings->get_api_key();
 		if ( '' === $key ) {
 			return new \WP_Error( 'agencoen_no_key', __( 'No API key configured. Connect your site first.', 'agentic-commerce-engine' ) );
@@ -516,7 +716,15 @@ class Api_Client {
 			$url = add_query_arg( array_map( 'rawurlencode', $query ), $url );
 		}
 
-		$profile = self::resolve_profile( self::is_interactive_context(), $this->options );
+		// Per-call overrides beat the instance's, because the reason for one is
+		// always about the specific endpoint: creating an experiment starts a
+		// generation run over thousands of products, and the 12s interactive
+		// default would abort a slow success -- leaving the merchant an
+		// experiment they cannot see and a retry the one-split guard refuses.
+		$profile = self::resolve_profile(
+			self::is_interactive_context(),
+			array_merge( $this->options, $overrides )
+		);
 
 		$args = array(
 			'method'  => $method,

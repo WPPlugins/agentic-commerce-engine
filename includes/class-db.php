@@ -20,6 +20,7 @@ class Db {
 
 	const TABLE_BOT_HITS  = 'agencoen_bot_hits';
 	const TABLE_PAGE_HITS = 'agencoen_page_hits';
+	const TABLE_AB_EVENTS = 'agencoen_ab_events';
 
 	/**
 	 * Full table name with the site prefix.
@@ -43,6 +44,23 @@ class Db {
 	public static function page_hits_table() {
 		global $wpdb;
 		return $wpdb->prefix . self::TABLE_PAGE_HITS;
+	}
+
+	/**
+	 * A/B exposures. The ONLY table in this plugin that holds a per-visitor row.
+	 *
+	 * A separate table rather than a column on agencoen_page_hits, because the
+	 * two have opposite privacy postures and must be able to be dropped
+	 * independently: page hits are aggregate and always on, this is per-visitor
+	 * and off unless the site owner switches it on and a visitor consents. A
+	 * shared table would mean disabling A/B could not remove its data without
+	 * also removing the pageview history.
+	 *
+	 * @return string
+	 */
+	public static function ab_events_table() {
+		global $wpdb;
+		return $wpdb->prefix . self::TABLE_AB_EVENTS;
 	}
 
 	/**
@@ -85,6 +103,33 @@ class Db {
 			KEY day_views (day,views)
 		) {$charset};";
 		dbDelta( $pages_sql );
+
+		// A/B exposures. `visitor` is a salted hash computed at write time; the
+		// raw cookie value is never stored. The unique key is one row per
+		// visitor per experiment per day, so a visitor who reloads forty times
+		// carries the weight of one -- the ACE estimator's variance assumes
+		// independent observations, and forty reloads are one observation.
+		$ab     = self::ab_events_table();
+		$ab_sql = "CREATE TABLE {$ab} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			day date NOT NULL,
+			experiment varchar(64) NOT NULL,
+			subject varchar(191) NOT NULL default '',
+			arm varchar(8) NOT NULL default '',
+			visitor char(40) NOT NULL,
+			converted tinyint(1) unsigned NOT NULL default 0,
+			PRIMARY KEY  (id),
+			UNIQUE KEY day_exp_visitor (day,experiment,visitor),
+			KEY day_exp (day,experiment),
+			KEY visitor_day (visitor,day)
+		) {$charset};";
+		dbDelta( $ab_sql );
+
+		// New-in-4.5 defaults. A/B testing is the one feature here that sets a
+		// cookie, so it defaults off and an upgrade must never switch it on.
+		add_option( Settings::OPT_AB_ENABLED, 'no' );
+		add_option( Settings::OPT_AB_REPORT, 'no' );
+		add_option( Settings::OPT_AB_SELECTOR, '' );
 
 		// New-in-4.4 defaults. Both default to 'no': storefront tracking is
 		// opt-in, and an upgrade must never silently start collecting.

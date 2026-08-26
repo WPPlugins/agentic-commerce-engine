@@ -97,6 +97,39 @@ $agencoen_offline = empty( $connected );
 		<?php endif; ?>
 	</div>
 
+	<!-- Per-visitor A/B testing (4.5) -->
+	<div class="ace-card">
+		<h2 class="ace-card-title"><?php esc_html_e( 'A/B test your product copy', 'agentic-commerce-engine' ); ?></h2>
+		<p class="ace-card-sub"><?php esc_html_e( 'Shows different versions of a product description to different visitors and measures which one sells better. Experiments are set up in ACE; this switch decides whether this site takes part.', 'agentic-commerce-engine' ); ?></p>
+
+		<label class="ace-toggle">
+			<input type="checkbox" id="ace-ab-enabled" <?php checked( $agencoen_settings->is_ab_enabled() ); ?> />
+			<span><?php esc_html_e( 'Split visitors between versions on this site', 'agentic-commerce-engine' ); ?></span>
+		</label>
+		<p class="ace-help ace-indent">
+			<?php esc_html_e( 'This is the one feature here that stores a cookie. To remember which version a visitor saw, it keeps a random id in their browser. Nothing happens without their consent: it uses the WordPress Consent API, so your cookie banner decides. If you have no consent plugin, nothing is stored and every visitor sees your normal copy.', 'agentic-commerce-engine' ); ?>
+		</p>
+		<p class="ace-help ace-indent">
+			<?php esc_html_e( 'Search engines and AI crawlers always see your normal copy. They carry no cookie and give no consent, so they are never put into a test, and your page never contains more than one version of its description.', 'agentic-commerce-engine' ); ?>
+		</p>
+
+		<label class="ace-toggle">
+			<input type="checkbox" id="ace-ab-report" <?php checked( $agencoen_settings->is_ab_report_enabled() ); ?> <?php disabled( $agencoen_offline ); ?> />
+			<span><?php esc_html_e( 'Send results to my ACE project', 'agentic-commerce-engine' ); ?></span>
+		</label>
+		<p class="ace-help ace-indent">
+			<?php esc_html_e( 'Separate from the switch above, because a test can run without the result leaving this site. ACE receives which version was shown and whether that visitor reached checkout, against a scrambled id that is unique to this site and cannot be linked back to a person or matched with any other site. No names, email addresses, order details or IP addresses are ever sent.', 'agentic-commerce-engine' ); ?>
+		</p>
+
+		<label class="ace-field">
+			<span class="ace-field-label"><?php esc_html_e( 'Description block selector', 'agentic-commerce-engine' ); ?></span>
+			<input type="text" id="ace-ab-selector" class="regular-text" placeholder=".woocommerce-Tabs-panel--description" value="<?php echo esc_attr( $agencoen_settings->ab_selector() ); ?>" />
+		</label>
+		<p class="ace-help ace-indent">
+			<?php esc_html_e( 'Leave blank for the standard WooCommerce layout. On another theme, put the CSS selector for the block holding your product description. If it does not match your theme, the test will run and change nothing, and it will report no difference.', 'agentic-commerce-engine' ); ?>
+		</p>
+	</div>
+
 	<!-- Content publishing (4.0) -->
 	<div class="ace-card">
 		<h2 class="ace-card-title"><?php esc_html_e( 'Content publishing', 'agentic-commerce-engine' ); ?></h2>

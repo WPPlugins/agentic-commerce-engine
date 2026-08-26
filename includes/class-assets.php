@@ -29,6 +29,7 @@ class Assets {
 		'agencoen-review'     => 'review',
 		'agencoen-content'    => 'content',
 		'agencoen-aisearch'   => 'aisearch',
+		'agencoen-experiments' => 'experiments',
 		'agencoen-settings'   => 'settings',
 		'agencoen-connection' => 'connection',
 	);

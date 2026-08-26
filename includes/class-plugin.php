@@ -72,6 +72,17 @@ final class Plugin {
 	private $traffic;
 	/** @var Sales_Tracker */
 	private $sales;
+	/** @var Ab_Test */
+	private $ab_test;
+
+	/** @var Apply_Queue */
+	private $apply_queue;
+
+	/** @var Experiments */
+	private $experiments;
+
+	/** @var Ajax_Experiments */
+	private $ajax_experiments;
 	/** @var Brand */
 	private $brand;
 	/** @var Cron */
@@ -141,12 +152,16 @@ final class Plugin {
 		$this->bots           = new Bot_Tracker( $this );
 		$this->traffic        = new Traffic_Tracker( $this );
 		$this->sales          = new Sales_Tracker( $this );
+		$this->ab_test        = new Ab_Test( $this );
+		$this->apply_queue    = new Apply_Queue( $this );
+		$this->experiments    = new Experiments( $this );
 		$this->brand          = new Brand( $this );
 		$this->cron           = new Cron( $this );
 		$this->webhook        = new Webhook( $this );
 		$this->ajax           = new Ajax( $this );
 		$this->ajax_content   = new Ajax_Content( $this );
 		$this->ajax_aeo       = new Ajax_Aeo( $this );
+		$this->ajax_experiments = new Ajax_Experiments( $this );
 		$this->ajax_bots      = new Ajax_Bots( $this );
 		$this->assets         = new Assets( $this );
 		$this->admin          = new Admin( $this );
@@ -174,6 +189,7 @@ final class Plugin {
 		// Registered unconditionally; both gate internally on their own opt-in,
 		// so a site with the feature off pays only a boolean check per request.
 		$this->traffic->register();
+		$this->ab_test->register();
 		$this->cron->register();
 		$this->webhook->register();
 
@@ -184,6 +200,12 @@ final class Plugin {
 			$this->ajax_content->register();
 			$this->ajax_aeo->register();
 			$this->ajax_bots->register();
+			// Woo-gated inside its own gate chain, like the commerce actions
+			// in class-ajax.php: the nonce is checked before the Woo state, so
+			// a hand-crafted request cannot probe whether Woo is active.
+			if ( $this->has_woo() ) {
+				$this->ajax_experiments->register();
+			}
 		}
 
 		$this->assets->register();
@@ -273,6 +295,18 @@ final class Plugin {
 	/** @return Sales_Tracker */
 	public function sales() {
 		return $this->sales;
+	}
+	/** @return Ab_Test */
+	public function apply_queue() {
+		return $this->apply_queue;
+	}
+
+	public function experiments() {
+		return $this->experiments;
+	}
+
+	public function ab_test() {
+		return $this->ab_test;
 	}
 	/** @return Brand */
 	public function brand() {

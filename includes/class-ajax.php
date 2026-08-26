@@ -369,6 +369,8 @@ class Ajax extends Ajax_Base {
 			'bots_report'    => Settings::OPT_BOTS_REPORT,
 			'traffic_enabled' => Settings::OPT_TRAFFIC_ENABLED,
 			'traffic_report'  => Settings::OPT_TRAFFIC_REPORT,
+			'ab_enabled'      => Settings::OPT_AB_ENABLED,
+			'ab_report'       => Settings::OPT_AB_REPORT,
 		);
 		foreach ( $bools as $field => $option ) {
 			if ( isset( $_POST[ $field ] ) ) {
@@ -376,6 +378,12 @@ class Ajax extends Ajax_Base {
 			}
 		}
 
+		if ( isset( $_POST['ab_selector'] ) ) {
+			// Stored raw and validated on READ, in Settings::ab_selector(), so a
+			// value that predates the validation cannot slip through by having
+			// been saved before the rule existed.
+			update_option( Settings::OPT_AB_SELECTOR, sanitize_text_field( wp_unslash( $_POST['ab_selector'] ) ) );
+		}
 		if ( isset( $_POST['sync_frequency'] ) ) {
 			$settings->set_sync_frequency( sanitize_key( wp_unslash( $_POST['sync_frequency'] ) ) );
 		}

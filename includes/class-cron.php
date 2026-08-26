@@ -74,6 +74,22 @@ class Cron {
 			$this->plugin->traffic()->report_back();
 			$this->plugin->sales()->report_back();
 		}
+
+		// A/B exposures ride the same tick, but on their OWN switches. They are
+		// the one thing here that holds a per-visitor row, so pruning and
+		// reporting them must not be reachable from the traffic settings: a site
+		// owner who turns storefront traffic on has not thereby agreed to split
+		// their visitors or to send per-visitor rows anywhere.
+		// The config reconcile runs UNCONDITIONALLY, because its job when the
+		// feature is off is to remove every config this site is holding. Gating
+		// it on the setting would leave a page splitting visitors after the site
+		// owner switched A/B testing off, which is the one outcome that must not
+		// be possible.
+		$this->plugin->ab_test()->sync_configs();
+		if ( $this->plugin->settings()->is_ab_enabled() ) {
+			$this->plugin->ab_test()->prune();
+			$this->plugin->ab_test()->report_back();
+		}
 	}
 
 	/**
@@ -122,6 +138,15 @@ class Cron {
 
 		// Keep the dashboard balance reasonably fresh.
 		Dashboard::credits( $this->plugin, Dashboard::FETCH_FRESH );
+
+		// Pull anything ACE has approved for this site and report what landed.
+		// HOURLY, not daily: the ack is what makes a version count as live for
+		// an A/B test, so a daily tick would put up to a day between a merchant
+		// approving a challenger in ACE and the test being able to start.
+		//
+		// Woo-gated inside `drain()` rather than here, because the guard has to
+		// hold for the manual path too.
+		$this->plugin->apply_queue()->drain();
 	}
 
 	/**

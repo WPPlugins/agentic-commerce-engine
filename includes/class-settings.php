@@ -34,6 +34,9 @@ class Settings {
 	const OPT_PROJECT_ID     = 'agencoen_project_id';
 	const OPT_PLATFORM       = 'agencoen_platform';
 	const OPT_FEATURES       = 'agencoen_features';
+	const OPT_AB_ENABLED     = 'agencoen_ab_enabled';
+	const OPT_AB_REPORT      = 'agencoen_ab_report';
+	const OPT_AB_SELECTOR    = 'agencoen_ab_selector';
 	const OPT_BOTS_ENABLED   = 'agencoen_bots_enabled';
 	const OPT_BOTS_PATHS     = 'agencoen_bots_paths';
 	const OPT_BOTS_RETENTION = 'agencoen_bots_retention';
@@ -496,6 +499,57 @@ class Settings {
 	 */
 	public function is_traffic_enabled() {
 		return 'yes' === get_option( self::OPT_TRAFFIC_ENABLED, 'no' );
+	}
+
+	/**
+	 * Whether per-visitor A/B testing runs on the storefront.
+	 *
+	 * DEFAULT NO, AND THAT IS LOAD-BEARING. Every other tracker in this plugin
+	 * is aggregate-only and needs no consent mechanism. This one sets a cookie
+	 * and records a per-visitor row, so switching it on changes what the site
+	 * collects. An upgrade must never do that on a site owner's behalf.
+	 *
+	 * @return bool
+	 */
+	public function is_ab_enabled() {
+		return 'yes' === get_option( self::OPT_AB_ENABLED, 'no' );
+	}
+
+	/**
+	 * Whether A/B exposures are reported to ACE.
+	 *
+	 * Its own switch, separate from running the test, for the same reason the
+	 * traffic tracker splits collecting from reporting: a site owner may be
+	 * willing to split their own traffic and not willing to send the result
+	 * anywhere, and folding the two under one checkbox denies them that.
+	 *
+	 * @return bool
+	 */
+	public function is_ab_report_enabled() {
+		return 'yes' === get_option( self::OPT_AB_REPORT, 'no' );
+	}
+
+	/**
+	 * CSS selector for the block holding the product description.
+	 *
+	 * Empty means "use whatever ACE sent", which is the Storefront default.
+	 * Themes name this block differently and a selector that matches nothing
+	 * means the script swaps nothing: the test runs for four weeks, both arms
+	 * read identical words, and it reports no difference with no error anywhere
+	 * to explain it. That is the failure this setting exists to prevent.
+	 *
+	 * @return string
+	 */
+	public function ab_selector() {
+		$value = (string) get_option( self::OPT_AB_SELECTOR, '' );
+		$value = trim( $value );
+		// Bounded and character-limited: it is interpolated into a JSON config
+		// that ends up in a page, and a selector is a short string of a known
+		// shape, never markup.
+		if ( '' === $value || strlen( $value ) > 120 || preg_match( '/[<>"\']/', $value ) ) {
+			return '';
+		}
+		return $value;
 	}
 
 	/**
