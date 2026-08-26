@@ -4,7 +4,7 @@ Tags: ai, seo, woocommerce, ai search, content
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 4.7.1
+Stable tag: 4.7.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -138,6 +138,9 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 
 == Changelog ==
 
+= 4.7.2 =
+* Fixed: on the New experiment tab, "Check this design" could appear to do nothing. When the answer was a refusal, such as no products having reached ACE yet, it flashed in a notice that disappeared after a few seconds. The reason now stays on the page until you change the design.
+
 = 4.7.1 =
 * The whole plugin is now translatable. Around 120 strings across the AI Search, Content and Experiments screens were printed in English whatever your site language, because they were never passed through WordPress translation. They are now, and a test stops the same thing happening again.
 * Fixed: on an experiment, the progress strip could say every product had a second version live while the checks below said fewer than two versions were live. Both were measuring something real and neither said which. The strip now waits for the same thing the check waits for, and explains that only one version being live means both groups read the same words.
@@ -221,6 +224,9 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 * Product enrichment now runs on the platform's durable jobs API with webhook-accelerated polling.
 
 == Upgrade Notice ==
+
+= 4.7.2 =
+"Check this design" no longer appears to do nothing when the answer is a refusal.
 
 = 4.7.1 =
 The plugin is now fully translatable, and an experiment's progress strip no longer contradicts its own checks.

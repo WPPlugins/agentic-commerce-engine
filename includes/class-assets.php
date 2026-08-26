@@ -470,6 +470,9 @@ class Assets {
 			'ofProductsLive' => __( 'of', 'agentic-commerce-engine' ),
 			'productsLive'   => __( 'products have a second version live', 'agentic-commerce-engine' ),
 
+			'preflightFailed'  => __( 'Could not check that design.', 'agentic-commerce-engine' ),
+			'preflightRefused' => __( 'This design cannot be checked yet', 'agentic-commerce-engine' ),
+
 			/* Settings screen */
 			'feedUrlsRegenerated' => __( 'Feed URLs regenerated. Update them wherever they are configured.', 'agentic-commerce-engine' ),
 

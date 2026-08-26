@@ -704,7 +704,34 @@
 				} )
 				.catch( function ( err ) {
 					core.setBusy( checkBtn, false );
-					core.errorToast( ( err && err.message ) || 'Could not check that design.' );
+					var message = ( err && err.message ) ||
+						t( 'preflightFailed', 'Could not check that design.' );
+
+					/*
+					 * A REFUSAL BELONGS ON THE PAGE, NOT IN A TOAST.
+					 *
+					 * This used to be a toast alone. A store whose products have
+					 * not reached ACE gets "No products matched that selection.",
+					 * which is the correct and useful answer -- and it appeared
+					 * for a few seconds beside a button the merchant was still
+					 * looking away from, then vanished. Clicking "Check this
+					 * design" and having the page do nothing at all is the
+					 * behaviour that gets reported as "the button is broken".
+					 *
+					 * The verdict banner is already here and already hidden, so
+					 * the refusal goes in it and stays there. The toast stays
+					 * too: it is what catches the eye.
+					 */
+					verdictEl.hidden = false;
+					verdictEl.className = 'ace-banner ace-banner-error';
+					verdictEl.innerHTML = '<strong>' +
+						esc( t( 'preflightRefused', 'This design cannot be checked yet' ) ) +
+						'</strong><p>' + esc( message ) + '</p>';
+					launchBtn.disabled = true;
+					slowEl.hidden = true;
+					drawSizing( null );
+
+					core.errorToast( message );
 				} );
 		}
 
