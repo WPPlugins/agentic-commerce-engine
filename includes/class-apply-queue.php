@@ -207,6 +207,38 @@ class Apply_Queue {
 				}
 				$product->save();
 				return true;
+
+			// The `woocommerce` content type's two additive fields. Both arrive
+			// as JSON inside the string value; Native_Fields owns the parsing
+			// and the sanitising so the local flow cannot end up with a
+			// different idea of what a usable tag is.
+			//
+			// A payload that sanitises down to nothing returns a REASON, not
+			// true. Reporting "applied" for a write that wrote nothing is
+			// exactly the lie this class exists to prevent.
+			case 'productTags':
+				$tags = Native_Fields::normalize_tags( $value );
+				if ( empty( $tags ) ) {
+					return 'no usable tags in payload';
+				}
+				return Native_Fields::write_tags( $post_id, $tags )
+					? true
+					: 'product already carries every tag in the payload';
+
+			case 'productAttributes':
+				$attributes = Native_Fields::normalize_attributes( $value );
+				if ( empty( $attributes ) ) {
+					return 'no usable attributes in payload';
+				}
+				$product = wc_get_product( $post_id );
+				if ( ! $product ) {
+					return 'product not loadable';
+				}
+				if ( ! Native_Fields::write_attributes( $product, $attributes ) ) {
+					return 'product already carries every attribute in the payload';
+				}
+				$product->save();
+				return true;
 		}
 
 		// An unknown field is not a failure to retry forever. A newer ACE may
@@ -214,6 +246,15 @@ class Apply_Queue {
 		// would be a lie; reporting it failed would re-deliver it on every
 		// tick until the site upgrades. Failed is the honest answer, and the
 		// message says which field so the log names the version gap.
+		//
+		// THIS IS ALSO THE CATEGORY GUARD. There is deliberately no `categories`
+		// case above, and no writer for one in Native_Fields, so a future ACE
+		// that started sending product categories would land here and be
+		// refused rather than restructuring a merchant's storefront navigation.
+		// Same for `productType`: WooCommerce's product_type is
+		// simple|variable|grouped|external, which selects a WC_Product subclass
+		// and changes how the product is sold, so Shopify's merchandising
+		// product_type has no destination here at all.
 		return 'unsupported field: ' . $field;
 	}
 }

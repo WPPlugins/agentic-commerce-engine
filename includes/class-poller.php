@@ -188,6 +188,24 @@ class Poller {
 			$flat['seo_description'] = $meta['description'];
 		}
 
+		// The `woocommerce` type carries SEO too, and a merchant may well select
+		// it without also selecting meta tags. LAST in precedence, and only for
+		// a field still empty: when both ran, ACE folded the meta-tags output
+		// onto the feed record before enriching it, so the two agree, and
+		// preferring the dedicated type keeps one obvious source of truth.
+		//
+		// Note the key names differ. meta-tags uses title/description; the
+		// woocommerce payload uses the feed spelling.
+		$woo = isset( $per_type['woocommerce'] ) && is_array( $per_type['woocommerce'] )
+			? $per_type['woocommerce']
+			: array();
+		if ( ! isset( $flat['seo_title'] ) && isset( $woo['seo_title'] ) && is_string( $woo['seo_title'] ) && '' !== $woo['seo_title'] ) {
+			$flat['seo_title'] = $woo['seo_title'];
+		}
+		if ( ! isset( $flat['seo_description'] ) && isset( $woo['seo_description'] ) && is_string( $woo['seo_description'] ) && '' !== $woo['seo_description'] ) {
+			$flat['seo_description'] = $woo['seo_description'];
+		}
+
 		return $flat;
 	}
 

@@ -130,11 +130,57 @@ class Apply {
 				$links = ( isset( $data['links'] ) && is_array( $data['links'] ) ) ? $data['links'] : $data;
 				update_post_meta( $product_id, Meta::LINKS, $links );
 				$applied_types['internal-links'] = true;
+			} elseif ( 'woocommerce' === $type ) {
+				// Native WooCommerce fields, not an artifact stored for later
+				// rendering. SEO title and description are NOT read here:
+				// derive_flat_fields folds them into the flat payload so they
+				// travel the same path as meta-tags and inherit backup_once()
+				// and revert() unchanged.
+				//
+				// `categories` and `product_type` keys inside this payload are
+				// IGNORED. product_cat is the storefront's navigation spine and
+				// a write is not revertible; WooCommerce's product_type is
+				// simple|variable|grouped|external and changes how the product
+				// is sold.
+				if ( is_array( $data ) && $this->apply_woocommerce_fields( $product_id, $data ) ) {
+					$applied_types['woocommerce'] = true;
+				}
 			} elseif ( isset( self::FEED_CHANNELS[ $type ] ) ) {
 				update_post_meta( $product_id, Meta::FEED_PREFIX . self::FEED_CHANNELS[ $type ], $data );
 				$applied_types[ $type ] = true;
 			}
 		}
+	}
+
+	/**
+	 * Write the `woocommerce` payload's tags and attributes onto the product.
+	 *
+	 * Shares Native_Fields with the ACE-driven queue path, so a merchant who
+	 * enriches from wp-admin and one who approves in the ACE app end up with
+	 * the same product. Saves once, and only when something actually changed.
+	 *
+	 * @param int   $product_id Product post id.
+	 * @param array $data       The type's payload.
+	 * @return bool True when anything was written.
+	 */
+	private function apply_woocommerce_fields( $product_id, array $data ) {
+		$wrote = false;
+
+		$tags = isset( $data['tags'] ) ? Native_Fields::normalize_tags( $data['tags'] ) : array();
+		if ( ! empty( $tags ) && Native_Fields::write_tags( $product_id, $tags ) ) {
+			$wrote = true;
+		}
+
+		$attributes = isset( $data['attributes'] ) ? Native_Fields::normalize_attributes( $data['attributes'] ) : array();
+		if ( ! empty( $attributes ) ) {
+			$product = wc_get_product( $product_id );
+			if ( $product && Native_Fields::write_attributes( $product, $attributes ) ) {
+				$product->save();
+				$wrote = true;
+			}
+		}
+
+		return $wrote;
 	}
 
 	/**
@@ -146,7 +192,14 @@ class Apply {
 	public function revert( $product_id ) {
 		$product_id = (int) $product_id;
 		$backup     = get_post_meta( $product_id, Meta::BACKUP, true );
-		if ( ! is_array( $backup ) || empty( $backup ) ) {
+		$backup     = is_array( $backup ) ? $backup : array();
+
+		// EITHER a backup or a ledger is enough to have something to undo.
+		// A product that only ever received an ACE-approved queue payload has
+		// a Native_Fields ledger and no backup, because the queue path never
+		// calls backup_once(). Requiring a backup here left exactly those
+		// products' tags and attributes unrevertable.
+		if ( empty( $backup ) && ! Native_Fields::has_writes( $product_id ) ) {
 			return new \WP_Error( 'agencoen_no_backup', __( 'No backup to revert to.', 'agentic-commerce-engine' ) );
 		}
 
@@ -164,6 +217,10 @@ class Apply {
 		if ( isset( $backup['short_description'] ) ) {
 			$product->set_short_description( $backup['short_description'] );
 		}
+		// Before the single save, so removing our attributes rides the same
+		// write as the restored scalars. Removes exactly what we added and
+		// leaves anything the merchant added afterwards alone.
+		Native_Fields::undo( $product_id, $product );
 		$product->save();
 
 		if ( isset( $backup['seo_title'] ) ) {

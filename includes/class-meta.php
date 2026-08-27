@@ -30,6 +30,18 @@ final class Meta {
 	const APPLIED_TYPES = '_agencoen_applied_types';  // which content types were applied.
 	const FEED_PREFIX   = '_agencoen_feed_';          // + channel (google|microsoft|agentic).
 
+	/**
+	 * What the `woocommerce` content type ADDED to a product, for exact undo:
+	 * array( 'tags' => array( 'added' => int[], 'created' => int[] ),
+	 *        'attributes' => array( 'keys' => string[] ) ).
+	 *
+	 * A ledger and not part of Meta::BACKUP on purpose. BACKUP is a once-only
+	 * whole-value snapshot, which is right for scalars this plugin exclusively
+	 * owns and wrong for terms: restoring one months later would delete tags the
+	 * merchant added by hand in between. See Native_Fields for the full argument.
+	 */
+	const NATIVE_WRITES = '_agencoen_native_writes';
+
 	const STATUS_QUEUED    = 'queued';
 	const STATUS_ENRICHED  = 'enriched';
 	const STATUS_APPLIED   = 'applied';

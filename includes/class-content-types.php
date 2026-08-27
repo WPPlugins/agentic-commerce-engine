@@ -20,8 +20,25 @@ final class Content_Types {
 	const GROUP_FEED   = 'feed';
 
 	/**
-	 * The full catalog. "shopify" is intentionally excluded (no WooCommerce
-	 * destination).
+	 * The full catalog of enrichment types this plugin can request and apply.
+	 *
+	 * THE TWO PLATFORM-NATIVE TYPES ARE MIRROR IMAGES. Each writes fields that
+	 * exist on one platform only, so each is offered on that platform alone:
+	 * "shopify" writes Shopify's native SEO and product fields and is excluded
+	 * here because there is no WooCommerce destination for them, and
+	 * "woocommerce" is its counterpart, writing product tags, custom attributes
+	 * and SEO meta onto the WooCommerce product itself. ACE applies the same
+	 * rule from the other side in /api/v1/plugin/content-types, keyed on the
+	 * store platform, so a Shopify store never sees "woocommerce" either.
+	 *
+	 * "woocommerce" sits in GROUP_FEED to match the card ACE shows under
+	 * "Channel feeds", even though nothing about it is served at a URL. That
+	 * grouping is presentation, so the entries also carry a `served` flag for
+	 * the channels that really do have a tokened feed route, and
+	 * {@see feed_keys()} reads that rather than the group.
+	 *
+	 * This catalog is only reachable from the WooCommerce-gated screens
+	 * ({@see Admin::render()} with $needs_woo), so it needs no has_woo() gate.
 	 *
 	 * @return array<string,array>
 	 */
@@ -66,6 +83,7 @@ final class Content_Types {
 				'label'       => __( 'Google Merchant feed', 'agentic-commerce-engine' ),
 				'description' => __( 'Google Shopping feed records, served at a feed URL.', 'agentic-commerce-engine' ),
 				'group'       => self::GROUP_FEED,
+				'served'      => true,
 				'recommended' => false,
 				'requires'    => array(),
 			),
@@ -73,12 +91,21 @@ final class Content_Types {
 				'label'       => __( 'Agentic Commerce feed', 'agentic-commerce-engine' ),
 				'description' => __( "OpenAI's Agentic Commerce Protocol feed for AI shopping agents.", 'agentic-commerce-engine' ),
 				'group'       => self::GROUP_FEED,
+				'served'      => true,
 				'recommended' => false,
 				'requires'    => array(),
 			),
 			'microsoft-shopping'  => array(
 				'label'       => __( 'Microsoft Bing feed', 'agentic-commerce-engine' ),
 				'description' => __( 'Microsoft Bing Shopping feed records, served at a feed URL.', 'agentic-commerce-engine' ),
+				'group'       => self::GROUP_FEED,
+				'served'      => true,
+				'recommended' => false,
+				'requires'    => array(),
+			),
+			'woocommerce'         => array(
+				'label'       => __( 'WooCommerce product fields', 'agentic-commerce-engine' ),
+				'description' => __( 'Product tags, product attributes, and SEO meta written onto the product itself. Tags and attributes are added, never replaced, and categories are never changed.', 'agentic-commerce-engine' ),
 				'group'       => self::GROUP_FEED,
 				'recommended' => false,
 				'requires'    => array(),
@@ -96,7 +123,14 @@ final class Content_Types {
 	}
 
 	/**
-	 * Feed-channel keys.
+	 * Keys of the channels actually SERVED at a feed URL.
+	 *
+	 * Read from the `served` flag, not from GROUP_FEED. The group is a display
+	 * grouping shared with ACE's own wizard, and it now holds "woocommerce",
+	 * which writes onto the product and serves nothing. Reading the group here
+	 * would have quietly added a channel to a list whose whole meaning is "has a
+	 * tokened feed route". The flag lives in this file rather than deriving from
+	 * {@see Apply::FEED_CHANNELS} so the catalog keeps no class dependencies.
 	 *
 	 * @return string[]
 	 */
@@ -105,7 +139,7 @@ final class Content_Types {
 			array_filter(
 				self::all(),
 				function ( $c ) {
-					return self::GROUP_FEED === $c['group'];
+					return ! empty( $c['served'] );
 				}
 			)
 		);

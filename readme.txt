@@ -4,7 +4,7 @@ Tags: ai, seo, woocommerce, ai search, content
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 4.8.0
+Stable tag: 4.9.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -138,6 +138,12 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 
 == Changelog ==
 
+= 4.9.0 =
+* New: WooCommerce product fields. Pick it in ACE and your enriched product data is written onto the product itself: product tags, specification attributes shown in the Additional information tab, and your SEO title and meta description.
+* Tags and attributes are only ever added. Anything already on the product stays, and a specification you set yourself is never overwritten. Revert takes back exactly what ACE added and leaves the rest alone, including anything you added afterwards.
+* Product categories are never changed. ACE can suggest one for you to look at, but it will not move your products between categories, because that would rearrange your shop menus and category pages.
+* SEO title and meta description need Yoast SEO, Rank Math or All in One SEO installed, since that is where WordPress stores them.
+
 = 4.8.0 =
 * New: a History tab. Every test you have finished, what it found, and what it was worth, with a place to write down what you learned from each one. Filter by outcome, search by name.
 * New: what testing has been worth to your shop, above that list. It counts two things: money won by keeping a version that beat your original, and money kept by not rolling out a version that lost. The second is usually the larger of the two, and both are counted only where a test reached a clear answer and your store reported real order values.
@@ -235,6 +241,9 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 * Product enrichment now runs on the platform's durable jobs API with webhook-accelerated polling.
 
 == Upgrade Notice ==
+
+= 4.9.0 =
+ACE can now write product tags and specification attributes onto your products, alongside the SEO title and meta description it already wrote. It only ever adds: your existing tags and specifications are kept, and Revert takes back exactly what it added. Your product categories are never changed.
 
 = 4.8.0 =
 Adds a History tab: every test you have finished, what it found, and what it was worth. It now also counts money kept by not rolling out a version that lost, which was previously invisible. Fixes a lift figure that could read lower than it should on a finished test.
