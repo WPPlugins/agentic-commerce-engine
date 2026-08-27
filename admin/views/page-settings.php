@@ -212,6 +212,17 @@ $agencoen_offline = empty( $connected );
 					);
 					?>
 				</p>
+			<?php else : ?>
+				<?php
+				// WordPress has no SEO title or meta description of its own: those
+				// fields belong to whichever SEO plugin is installed. Without one
+				// there is nowhere to write them, and saying so here is the only
+				// chance a merchant gets BEFORE spending a run on copy that cannot
+				// land. Enrichment reports the same thing afterwards, per product.
+				?>
+				<p class="ace-help ace-indent">
+					<?php esc_html_e( 'No SEO plugin detected. WordPress has no SEO title or meta description field of its own, so ACE cannot write those until you install Yoast SEO, Rank Math, or All in One SEO. Everything else ACE generates still applies.', 'agentic-commerce-engine' ); ?>
+				</p>
 			<?php endif; ?>
 		</div>
 	<?php endif; ?>

@@ -62,8 +62,9 @@ class Apply {
 		$applied_types = array();
 
 		// 1) Core on-page fields from the flat payload.
-		$apply_keys = empty( $fields ) ? array_keys( $pending ) : array_intersect( $fields, array_keys( $pending ) );
-		$touched    = false;
+		$apply_keys  = empty( $fields ) ? array_keys( $pending ) : array_intersect( $fields, array_keys( $pending ) );
+		$touched     = false;
+		$seo_blocked = '';
 		foreach ( $apply_keys as $key ) {
 			$value = $pending[ $key ];
 			switch ( $key ) {
@@ -81,13 +82,22 @@ class Apply {
 					$touched                              = true;
 					$applied_types['product-description'] = true;
 					break;
+				// Stamped only when the adapter actually wrote. It writes nothing
+				// when no SEO plugin is installed, and stamping regardless put
+				// "Meta tags" on the Applied list for copy that reached no field.
 				case 'seo_title':
-					$this->plugin->seo()->write_seo_title( $product_id, $value );
-					$applied_types['meta-tags'] = true;
+					if ( $this->plugin->seo()->write_seo_title( $product_id, $value ) ) {
+						$applied_types['meta-tags'] = true;
+					} else {
+						$seo_blocked = $this->plugin->seo()->write_failure_reason( 'meta title' );
+					}
 					break;
 				case 'seo_description':
-					$this->plugin->seo()->write_seo_description( $product_id, $value );
-					$applied_types['meta-tags'] = true;
+					if ( $this->plugin->seo()->write_seo_description( $product_id, $value ) ) {
+						$applied_types['meta-tags'] = true;
+					} else {
+						$seo_blocked = $this->plugin->seo()->write_failure_reason( 'meta description' );
+					}
 					break;
 			}
 		}
@@ -97,6 +107,23 @@ class Apply {
 
 		// 2) Additive content types.
 		$this->apply_content_types( $product_id, $content, $applied_types );
+
+		// Nothing reached the product and an SEO write is why. Marking this
+		// applied would leave the merchant reading "Applied" on a product
+		// whose meta title is still whatever it was, with nothing on screen
+		// saying so. Narrow on purpose: a run that wrote anything at all is
+		// still an apply, and a partial one already reports the types that
+		// did land.
+		if ( '' !== $seo_blocked && ! $touched && empty( $applied_types ) ) {
+			return new \WP_Error(
+				'agencoen_seo_write_failed',
+				sprintf(
+					/* translators: %s: reason the SEO write could not be made. */
+					__( 'Nothing was applied: %s.', 'agentic-commerce-engine' ),
+					$seo_blocked
+				)
+			);
+		}
 
 		update_post_meta( $product_id, Meta::STATUS, Meta::STATUS_APPLIED );
 		update_post_meta( $product_id, Meta::APPLIED_AT, gmdate( 'c' ) );

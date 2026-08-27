@@ -4,7 +4,7 @@ Tags: ai, seo, woocommerce, ai search, content
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 4.9.0
+Stable tag: 4.9.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -138,6 +138,11 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 
 == Changelog ==
 
+= 4.9.1 =
+* Fixed: your SEO title and meta description were reported as applied even on sites with no SEO plugin installed, where there is no field to write them to. ACE now says so instead, and the content stays in the queue and applies by itself once you install one. Previously it was marked done and never applied, even after you installed an SEO plugin later.
+* Fixed: a product could show "Meta tags" on its applied list when nothing had actually been written.
+* New: Settings now tells you when no SEO plugin is detected, so you know before you run enrichment rather than after.
+
 = 4.9.0 =
 * New: WooCommerce product fields. Pick it in ACE and your enriched product data is written onto the product itself: product tags, specification attributes shown in the Additional information tab, and your SEO title and meta description.
 * Tags and attributes are only ever added. Anything already on the product stays, and a specification you set yourself is never overwritten. Revert takes back exactly what ACE added and leaves the rest alone, including anything you added afterwards.
@@ -241,6 +246,9 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 * Product enrichment now runs on the platform's durable jobs API with webhook-accelerated polling.
 
 == Upgrade Notice ==
+
+= 4.9.1 =
+Fixes SEO titles and meta descriptions being reported as applied on sites with no SEO plugin installed. Affected content was marked done and could never apply, even after installing one later. It now waits in the queue and applies by itself. Recommended for anyone who has run enrichment without Yoast SEO, Rank Math or All in One SEO.
 
 = 4.9.0 =
 ACE can now write product tags and specification attributes onto your products, alongside the SEO title and meta description it already wrote. It only ever adds: your existing tags and specifications are kept, and Revert takes back exactly what it added. Your product categories are never changed.

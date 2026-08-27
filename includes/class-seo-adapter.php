@@ -88,6 +88,41 @@ class Seo_Adapter {
 	}
 
 	/**
+	 * Why a write did not land. Call only after a writer returned false.
+	 *
+	 * ONE PLACE, because two callers need the same answer and neither should
+	 * have to know how this class decides. {@see Apply} reports it to the
+	 * merchant in wp-admin; {@see Apply_Queue} hands it back to ACE, where it
+	 * becomes `last_push_error` on the screen a merchant consults to answer
+	 * "where did my content go".
+	 *
+	 * Three distinct answers, because the remedy differs. No SEO plugin at all
+	 * means install one. A detected plugin we cannot reach means something is
+	 * wrong with that plugin, not with the merchant's choices. A rejected write
+	 * means the plugin was asked and said no. Only the AIOSEO path can produce
+	 * the last two: Yoast and Rank Math are plain post meta, so a write to
+	 * either cannot fail once detected.
+	 *
+	 * NOT TRANSLATED, deliberately. These travel to ACE as wire diagnostics
+	 * alongside 'product not loadable' and 'unsupported field: x', and a
+	 * ledger row that reads in the site's locale is harder to support, not
+	 * easier. The wp-admin surface has its own translated copy.
+	 *
+	 * @param string $what Field name for the message, e.g. 'meta title'.
+	 * @return string
+	 */
+	public function write_failure_reason( $what ) {
+		$label = $this->label();
+		if ( '' === $label ) {
+			return 'no SEO plugin installed to write the ' . $what;
+		}
+		if ( ! $this->supports_seo_write() ) {
+			return $label . ' is active but ACE could not reach its data to write the ' . $what;
+		}
+		return $label . ' rejected the ' . $what . ' write';
+	}
+
+	/**
 	 * @param int $product_id Product id.
 	 * @return string
 	 */

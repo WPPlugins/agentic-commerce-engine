@@ -186,13 +186,23 @@ class Apply_Queue {
 		}
 
 		switch ( $field ) {
+			// The adapter writes nothing when no SEO plugin is installed, and
+			// its boolean used to be discarded. Returning true regardless made
+			// drain() ack the row as applied, which stamps pushed_at and drops
+			// it out of the queue for good, so the copy could never land even
+			// after the merchant installed an SEO plugin. Failing is not a
+			// worse outcome than that: the queue selects `pushed_at IS NULL`,
+			// so the row simply waits and applies on the first tick after one
+			// is present.
 			case 'seoTitle':
-				$this->plugin->seo()->write_seo_title( $post_id, $value );
-				return true;
+				return $this->plugin->seo()->write_seo_title( $post_id, $value )
+					? true
+					: $this->plugin->seo()->write_failure_reason( 'meta title' );
 
 			case 'seoDescription':
-				$this->plugin->seo()->write_seo_description( $post_id, $value );
-				return true;
+				return $this->plugin->seo()->write_seo_description( $post_id, $value )
+					? true
+					: $this->plugin->seo()->write_failure_reason( 'meta description' );
 
 			case 'title':
 			case 'descriptionHtml':

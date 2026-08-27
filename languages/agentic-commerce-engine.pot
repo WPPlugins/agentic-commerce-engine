@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Agentic Commerce Engine 4.9.0\n"
+"Project-Id-Version: Agentic Commerce Engine 4.9.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/agentic-commerce-engine\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-27T09:42:24+00:00\n"
+"POT-Creation-Date: 2026-08-27T15:41:25+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: ace-make-pot\n"
 "X-Domain: agentic-commerce-engine\n"
@@ -1060,58 +1060,62 @@ msgstr ""
 msgid "Detected %s. ACE automatically suppresses its schema output when your SEO plugin already emits Product schema, to avoid duplicates."
 msgstr ""
 
-#: admin/views/page-settings.php:222
+#: admin/views/page-settings.php:224
+msgid "No SEO plugin detected. WordPress has no SEO title or meta description field of its own, so ACE cannot write those until you install Yoast SEO, Rank Math, or All in One SEO. Everything else ACE generates still applies."
+msgstr ""
+
+#: admin/views/page-settings.php:233
 #: includes/class-assets.php:239
 msgid "Channel feeds"
 msgstr ""
 
-#: admin/views/page-settings.php:223
+#: admin/views/page-settings.php:234
 msgid "When you enrich products with a channel feed type, ACE serves the feed at these URLs."
 msgstr ""
 
-#: admin/views/page-settings.php:226
+#: admin/views/page-settings.php:237
 msgid "Google Merchant"
 msgstr ""
 
-#: admin/views/page-settings.php:227
+#: admin/views/page-settings.php:238
 msgid "Microsoft Bing"
 msgstr ""
 
-#: admin/views/page-settings.php:228
+#: admin/views/page-settings.php:239
 msgid "Agentic Commerce"
 msgstr ""
 
-#: admin/views/page-settings.php:237
+#: admin/views/page-settings.php:248
 msgid "Regenerate feed URLs"
 msgstr ""
 
-#: admin/views/page-settings.php:238
+#: admin/views/page-settings.php:249
 msgid "Each URL carries a private token, so only the channels you give it to can read the feed. Regenerating invalidates the old URLs; update them in Google and Microsoft afterwards."
 msgstr ""
 
-#: admin/views/page-settings.php:244
+#: admin/views/page-settings.php:255
 #: admin/views/partial-empty-state.php:42
 msgid "Advanced"
 msgstr ""
 
-#: admin/views/page-settings.php:245
+#: admin/views/page-settings.php:256
 msgid "Platform endpoint, webhook, and diagnostics."
 msgstr ""
 
-#: admin/views/page-settings.php:248
+#: admin/views/page-settings.php:259
 #: admin/views/partial-empty-state.php:44
 msgid "Platform URL"
 msgstr ""
 
-#: admin/views/page-settings.php:253
+#: admin/views/page-settings.php:264
 msgid "Webhook URL (read-only)"
 msgstr ""
 
-#: admin/views/page-settings.php:259
+#: admin/views/page-settings.php:270
 msgid "Enable debug logging"
 msgstr ""
 
-#: admin/views/page-settings.php:264
+#: admin/views/page-settings.php:275
 msgid "Save settings"
 msgstr ""
 
@@ -1425,11 +1429,17 @@ msgid "No pending enrichment to apply."
 msgstr ""
 
 #: includes/class-apply.php:58
-#: includes/class-apply.php:208
+#: includes/class-apply.php:235
 msgid "Product not found."
 msgstr ""
 
-#: includes/class-apply.php:203
+#. translators: %s: reason the SEO write could not be made.
+#: includes/class-apply.php:122
+#, php-format
+msgid "Nothing was applied: %s."
+msgstr ""
+
+#: includes/class-apply.php:230
 msgid "No backup to revert to."
 msgstr ""
 
