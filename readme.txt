@@ -4,7 +4,7 @@ Tags: ai, seo, woocommerce, ai search, content
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 4.9.1
+Stable tag: 4.10.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -138,6 +138,13 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 
 == Changelog ==
 
+= 4.10.0 =
+* New: AI shopping agents can now find your shop. The plugin publishes a Universal Commerce Protocol profile at /.well-known/ucp on your own domain, which is where agents like ChatGPT and Perplexity look when someone asks them to find a product.
+* What they see is the enriched product copy you have approved in ACE, not your raw product data.
+* New: agents can send a shopper straight to a filled basket. A link with the products already chosen lands on your cart with everything in it, ready to check out.
+* You stay in control of the sale. Nothing is bought through ACE, and no payment details ever pass through it. The shopper always finishes on your own checkout.
+* Turn it on per project in ACE, under UCP. It is off until you switch it on, and switching it off stops this site publishing within the hour.
+
 = 4.9.1 =
 * Fixed: your SEO title and meta description were reported as applied even on sites with no SEO plugin installed, where there is no field to write them to. ACE now says so instead, and the content stays in the queue and applies by itself once you install one. Previously it was marked done and never applied, even after you installed an SEO plugin later.
 * Fixed: a product could show "Meta tags" on its applied list when nothing had actually been written.
@@ -246,6 +253,9 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 * Product enrichment now runs on the platform's durable jobs API with webhook-accelerated polling.
 
 == Upgrade Notice ==
+
+= 4.10.0 =
+Your shop can now be found by AI shopping agents. The plugin publishes a Universal Commerce Protocol profile on your own domain, so agents can search your products and send shoppers to a ready-filled basket. Off until you turn it on in ACE, and no sale or payment ever goes through us.
 
 = 4.9.1 =
 Fixes SEO titles and meta descriptions being reported as applied on sites with no SEO plugin installed. Affected content was marked done and could never apply, even after installing one later. It now waits in the queue and applies by itself. Recommended for anyone who has run enrichment without Yoast SEO, Rank Math or All in One SEO.

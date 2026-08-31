@@ -106,6 +106,9 @@ final class Plugin {
 	/** @var Feeds */
 	private $feeds;
 
+	/** @var Ucp */
+	private $ucp;
+
 	/**
 	 * Get (and lazily build) the singleton.
 	 *
@@ -167,6 +170,7 @@ final class Plugin {
 		$this->admin          = new Admin( $this );
 		$this->frontend       = new Frontend( $this );
 		$this->feeds          = new Feeds( $this );
+		$this->ucp            = new Ucp( $this );
 	}
 
 	/**
@@ -183,6 +187,10 @@ final class Plugin {
 			$this->frontend->register();
 			$this->feeds->register();
 		}
+
+		// Registered unconditionally: the profile route is useful on any site,
+		// and handle_buy() bails on its own when WooCommerce is absent.
+		$this->ucp->register();
 
 		$this->article_schema->register();
 		$this->bots->register();

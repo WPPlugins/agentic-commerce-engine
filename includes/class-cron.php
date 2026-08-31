@@ -127,7 +127,7 @@ class Cron {
 			return;
 		}
 
-		$this->plugin->api()->heartbeat(
+		$response = $this->plugin->api()->heartbeat(
 			array(
 				'storeId'       => $settings->get_store_id(),
 				'pluginVersion' => AGENCOEN_VERSION,
@@ -135,6 +135,18 @@ class Cron {
 				'productCount'  => $this->plugin->repository()->count_published(),
 			)
 		);
+
+		// Learn (or forget) the UCP delivery token. It rides the heartbeat so
+		// the merchant never has to paste anything, and so turning delivery off
+		// in ACE stops this site serving /.well-known/ucp within the hour
+		// rather than leaving a profile pointing at endpoints that now 404.
+		//
+		// Only acted on when the key is PRESENT: an older ACE that does not
+		// send it must not read as "delivery is off" and wipe a working token.
+		if ( is_array( $response ) && array_key_exists( 'ucp', $response ) ) {
+			$ucp = is_array( $response['ucp'] ) ? $response['ucp'] : array();
+			Ucp::set_token( isset( $ucp['token'] ) && is_string( $ucp['token'] ) ? $ucp['token'] : '' );
+		}
 
 		// Keep the dashboard balance reasonably fresh.
 		Dashboard::credits( $this->plugin, Dashboard::FETCH_FRESH );

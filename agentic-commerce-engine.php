@@ -3,7 +3,7 @@
  * Plugin Name:       Agentic Commerce Engine
  * Plugin URI:        https://ace.authoritas.com
  * Description:       Free AI crawler analytics, schema output and publishing tools for any WordPress site. Article generation and AI search research additionally use the ACE service.
- * Version:           4.9.1
+ * Version:           4.10.0
  * Author:            Authoritas
  * Author URI:        https://authoritas.com
  * License:           GPLv2 or later
@@ -30,7 +30,7 @@ defined( 'ABSPATH' ) || exit;
  * Constants
  * -------------------------------------------------------------------------
  */
-define( 'AGENCOEN_VERSION', '4.9.1' );
+define( 'AGENCOEN_VERSION', '4.10.0' );
 define( 'AGENCOEN_PLUGIN_FILE', __FILE__ );
 define( 'AGENCOEN_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AGENCOEN_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -145,6 +145,10 @@ register_activation_hook(
 		if ( ! wp_next_scheduled( 'agencoen_bot_prune' ) ) {
 			wp_schedule_event( time() + DAY_IN_SECONDS, 'daily', 'agencoen_bot_prune' );
 		}
+
+		// The UCP routes are rewrite rules, so they 404 until the rules are
+		// rebuilt. Activation is the only moment we can be sure of doing it.
+		flush_rewrite_rules();
 	}
 );
 
@@ -166,5 +170,9 @@ register_deactivation_hook(
 		foreach ( $hooks as $hook ) {
 			wp_clear_scheduled_hook( $hook );
 		}
+
+		// Drop our rewrite rules with us, so /.well-known/ucp stops answering
+		// rather than 404ing through a stale rule.
+		flush_rewrite_rules();
 	}
 );
