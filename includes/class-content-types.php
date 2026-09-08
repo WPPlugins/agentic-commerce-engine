@@ -1,6 +1,6 @@
 <?php
 /**
- * Catalog of the content types the plugin can request from the ACE platform.
+ * Catalog of the content types the plugin can request from the Rezolve Ai platform.
  * Keys are the platform's API strings (sent as options.contentTypes). Single
  * source of truth for labels, grouping, recommendation, and apply targets.
  *
@@ -27,11 +27,11 @@ final class Content_Types {
 	 * "shopify" writes Shopify's native SEO and product fields and is excluded
 	 * here because there is no WooCommerce destination for them, and
 	 * "woocommerce" is its counterpart, writing product tags, custom attributes
-	 * and SEO meta onto the WooCommerce product itself. ACE applies the same
+	 * and SEO meta onto the WooCommerce product itself. Rezolve Ai applies the same
 	 * rule from the other side in /api/v1/plugin/content-types, keyed on the
 	 * store platform, so a Shopify store never sees "woocommerce" either.
 	 *
-	 * "woocommerce" sits in GROUP_FEED to match the card ACE shows under
+	 * "woocommerce" sits in GROUP_FEED to match the card Rezolve Ai shows under
 	 * "Channel feeds", even though nothing about it is served at a URL. That
 	 * grouping is presentation, so the entries also carry a `served` flag for
 	 * the channels that really do have a tokened feed route, and
@@ -126,7 +126,7 @@ final class Content_Types {
 	 * Keys of the channels actually SERVED at a feed URL.
 	 *
 	 * Read from the `served` flag, not from GROUP_FEED. The group is a display
-	 * grouping shared with ACE's own wizard, and it now holds "woocommerce",
+	 * grouping shared with Rezolve Ai's own wizard, and it now holds "woocommerce",
 	 * which writes onto the product and serves nothing. Reading the group here
 	 * would have quietly added a channel to a list whose whole meaning is "has a
 	 * tokened feed route". The flag lives in this file rather than deriving from

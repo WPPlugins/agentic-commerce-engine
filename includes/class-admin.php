@@ -3,7 +3,7 @@
  * Registers the admin menu and renders the six screens.
  *
  * Every screen always renders. Nothing local is withheld from a site that has
- * not linked an ACE account: the connect banner is additive, and only the
+ * not linked a Rezolve Ai account: the connect banner is additive, and only the
  * individual controls that call the remote service are disabled. The one
  * substitution left is the commerce screens without WooCommerce, which is a
  * plugin-dependency state rather than an account state.
@@ -61,8 +61,8 @@ class Admin {
 		$cap = Capabilities::manage();
 
 		add_menu_page(
-			__( 'Agentic Commerce Engine', 'agentic-commerce-engine' ),
-			'ACE',
+			__( 'Rezolve Ai', 'agentic-commerce-engine' ),
+			'Rezolve Ai',
 			$cap,
 			self::SLUG,
 			array( $this, 'render_dashboard' ),
@@ -132,7 +132,7 @@ class Admin {
 		$this->render( 'page-settings.php', __( 'Settings', 'agentic-commerce-engine' ) );
 	}
 
-	/** Render: Connection (the optional ACE account lives here, and only here). */
+	/** Render: Connection (the optional Rezolve Ai account lives here, and only here). */
 	public function render_connection() {
 		$this->render( 'page-connection.php', __( 'Connection', 'agentic-commerce-engine' ) );
 	}
@@ -165,6 +165,16 @@ class Admin {
 			if ( 'page-connection.php' !== $view && self::connect_notice_due( $connected, Settings::connect_notice_dismissed(), $agencoen_recent_hits ) ) {
 				include AGENCOEN_PLUGIN_DIR . 'admin/views/partial-connect-banner.php';
 			}
+			// Connected, but sending nothing. Not shown on Settings itself,
+			// which is where the switches are and where the banner would be
+			// pointing at a control already on screen.
+			if ( 'page-settings.php' !== $view && self::traffic_notice_due(
+				$connected,
+				$plugin->settings()->is_traffic_report(),
+				Settings::traffic_notice_dismissed()
+			) ) {
+				include AGENCOEN_PLUGIN_DIR . 'admin/views/partial-traffic-banner.php';
+			}
 			include AGENCOEN_PLUGIN_DIR . 'admin/views/' . $view;
 		}
 		echo '</div>';
@@ -183,6 +193,28 @@ class Admin {
 	 */
 	public static function connect_notice_due( $connected, $dismissed, $recent_hits ) {
 		return ! $connected && ! $dismissed && (int) $recent_hits >= self::CONNECT_NOTICE_MIN_HITS;
+	}
+
+	/**
+	 * Pure gate for the "measurement is off" notice.
+	 *
+	 * Only for CONNECTED sites: an unconnected one has nowhere to report to and
+	 * is already being offered an account by the notice above. Reporting is the
+	 * switch that matters here, not collection: a site can count its own
+	 * pageviews locally all it likes and Rezolve Ai still measures nothing.
+	 *
+	 * WHY THIS EXISTS. Both traffic options default to 'no' and nothing ever
+	 * asked. On the day it was added, every experiment and attribution feature
+	 * on the Rezolve Ai side was reading a table that had never received a row
+	 * from any site, and no screen anywhere said so.
+	 *
+	 * @param bool $connected Store connected.
+	 * @param bool $reporting Daily totals are being sent.
+	 * @param bool $dismissed Current user dismissed the notice.
+	 * @return bool
+	 */
+	public static function traffic_notice_due( $connected, $reporting, $dismissed ) {
+		return (bool) $connected && ! $reporting && ! $dismissed;
 	}
 
 	/* --------------------------------------------------------------------- */

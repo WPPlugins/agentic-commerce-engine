@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
 
 /*
  * Browsing, filtering and exporting the catalog is all local. Only enrichment
- * itself is sent to ACE, so only those two buttons need a connection.
+ * itself is sent to Rezolve Ai, so only those two buttons need a connection.
  */
 $agencoen_offline = empty( $connected );
 
@@ -94,7 +94,7 @@ $agencoen_chips = array(
 			</table>
 		</div>
 		<div class="ace-pagination">
-			<?php // Pagination buttons start disabled and are enabled by products.js; unrelated to the ACE account. ?>
+			<?php // Pagination buttons start disabled and are enabled by products.js; unrelated to the Rezolve Ai account. ?>
 			<button type="button" class="ace-btn ace-btn-secondary ace-btn-sm" id="ace-prev-page" disabled><?php esc_html_e( 'Previous', 'agentic-commerce-engine' ); ?></button>
 			<span id="ace-page-info" class="ace-muted"></span>
 			<button type="button" class="ace-btn ace-btn-secondary ace-btn-sm" id="ace-next-page" disabled><?php esc_html_e( 'Next', 'agentic-commerce-engine' ); ?></button>

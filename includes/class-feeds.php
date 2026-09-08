@@ -78,7 +78,7 @@ class Feeds {
 					'args'                => array(
 						'token' => array(
 							'type'              => 'string',
-							'description'       => __( 'Per-site feed token from the ACE Settings screen.', 'agentic-commerce-engine' ),
+							'description'       => __( 'Per-site feed token from the Rezolve Ai Settings screen.', 'agentic-commerce-engine' ),
 							'sanitize_callback' => 'sanitize_text_field',
 						),
 					),
@@ -100,7 +100,7 @@ class Feeds {
 		}
 		return new \WP_Error(
 			'agencoen_feed_forbidden',
-			__( 'Invalid or missing feed token. Copy the feed URL from the ACE Settings screen.', 'agentic-commerce-engine' ),
+			__( 'Invalid or missing feed token. Copy the feed URL from the Rezolve Ai Settings screen.', 'agentic-commerce-engine' ),
 			array( 'status' => rest_authorization_required_code() )
 		);
 	}
@@ -182,7 +182,7 @@ class Feeds {
 			. '<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0"><channel>'
 			. '<title>' . self::x( wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ) ) . '</title>'
 			. '<link>' . self::x( home_url() ) . '</link>'
-			. '<description>' . self::x( sprintf( 'ACE %s feed', $channel ) ) . '</description>'
+			. '<description>' . self::x( sprintf( 'Rezolve Ai %s feed', $channel ) ) . '</description>'
 		);
 		$this->stream_records(
 			$channel,

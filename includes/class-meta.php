@@ -48,8 +48,8 @@ final class Meta {
 	const STATUS_DISMISSED = 'dismissed';
 	const STATUS_FAILED    = 'failed';
 
-	// Content Hub (4.0): posts materialized from ACE article briefs.
-	const BRIEF_ID             = '_agencoen_brief_id';       // ACE brief id backing the post.
+	// Content Hub (4.0): posts materialized from Rezolve Ai article briefs.
+	const BRIEF_ID             = '_agencoen_brief_id';       // Rezolve Ai brief id backing the post.
 	const ARTICLE_SOURCE       = '_agencoen_source';          // 'ace' for plugin-authored posts.
 	const ARTICLE_JSONLD       = '_agencoen_article_jsonld';  // Article JSON-LD from the platform.
 	const ARTICLE_PUBLISHED_AT = '_agencoen_published_at';    // when the post went live (ISO 8601).

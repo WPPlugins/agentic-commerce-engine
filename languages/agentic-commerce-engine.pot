@@ -1,23 +1,23 @@
-# Copyright (C) 2026 Authoritas
+# Copyright (C) 2026 Rezolve Ai Limited
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Agentic Commerce Engine 4.10.0\n"
+"Project-Id-Version: Rezolve Ai 4.13.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/agentic-commerce-engine\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-31T17:55:18+00:00\n"
+"POT-Creation-Date: 2026-09-07T20:40:38+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: ace-make-pot\n"
+"X-Generator: rezolve-ai-make-pot\n"
 "X-Domain: agentic-commerce-engine\n"
 
 #. Plugin Name of the plugin
 #: agentic-commerce-engine.php
 #: includes/class-admin.php:64
-msgid "Agentic Commerce Engine"
+msgid "Rezolve Ai"
 msgstr ""
 
 #. Plugin URI of the plugin
@@ -27,17 +27,17 @@ msgstr ""
 
 #. Description of the plugin
 #: agentic-commerce-engine.php
-msgid "Free AI crawler analytics, schema output and publishing tools for any WordPress site. Article generation and AI search research additionally use the ACE service."
+msgid "Free AI crawler analytics, schema output and publishing tools for any WordPress site. Article generation and AI search research additionally use the Rezolve Ai service."
 msgstr ""
 
 #. Author of the plugin
 #: agentic-commerce-engine.php
-msgid "Authoritas"
+msgid "Rezolve Ai Limited"
 msgstr ""
 
 #. Author URI of the plugin
 #: agentic-commerce-engine.php
-msgid "https://authoritas.com"
+msgid "https://rezolve.com"
 msgstr ""
 
 #: admin/views/page-aisearch.php:23
@@ -63,19 +63,19 @@ msgid "Runs"
 msgstr ""
 
 #: admin/views/page-aisearch.php:54
-msgid "AI Search research is not part of this ACE plan"
+msgid "AI Search research is not part of this Rezolve Ai plan"
 msgstr ""
 
 #: admin/views/page-aisearch.php:55
-msgid "Research runs query AI answer engines on ACE servers, and that capability is not included on the ACE account this site is linked to. The Crawlers tab is unaffected: it tracks AI crawler visits directly on this site and needs no account at all."
+msgid "Research runs query AI answer engines on Rezolve Ai servers, and that capability is not included on the Rezolve Ai account this site is linked to. The Crawlers tab is unaffected: it tracks AI crawler visits directly on this site and needs no account at all."
 msgstr ""
 
 #: admin/views/page-aisearch.php:59
-msgid "AI Search research runs on ACE servers"
+msgid "AI Search research runs on Rezolve Ai servers"
 msgstr ""
 
 #: admin/views/page-aisearch.php:60
-msgid "Track how AI assistants answer questions about your products, which brands they recommend, and which pages they cite. Querying those engines is work this site cannot do by itself, so it needs an ACE account. The Crawlers tab works without one."
+msgid "Track how AI assistants answer questions about your products, which brands they recommend, and which pages they cite. Querying those engines is work this site cannot do by itself, so it needs a Rezolve Ai account. The Crawlers tab works without one."
 msgstr ""
 
 #: admin/views/page-aisearch.php:61
@@ -115,7 +115,7 @@ msgid "Research prompts"
 msgstr ""
 
 #: admin/views/page-aisearch.php:107
-msgid "These are the questions ACE asks the AI engines on every run. Add or replace prompts from the Runs tab."
+msgid "These are the questions Rezolve Ai asks the AI engines on every run. Add or replace prompts from the Runs tab."
 msgstr ""
 
 #: admin/views/page-aisearch.php:113
@@ -246,7 +246,7 @@ msgid "Last 90 days"
 msgstr ""
 
 #: admin/views/page-aisearch.php:244
-msgid "Send daily summary to ACE"
+msgid "Send daily summary to Rezolve Ai"
 msgstr ""
 
 #: admin/views/page-aisearch.php:246
@@ -278,11 +278,11 @@ msgid "The plugin is free and works on its own"
 msgstr ""
 
 #: admin/views/page-connection.php:23
-msgid "AI crawler analytics, schema output, and the publishing tools are free and always on, with or without an ACE account. Nothing on this page is needed to use them."
+msgid "AI crawler analytics, schema output, and the publishing tools are free and always on, with or without a Rezolve Ai account. Nothing on this page is needed to use them."
 msgstr ""
 
 #: admin/views/page-connection.php:26
-msgid "ACE is a separate service that writes content and runs AI search research on its own servers. Writing an article or querying an AI answer engine is work your site cannot do by itself, so those features send a request to ACE and need an account."
+msgid "Rezolve Ai is a separate service that writes content and runs AI search research on its own servers. Writing an article or querying an AI answer engine is work your site cannot do by itself, so those features send a request to Rezolve Ai and need an account."
 msgstr ""
 
 #: admin/views/page-connection.php:35
@@ -290,7 +290,7 @@ msgid "Account"
 msgstr ""
 
 #: admin/views/page-connection.php:36
-msgid "This site is linked to your ACE project. The key is stored server-side and never shown again."
+msgid "This site is linked to your Rezolve Ai project. The key is stored server-side and never shown again."
 msgstr ""
 
 #: admin/views/page-connection.php:39
@@ -340,7 +340,7 @@ msgid "Published"
 msgstr ""
 
 #: admin/views/page-content.php:45
-msgid "Writing an article is done by a language model on ACE servers, so this form needs an ACE account. The Published tab below works without one."
+msgid "Writing an article is done by a language model on Rezolve Ai servers, so this form needs a Rezolve Ai account. The Published tab below works without one."
 msgstr ""
 
 #: admin/views/page-content.php:52
@@ -439,7 +439,7 @@ msgid "Discard"
 msgstr ""
 
 #: admin/views/page-content.php:136
-msgid "Briefs are stored in your ACE project, so this list is empty without an account. Articles already in WordPress are on the Published tab."
+msgid "Briefs are stored in your Rezolve Ai project, so this list is empty without an account. Articles already in WordPress are on the Published tab."
 msgstr ""
 
 #: admin/views/page-content.php:140
@@ -548,7 +548,7 @@ msgid "Credits"
 msgstr ""
 
 #: admin/views/page-dashboard.php:105
-msgid "Your ACE service balance. Generating content for one product or one content type uses about one credit."
+msgid "Your Rezolve Ai service balance. Generating content for one product or one content type uses about one credit."
 msgstr ""
 
 #. translators: 1: credits used, 2: credit limit.
@@ -714,14 +714,14 @@ msgid "All"
 msgstr ""
 
 #: admin/views/page-products.php:23
-#: includes/class-admin.php:207
+#: includes/class-admin.php:239
 #: includes/class-assets.php:256
 #: includes/class-dashboard.php:170
 msgid "Not enriched"
 msgstr ""
 
 #: admin/views/page-products.php:24
-#: includes/class-admin.php:200
+#: includes/class-admin.php:232
 #: includes/class-assets.php:251
 #: includes/class-assets.php:411
 #: includes/class-assets.php:433
@@ -736,14 +736,14 @@ msgstr ""
 
 #: admin/views/page-products.php:26
 #: admin/views/page-review.php:25
-#: includes/class-admin.php:202
+#: includes/class-admin.php:234
 #: includes/class-assets.php:253
 #: includes/class-dashboard.php:140
 msgid "Applied"
 msgstr ""
 
 #: admin/views/page-products.php:27
-#: includes/class-admin.php:204
+#: includes/class-admin.php:236
 #: includes/class-assets.php:255
 #: includes/class-dashboard.php:158
 msgid "Failed"
@@ -883,15 +883,15 @@ msgid "180 days"
 msgstr ""
 
 #: admin/views/page-settings.php:62
-msgid "Send daily crawler totals to my ACE project"
+msgid "Send daily crawler totals to my Rezolve Ai project"
 msgstr ""
 
 #: admin/views/page-settings.php:65
-msgid "Optional. When enabled, ACE receives one aggregate row per crawler per day (crawler name, date, hit count). No IP addresses, cookies, or personal information ever leave your site. This setting covers crawlers only; visitor pageviews are a separate setting below and are off unless you turn them on."
+msgid "Optional. When enabled, Rezolve Ai receives one aggregate row per crawler per day (crawler name, date, hit count). No IP addresses, cookies, or personal information ever leave your site. This setting covers crawlers only; visitor pageviews are a separate setting below and are off unless you turn them on."
 msgstr ""
 
 #: admin/views/page-settings.php:68
-msgid "Tracking, path storage, and retention all run entirely on this site and are active right now. Only the optional daily report, which sends totals to ACE, needs an account."
+msgid "Tracking, path storage, and retention all run entirely on this site and are active right now. Only the optional daily report, which sends totals to Rezolve Ai, needs an account."
 msgstr ""
 
 #: admin/views/page-settings.php:74
@@ -899,7 +899,7 @@ msgid "Visitor pageviews"
 msgstr ""
 
 #: admin/views/page-settings.php:75
-msgid "Counts how many times each published page was viewed, so ACE can show what your content changes did to real traffic."
+msgid "Counts how many times each published page was viewed, so Rezolve Ai can show what your content changes did to real traffic."
 msgstr ""
 
 #: admin/views/page-settings.php:79
@@ -915,11 +915,11 @@ msgid "A script is used rather than server-side counting because page caching se
 msgstr ""
 
 #: admin/views/page-settings.php:90
-msgid "Send daily pageview and sales totals to my ACE project"
+msgid "Send daily pageview and sales totals to my Rezolve Ai project"
 msgstr ""
 
 #: admin/views/page-settings.php:93
-msgid "Optional, and separate from the crawler setting above. ACE receives one row per page per day (page, date, view count, and the referring site for visits from search and AI assistants), and for WooCommerce stores one row per product per day (units and revenue). No order details, customer records, names, email addresses or postal addresses are ever sent."
+msgid "Optional, and separate from the crawler setting above. Rezolve Ai receives one row per page per day (page, date, view count, and the referring site for visits from search and AI assistants), and for WooCommerce stores one row per product per day (units and revenue). No order details, customer records, names, email addresses or postal addresses are ever sent."
 msgstr ""
 
 #: admin/views/page-settings.php:96
@@ -931,7 +931,7 @@ msgid "A/B test your product copy"
 msgstr ""
 
 #: admin/views/page-settings.php:103
-msgid "Shows different versions of a product description to different visitors and measures which one sells better. Experiments are set up in ACE; this switch decides whether this site takes part."
+msgid "Shows different versions of a product description to different visitors and measures which one sells better. Experiments are set up in Rezolve Ai; this switch decides whether this site takes part."
 msgstr ""
 
 #: admin/views/page-settings.php:107
@@ -947,11 +947,11 @@ msgid "Search engines and AI crawlers always see your normal copy. They carry no
 msgstr ""
 
 #: admin/views/page-settings.php:118
-msgid "Send results to my ACE project"
+msgid "Send results to my Rezolve Ai project"
 msgstr ""
 
 #: admin/views/page-settings.php:121
-msgid "Separate from the switch above, because a test can run without the result leaving this site. ACE receives which version was shown and whether that visitor reached checkout, against a scrambled id that is unique to this site and cannot be linked back to a person or matched with any other site. No names, email addresses, order details or IP addresses are ever sent."
+msgid "Separate from the switch above, because a test can run without the result leaving this site. Rezolve Ai receives which version was shown and whether that visitor reached checkout, against a scrambled id that is unique to this site and cannot be linked back to a person or matched with any other site. No names, email addresses, order details or IP addresses are ever sent."
 msgstr ""
 
 #: admin/views/page-settings.php:125
@@ -1003,7 +1003,7 @@ msgid "The user who publishes"
 msgstr ""
 
 #: admin/views/page-settings.php:163
-msgid "Output Article schema (JSON-LD) on published ACE articles"
+msgid "Output Article schema (JSON-LD) on published Rezolve Ai articles"
 msgstr ""
 
 #: admin/views/page-settings.php:170
@@ -1039,7 +1039,7 @@ msgid "When on, AI changes go live on your products automatically. You can still
 msgstr ""
 
 #: admin/views/page-settings.php:192
-msgid "Scheduled sync and auto-apply send products to ACE for enrichment, so they need an account. The schema and product-page options below work on their own."
+msgid "Scheduled sync and auto-apply send products to Rezolve Ai for enrichment, so they need an account. The schema and product-page options below work on their own."
 msgstr ""
 
 #: admin/views/page-settings.php:197
@@ -1051,17 +1051,17 @@ msgid "Show IRL scenarios and internal links on the product page automatically"
 msgstr ""
 
 #: admin/views/page-settings.php:204
-msgid "Or place them yourself with the [agencoen_irl] and [agencoen_internal_links] shortcodes, or the ACE editor blocks."
+msgid "Or place them yourself with the [agencoen_irl] and [agencoen_internal_links] shortcodes, or the Rezolve Ai editor blocks."
 msgstr ""
 
 #. translators: %s: SEO plugin name.
 #: admin/views/page-settings.php:210
 #, php-format
-msgid "Detected %s. ACE automatically suppresses its schema output when your SEO plugin already emits Product schema, to avoid duplicates."
+msgid "Detected %s. Rezolve Ai automatically suppresses its schema output when your SEO plugin already emits Product schema, to avoid duplicates."
 msgstr ""
 
 #: admin/views/page-settings.php:224
-msgid "No SEO plugin detected. WordPress has no SEO title or meta description field of its own, so ACE cannot write those until you install Yoast SEO, Rank Math, or All in One SEO. Everything else ACE generates still applies."
+msgid "No SEO plugin detected. WordPress has no SEO title or meta description field of its own, so Rezolve Ai cannot write those until you install Yoast SEO, Rank Math, or All in One SEO. Everything else Rezolve Ai generates still applies."
 msgstr ""
 
 #: admin/views/page-settings.php:233
@@ -1070,7 +1070,7 @@ msgid "Channel feeds"
 msgstr ""
 
 #: admin/views/page-settings.php:234
-msgid "When you enrich products with a channel feed type, ACE serves the feed at these URLs."
+msgid "When you enrich products with a channel feed type, Rezolve Ai serves the feed at these URLs."
 msgstr ""
 
 #: admin/views/page-settings.php:237
@@ -1127,7 +1127,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: admin/views/partial-connect-banner.php:34
-msgid "The crawler analytics, schema output, and publishing tools you are using stay free and local either way. Connecting an optional ACE account adds work this site cannot do by itself: querying the AI answer engines about your brand, writing articles, and generating product content on ACE servers."
+msgid "The crawler analytics, schema output, and publishing tools you are using stay free and local either way. Connecting an optional Rezolve Ai account adds work this site cannot do by itself: querying the AI answer engines about your brand, writing articles, and generating product content on Rezolve Ai servers."
 msgstr ""
 
 #: admin/views/partial-connect-banner.php:39
@@ -1142,11 +1142,11 @@ msgid "Dismiss"
 msgstr ""
 
 #: admin/views/partial-empty-state.php:21
-msgid "Connect your site to ACE"
+msgid "Connect your site to Rezolve Ai"
 msgstr ""
 
 #: admin/views/partial-empty-state.php:23
-msgid "Paste your API key from the ACE platform to add AI writing and AI search research. The crawler analytics and publishing tools on this site do not use it."
+msgid "Paste your API key from the Rezolve Ai platform to add AI writing and AI search research. The crawler analytics and publishing tools on this site do not use it."
 msgstr ""
 
 #: admin/views/partial-empty-state.php:33
@@ -1158,7 +1158,7 @@ msgid "Where do I find my API key?"
 msgstr ""
 
 #: admin/views/partial-empty-state.php:52
-msgid "What the ACE service adds"
+msgid "What the Rezolve Ai service adds"
 msgstr ""
 
 #: admin/views/partial-empty-state.php:55
@@ -1184,11 +1184,11 @@ msgid "Crawler analytics, Product and Article JSON-LD, the channel feed URLs, an
 msgstr ""
 
 #: admin/views/partial-header.php:34
-msgid "ACE quick links"
+msgid "Rezolve Ai quick links"
 msgstr ""
 
 #: admin/views/partial-header.php:35
-msgid "Open ACE app"
+msgid "Open Rezolve Ai app"
 msgstr ""
 
 #: admin/views/partial-header.php:36
@@ -1216,7 +1216,7 @@ msgid "This screen works with your WooCommerce products, so it has nothing to sh
 msgstr ""
 
 #: admin/views/partial-requires-woo.php:24
-msgid "Sync your product catalog to ACE"
+msgid "Sync your product catalog to Rezolve Ai"
 msgstr ""
 
 #: admin/views/partial-requires-woo.php:25
@@ -1279,10 +1279,26 @@ msgstr ""
 msgid "Install WooCommerce and the product tools (sync, review queue, feeds, product schema) switch on by themselves."
 msgstr ""
 
+#: admin/views/partial-traffic-banner.php:25
+msgid "Rezolve Ai cannot yet show what your changes did"
+msgstr ""
+
+#: admin/views/partial-traffic-banner.php:27
+msgid "This site is connected, but it is not sending pageview totals, so results, A/B tests and AI referral reporting have nothing to measure. Switching it on sends one row per page per day. No order details, customer records, names, email addresses or postal addresses are ever sent."
+msgstr ""
+
+#: admin/views/partial-traffic-banner.php:32
+msgid "Turn on reporting"
+msgstr ""
+
+#: admin/views/partial-traffic-banner.php:34
+msgid "Not now"
+msgstr ""
+
 #. translators: %s: current PHP version.
 #: agentic-commerce-engine.php:101
 #, php-format
-msgid "Agentic Commerce Engine requires PHP 8.0 or higher. You are running %s."
+msgid "Rezolve Ai requires PHP 8.0 or higher. You are running %s."
 msgstr ""
 
 #: includes/class-admin.php:72
@@ -1321,20 +1337,20 @@ msgstr ""
 msgid "Connection"
 msgstr ""
 
-#: includes/class-admin.php:201
+#: includes/class-admin.php:233
 #: includes/class-assets.php:252
 #: includes/class-dashboard.php:146
 msgid "Ready to review"
 msgstr ""
 
-#: includes/class-admin.php:203
+#: includes/class-admin.php:235
 #: includes/class-assets.php:254
 #: includes/class-dashboard.php:164
 msgid "Dismissed"
 msgstr ""
 
 #: includes/class-ajax-aeo.php:63
-msgid "AI Search research is not enabled for this ACE deployment."
+msgid "AI Search research is not enabled for this Rezolve Ai deployment."
 msgstr ""
 
 #: includes/class-ajax-aeo.php:108
@@ -1409,19 +1425,19 @@ msgstr ""
 msgid "Please paste your API key."
 msgstr ""
 
-#: includes/class-ajax.php:188
+#: includes/class-ajax.php:198
 #: includes/class-enrichment.php:47
 msgid "No products selected."
 msgstr ""
 
-#: includes/class-api-client.php:787
+#: includes/class-api-client.php:799
 msgid "No API key configured. Connect your site first."
 msgstr ""
 
 #. translators: %d: HTTP status code.
-#: includes/class-api-client.php:925
+#: includes/class-api-client.php:937
 #, php-format
-msgid "The ACE platform returned an error (HTTP %d)."
+msgid "The Rezolve Ai platform returned an error (HTTP %d)."
 msgstr ""
 
 #: includes/class-apply.php:53
@@ -1465,7 +1481,7 @@ msgid "Saving…"
 msgstr ""
 
 #: includes/class-assets.php:213
-msgid "Open your ACE account"
+msgid "Open your Rezolve Ai account"
 msgstr ""
 
 #: includes/class-assets.php:214
@@ -1505,7 +1521,7 @@ msgid "Could not connect. Check your API key and try again."
 msgstr ""
 
 #: includes/class-assets.php:228
-msgid "Disconnect this site from ACE? Your API key will be removed."
+msgid "Disconnect this site from Rezolve Ai? Your API key will be removed."
 msgstr ""
 
 #: includes/class-assets.php:231
@@ -1702,7 +1718,7 @@ msgid "Products applied per day"
 msgstr ""
 
 #: includes/class-assets.php:306
-msgid "AI Search research is not set up for this ACE account yet. Finish setup in the ACE app, then reload this page. The Crawlers tab works either way."
+msgid "AI Search research is not set up for this Rezolve Ai account yet. Finish setup in the Rezolve Ai app, then reload this page. The Crawlers tab works either way."
 msgstr ""
 
 #: includes/class-assets.php:307
@@ -1865,7 +1881,7 @@ msgid "Saved."
 msgstr ""
 
 #: includes/class-assets.php:361
-msgid "Crawler summary sent to ACE."
+msgid "Crawler summary sent to Rezolve Ai."
 msgstr ""
 
 #: includes/class-assets.php:362
@@ -2067,7 +2083,7 @@ msgid "Private"
 msgstr ""
 
 #: includes/class-assets.php:422
-msgid "In your ACE project"
+msgid "In your Rezolve Ai project"
 msgstr ""
 
 #: includes/class-assets.php:423
@@ -2083,7 +2099,7 @@ msgid "Live on this site"
 msgstr ""
 
 #: includes/class-assets.php:427
-msgid "Add a brand voice in ACE"
+msgid "Add a brand voice in Rezolve Ai"
 msgstr ""
 
 #: includes/class-assets.php:428
@@ -2189,7 +2205,7 @@ msgid "Could not load briefs."
 msgstr ""
 
 #: includes/class-assets.php:461
-msgid "No ACE articles in WordPress yet. Generated drafts will appear here."
+msgid "No Rezolve Ai articles in WordPress yet. Generated drafts will appear here."
 msgstr ""
 
 #: includes/class-assets.php:462
@@ -2205,7 +2221,7 @@ msgid "Could not load articles."
 msgstr ""
 
 #: includes/class-assets.php:465
-msgid "Updated with the latest version from ACE."
+msgid "Updated with the latest version from Rezolve Ai."
 msgstr ""
 
 #: includes/class-assets.php:466
@@ -2475,11 +2491,11 @@ msgid "That version could not be identified."
 msgstr ""
 
 #: includes/class-feeds.php:81
-msgid "Per-site feed token from the ACE Settings screen."
+msgid "Per-site feed token from the Rezolve Ai Settings screen."
 msgstr ""
 
 #: includes/class-feeds.php:103
-msgid "Invalid or missing feed token. Copy the feed URL from the ACE Settings screen."
+msgid "Invalid or missing feed token. Copy the feed URL from the Rezolve Ai Settings screen."
 msgstr ""
 
 #: includes/class-frontend.php:151
@@ -2523,7 +2539,7 @@ msgid "This brief has no generated article yet."
 msgstr ""
 
 #: includes/class-publisher.php:148
-msgid "This post was not created by ACE."
+msgid "This post was not created by Rezolve Ai."
 msgstr ""
 
 #: includes/class-webhook.php:99

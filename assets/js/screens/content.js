@@ -16,7 +16,7 @@
 	var i18n = cfg.i18n || {};
 	var root = document.getElementById( 'agencoen-content' );
 
-	// Briefs, the type catalog and the brand voice come from ACE. The posts
+	// Briefs, the type catalog and the brand voice come from Rezolve Ai. The posts
 	// list and its counts are local, so they load either way.
 	var connected = !! cfg.connected;
 
@@ -74,7 +74,7 @@
 			core.statTile( {
 				label: t( 'statBriefs', 'Briefs' ),
 				value: connected ? ( null === state.briefsTotal ? '…' : core.num( state.briefsTotal ) ) : '–',
-				sub: t( 'statBriefsSub', 'In your ACE project' ),
+				sub: t( 'statBriefsSub', 'In your Rezolve Ai project' ),
 				accent: 'info'
 			} ) +
 			core.statTile( {
@@ -109,7 +109,7 @@
 	function brandLink( url ) {
 		var href = url || ( ( cfg.baseUrl || '' ) + '/settings/brand' );
 		return '<a href="' + core.esc( href ) + '" target="_blank" rel="noopener">' +
-			core.esc( t( 'addVoice', 'Add a brand voice in ACE' ) ) + '</a>';
+			core.esc( t( 'addVoice', 'Add a brand voice in Rezolve Ai' ) ) + '</a>';
 	}
 
 	function loadBrand() {
@@ -609,7 +609,7 @@
 			return;
 		}
 		if ( ! items.length ) {
-			el.innerHTML = emptyState( t( 'noPosts', 'No ACE articles in WordPress yet. Generated drafts will appear here.' ) );
+			el.innerHTML = emptyState( t( 'noPosts', 'No Rezolve Ai articles in WordPress yet. Generated drafts will appear here.' ) );
 			return;
 		}
 
@@ -682,7 +682,7 @@
 		core.setBusy( btn, true );
 		core.post( 'content_publish', data ).then( function ( res ) {
 			core.setBusy( btn, false );
-			core.toast( res.url ? t( 'republished', 'Updated with the latest version from ACE.' ) : t( 'draftUpdated', 'Draft updated with the latest version.' ) );
+			core.toast( res.url ? t( 'republished', 'Updated with the latest version from Rezolve Ai.' ) : t( 'draftUpdated', 'Draft updated with the latest version.' ) );
 			loadPosts( state.postsPage );
 		} ).catch( function ( err ) {
 			core.setBusy( btn, false );

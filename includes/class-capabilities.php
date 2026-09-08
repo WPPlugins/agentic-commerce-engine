@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
 class Capabilities {
 
 	/**
-	 * The capability required for every ACE admin screen and ajax action.
+	 * The capability required for every Rezolve Ai admin screen and ajax action.
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class Capabilities {
 		$cap = class_exists( 'WooCommerce' ) ? 'manage_woocommerce' : 'manage_options';
 
 		/**
-		 * Filter the capability that guards ACE screens and actions.
+		 * Filter the capability that guards Rezolve Ai screens and actions.
 		 *
 		 * @param string $cap Resolved capability.
 		 */
@@ -35,7 +35,7 @@ class Capabilities {
 	}
 
 	/**
-	 * Whether the current user may use ACE.
+	 * Whether the current user may use Rezolve Ai.
 	 *
 	 * @return bool
 	 */

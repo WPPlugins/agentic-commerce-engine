@@ -92,7 +92,7 @@ class Seo_Adapter {
 	 *
 	 * ONE PLACE, because two callers need the same answer and neither should
 	 * have to know how this class decides. {@see Apply} reports it to the
-	 * merchant in wp-admin; {@see Apply_Queue} hands it back to ACE, where it
+	 * merchant in wp-admin; {@see Apply_Queue} hands it back to Rezolve Ai, where it
 	 * becomes `last_push_error` on the screen a merchant consults to answer
 	 * "where did my content go".
 	 *
@@ -103,7 +103,7 @@ class Seo_Adapter {
 	 * the last two: Yoast and Rank Math are plain post meta, so a write to
 	 * either cannot fail once detected.
 	 *
-	 * NOT TRANSLATED, deliberately. These travel to ACE as wire diagnostics
+	 * NOT TRANSLATED, deliberately. These travel to Rezolve Ai as wire diagnostics
 	 * alongside 'product not loadable' and 'unsupported field: x', and a
 	 * ledger row that reads in the site's locale is harder to support, not
 	 * easier. The wp-admin surface has its own translated copy.
@@ -117,7 +117,7 @@ class Seo_Adapter {
 			return 'no SEO plugin installed to write the ' . $what;
 		}
 		if ( ! $this->supports_seo_write() ) {
-			return $label . ' is active but ACE could not reach its data to write the ' . $what;
+			return $label . ' is active but Rezolve Ai could not reach its data to write the ' . $what;
 		}
 		return $label . ' rejected the ' . $what . ' write';
 	}

@@ -1,7 +1,7 @@
 <?php
 /**
  * Read-only brand identity + voice summary from the platform. Shown on the
- * Content screen ("Writing as <brand>"); editing stays in the ACE app's Brand
+ * Content screen ("Writing as <brand>"); editing stays in the Rezolve Ai app's Brand
  * tab, which is the single source of truth.
  *
  * @package Agencoen

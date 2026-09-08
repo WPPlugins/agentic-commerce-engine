@@ -1,24 +1,24 @@
-=== Agentic Commerce Engine ===
+=== Rezolve Ai ===
 Contributors: authoritas
 Tags: ai, seo, woocommerce, ai search, content
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 4.10.0
+Stable tag: 4.13.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Bring ACE to WordPress: AI content generation, AI search visibility research, native AI crawler analytics, and full WooCommerce product optimization.
+Bring Rezolve Ai to WordPress: AI content generation, AI search visibility research, native AI crawler analytics, and full WooCommerce product optimization.
 
 == Description ==
 
-Agentic Commerce Engine (ACE) connects your WordPress site to the ACE platform and puts the whole product in your dashboard. The plugin is free and fully functional on its own; article generation and AI search research additionally use the ACE service. WooCommerce is optional: content, AI search research, and crawler analytics work on any WordPress site, and the full product optimization suite is available when WooCommerce is active.
+Rezolve Ai connects your WordPress site to the Rezolve Ai platform and puts the whole product in your dashboard. The plugin is free and fully functional on its own; article generation and AI search research additionally use the Rezolve Ai service. WooCommerce is optional: content, AI search research, and crawler analytics work on any WordPress site, and the full product optimization suite is available when WooCommerce is active.
 
 **Content (any WordPress site)**
 
-* **Generate long-form articles** in wp-admin: pick a content type (built-in layouts, a preset library, or your project's custom types), a topic, keywords, and a locale, and ACE writes the article with your brand voice.
+* **Generate long-form articles** in wp-admin: pick a content type (built-in layouts, a preset library, or your project's custom types), a topic, keywords, and a locale, and Rezolve Ai writes the article with your brand voice.
 * **Publish as posts** with one click: articles land as drafts (or publish immediately), as Gutenberg blocks or classic HTML, with SEO title and meta description written to your active SEO plugin and Article JSON-LD attached.
-* **Two-way with the ACE app:** articles you generate here appear in the ACE Content Hub, and briefs written in the app can be published to WordPress from the plugin.
+* **Two-way with the Rezolve Ai app:** articles you generate here appear in the Rezolve Ai Content Hub, and briefs written in the app can be published to WordPress from the plugin.
 
 **AI Search research (any WordPress site)**
 
@@ -29,11 +29,11 @@ Agentic Commerce Engine (ACE) connects your WordPress site to the ACE platform a
 
 * **Native tracking** of AI crawlers hitting your site: GPTBot, ChatGPT-User, OAI-SearchBot, ClaudeBot, PerplexityBot, Google-Extended, Applebot-Extended, Amazonbot, Bytespider, CCBot, and more.
 * **Privacy-safe by design:** only the date, the crawler name, the page path, and a count are stored, in your own database. No IP addresses, no full user agents, no query strings, nothing about logged-in users.
-* **Charts built in:** trend by crawler, top crawled pages, and a day-by-day heatmap. Optionally report daily aggregates back to ACE to see them alongside your other channels.
+* **Charts built in:** trend by crawler, top crawled pages, and a day-by-day heatmap. Optionally report daily aggregates back to Rezolve Ai to see them alongside your other channels.
 
 **Product optimization (with WooCommerce)**
 
-* **Sync** your products to ACE in batches, safely, even on catalogs of thousands of products.
+* **Sync** your products to Rezolve Ai in batches, safely, even on catalogs of thousands of products.
 * **Enrich** products with AI across every content type: titles, descriptions, SEO meta, Product schema, real-life usage scenarios, internal links, and channel feeds.
 * **Review** every suggestion with a clear before/after diff, approve per product or in bulk, or turn on auto-apply. Revert any product with one click.
 * **Display** the new on-page content with a block, shortcodes, or an automatic append below the product summary.
@@ -45,7 +45,7 @@ Product lists, review, and the served feeds page through your catalog rather tha
 
 == External services ==
 
-This plugin connects to the ACE (Agentic Commerce Engine) platform, operated by Rezolve Ai Limited (Authoritas), to perform work that cannot be done on your own server: large language model content generation and queries against third-party AI answer engines.
+This plugin connects to the Rezolve Ai platform, operated by Rezolve Ai Limited, to perform work that cannot be done on your own server: large language model content generation and queries against third-party AI answer engines.
 
 **What works without any account or connection**
 
@@ -53,13 +53,13 @@ Every feature the plugin implements locally is available immediately on activati
 
 * AI crawler analytics: tracking, path storage, retention, and all of the charts and heatmaps on the AI Search screen.
 * Publishing preferences: default post status, block or classic format, default author, and Article JSON-LD output.
-* The Content screen's Published tab, listing and linking to the ACE articles already in your WordPress database.
+* The Content screen's Published tab, listing and linking to the Rezolve Ai articles already in your WordPress database.
 * Browsing, searching, filtering and exporting your WooCommerce catalog, and the whole review queue including approve, revert, and applying stored suggestions to your products.
 * Product JSON-LD, the on-page blocks and shortcodes, the product feed URLs, and debug logging.
 
-**What needs the ACE service**
+**What needs the Rezolve Ai service**
 
-Article generation, product enrichment, AI search research runs, credit balances, scheduled catalog sync, auto-apply, and the optional daily crawler report. Writing an article or querying an AI answer engine is work your own server cannot do, so these send a request to ACE and ask for an account. Nothing else is withheld, and none of the features listed above are affected.
+Article generation, product enrichment, AI search research runs, credit balances, scheduled catalog sync, auto-apply, and the optional daily crawler report. Writing an article or querying an AI answer engine is work your own server cannot do, so these send a request to Rezolve Ai and ask for an account. Nothing else is withheld, and none of the features listed above are affected.
 
 * **What is sent on connect:** your site URL and title, the WordPress version, the WooCommerce version when present, and the plugin version. This registers your site and returns a store ID and a webhook secret.
 * **What is sent on sync and enrich (WooCommerce):** product data including title, description, short description, SKU, price, stock status, image URLs, categories, tags, and variation IDs, plus the content types you selected.
@@ -69,10 +69,10 @@ Article generation, product enrichment, AI search research runs, credit balances
 * **What is sent for article generation:** the title, topic, keywords, locale, and options you enter, and optionally the products you link. The platform uses your project's brand voice and identity to write the article.
 * **What is sent for AI search research:** the research prompts you save, the engines and markets you pick, and, when you use prompt suggestions, catalog snippets (product titles, categories, tags). Research runs are executed by the Authoritas AI search platform.
 * **What is sent on heartbeat:** a periodic health ping containing your site URL, product counts, and version numbers.
-* **Optional crawler report:** if you opt in, a daily summary of AI crawler hits (date, crawler name, page paths, counts) is sent to ACE. This is off by default and never includes IP addresses or user agents.
+* **Optional crawler report:** if you opt in, a daily summary of AI crawler hits (date, crawler name, page paths, counts) is sent to Rezolve Ai. This is off by default and never includes IP addresses or user agents.
 * **AI processing:** the platform generates content using large language models, including models provided by OpenAI. Data you send is processed by these models to produce the results.
-* **ACE terms of service:** https://ace.authoritas.com/terms
-* **ACE privacy policy:** https://ace.authoritas.com/privacy
+* **Rezolve Ai terms of service:** https://ace.authoritas.com/terms
+* **Rezolve Ai privacy policy:** https://ace.authoritas.com/privacy
 * **OpenAI terms of use:** https://openai.com/policies/terms-of-use
 * **OpenAI privacy policy:** https://openai.com/policies/privacy-policy
 
@@ -90,7 +90,7 @@ This plugin bundles the Inter typeface (weights 400, 500, and 600) for its admin
 
 1. Upload the plugin to `/wp-content/plugins/` or install the ZIP from Plugins, then Add New, then Upload.
 2. Activate the plugin. WooCommerce is optional; with it active you also get the product optimization suite.
-3. Optional: to use article generation or AI search research, go to **ACE**, then **Connection**, paste your ACE API key, and click **Connect**. Everything else already works.
+3. Optional: to use article generation or AI search research, go to **Rezolve Ai**, then **Connection**, paste your Rezolve Ai API key, and click **Connect**. Everything else already works.
 4. Open **Content** to generate your first article, **AI Search** to set up research and see crawler analytics, or (with WooCommerce) **Products** to sync and enrich your catalog.
 
 For best results on production sites, configure a real system cron for WordPress so background polling, syncing, and the daily crawler maintenance run on time.
@@ -103,7 +103,7 @@ No. On a plain WordPress site you get article generation and publishing, the AI 
 
 = Do I need anything other than an API key? =
 
-No. Paste your ACE API key and connect. That is all.
+No. Paste your Rezolve Ai API key and connect. That is all.
 
 = What does the crawler tracker store? =
 
@@ -115,7 +115,7 @@ No. Articles are created as drafts by default, and product suggestions wait in t
 
 = Does it work with Yoast, Rank Math, or AIOSEO? =
 
-Yes. SEO titles and meta descriptions are written to the active SEO plugin's fields, and ACE suppresses its own schema output when your SEO plugin already emits it.
+Yes. SEO titles and meta descriptions are written to the active SEO plugin's fields, and Rezolve Ai suppresses its own schema output when your SEO plugin already emits it.
 
 = Where are my product feeds? =
 
@@ -138,22 +138,35 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 
 == Changelog ==
 
+= 4.13.0 =
+* Fixed: shops selling variable products were being shown to AI shopping agents as out of stock, even when everything was in stock. Agents that believed it refused to buy. The plugin now sends each product's real stock status, so what agents see matches your shop.
+* Fixed: prices were shown to agents in US dollars whatever currency your shop uses. Your shop currency is now sent with every sync.
+* New: every variation of a variable product is now sent in full, with its own price, SKU, stock status and options. Agents used to see one generic "Default" option priced at your cheapest variation; they now see the real choice, and can send a shopper to the exact variation they picked.
+* Buy links now add the exact variation a shopper chose to the basket, rather than the parent product.
+
+= 4.12.0 =
+* Rezolve Ai can now tell you when this site is not sending it anything to measure. If you have connected an account but left daily reporting off, the plugin says so and offers to switch it on. Nothing about what is collected has changed, and both traffic settings still start switched off: this asks, it does not decide for you.
+* The hourly check-in now reports whether traffic tracking and reporting are on, so the results, A/B testing and AI referral screens in Rezolve Ai can tell "switched off" apart from "nothing happened yet".
+
+= 4.11.0 =
+* The plugin is now called Rezolve Ai. Same plugin, same settings, same connection: only the name has changed. You do not need to reconnect or re-enter your API key.
+
 = 4.10.0 =
 * New: AI shopping agents can now find your shop. The plugin publishes a Universal Commerce Protocol profile at /.well-known/ucp on your own domain, which is where agents like ChatGPT and Perplexity look when someone asks them to find a product.
-* What they see is the enriched product copy you have approved in ACE, not your raw product data.
+* What they see is the enriched product copy you have approved in Rezolve Ai, not your raw product data.
 * New: agents can send a shopper straight to a filled basket. A link with the products already chosen lands on your cart with everything in it, ready to check out.
-* You stay in control of the sale. Nothing is bought through ACE, and no payment details ever pass through it. The shopper always finishes on your own checkout.
-* Turn it on per project in ACE, under UCP. It is off until you switch it on, and switching it off stops this site publishing within the hour.
+* You stay in control of the sale. Nothing is bought through Rezolve Ai, and no payment details ever pass through it. The shopper always finishes on your own checkout.
+* Turn it on per project in Rezolve Ai, under UCP. It is off until you switch it on, and switching it off stops this site publishing within the hour.
 
 = 4.9.1 =
-* Fixed: your SEO title and meta description were reported as applied even on sites with no SEO plugin installed, where there is no field to write them to. ACE now says so instead, and the content stays in the queue and applies by itself once you install one. Previously it was marked done and never applied, even after you installed an SEO plugin later.
+* Fixed: your SEO title and meta description were reported as applied even on sites with no SEO plugin installed, where there is no field to write them to. Rezolve Ai now says so instead, and the content stays in the queue and applies by itself once you install one. Previously it was marked done and never applied, even after you installed an SEO plugin later.
 * Fixed: a product could show "Meta tags" on its applied list when nothing had actually been written.
 * New: Settings now tells you when no SEO plugin is detected, so you know before you run enrichment rather than after.
 
 = 4.9.0 =
-* New: WooCommerce product fields. Pick it in ACE and your enriched product data is written onto the product itself: product tags, specification attributes shown in the Additional information tab, and your SEO title and meta description.
-* Tags and attributes are only ever added. Anything already on the product stays, and a specification you set yourself is never overwritten. Revert takes back exactly what ACE added and leaves the rest alone, including anything you added afterwards.
-* Product categories are never changed. ACE can suggest one for you to look at, but it will not move your products between categories, because that would rearrange your shop menus and category pages.
+* New: WooCommerce product fields. Pick it in Rezolve Ai and your enriched product data is written onto the product itself: product tags, specification attributes shown in the Additional information tab, and your SEO title and meta description.
+* Tags and attributes are only ever added. Anything already on the product stays, and a specification you set yourself is never overwritten. Revert takes back exactly what Rezolve Ai added and leaves the rest alone, including anything you added afterwards.
+* Product categories are never changed. Rezolve Ai can suggest one for you to look at, but it will not move your products between categories, because that would rearrange your shop menus and category pages.
 * SEO title and meta description need Yoast SEO, Rank Math or All in One SEO installed, since that is where WordPress stores them.
 
 = 4.8.0 =
@@ -168,7 +181,7 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 * Fixed: the last two dates on a chart's bottom axis could overlap into one another.
 
 = 4.7.2 =
-* Fixed: on the New experiment tab, "Check this design" could appear to do nothing. When the answer was a refusal, such as no products having reached ACE yet, it flashed in a notice that disappeared after a few seconds. The reason now stays on the page until you change the design.
+* Fixed: on the New experiment tab, "Check this design" could appear to do nothing. When the answer was a refusal, such as no products having reached Rezolve Ai yet, it flashed in a notice that disappeared after a few seconds. The reason now stays on the page until you change the design.
 
 = 4.7.1 =
 * The whole plugin is now translatable. Around 120 strings across the AI Search, Content and Experiments screens were printed in English whatever your site language, because they were never passed through WordPress translation. They are now, and a test stops the same thing happening again.
@@ -195,14 +208,14 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 * New: an Experiments screen. Set up a test, see which version is winning, and start, pause or stop it, without leaving WordPress. Needs WooCommerce.
 * Before you commit any credits, the screen tells you whether your traffic can actually settle the test you have designed. An answer that would never arrive is refused up front rather than after four weeks.
 * Setting up a test does not switch on visitor splitting. That stays a separate, deliberate choice in Settings, and it stays off until you make it.
-* Fixed: content you approve in ACE now actually reaches this site, and ACE is told when it does. Until now the plugin applied only what it had generated locally and never reported the result, so ACE had no record of anything this site published.
-* This is why A/B testing could not run here. On the ACE side a version counts as live only once it has been reported as published, so tests set up for a WooCommerce store never received their settings and never started. Nothing looked wrong from either end.
-* Your Published view in ACE will now show WooCommerce alongside other channels, rather than being empty for stores that had in fact published.
-* Checking happens hourly rather than daily, so approving a version in ACE and seeing it live on your store is a matter of minutes rather than the next day.
+* Fixed: content you approve in Rezolve Ai now actually reaches this site, and Rezolve Ai is told when it does. Until now the plugin applied only what it had generated locally and never reported the result, so Rezolve Ai had no record of anything this site published.
+* This is why A/B testing could not run here. On the Rezolve Ai side a version counts as live only once it has been reported as published, so tests set up for a WooCommerce store never received their settings and never started. Nothing looked wrong from either end.
+* Your Published view in Rezolve Ai will now show WooCommerce alongside other channels, rather than being empty for stores that had in fact published.
+* Checking happens hourly rather than daily, so approving a version in Rezolve Ai and seeing it live on your store is a matter of minutes rather than the next day.
 * No new data leaves your site. The report says which item was applied and whether it worked, and nothing else.
 
 = 4.5.0 =
-* New: optional per-visitor A/B testing of product descriptions, so an experiment set up in ACE can run on this site and be measured against real customers rather than only against crawler activity. Off by default on every site, including upgrades.
+* New: optional per-visitor A/B testing of product descriptions, so an experiment set up in Rezolve Ai can run on this site and be measured against real customers rather than only against crawler activity. Off by default on every site, including upgrades.
 * This is the only feature in the plugin that stores a cookie, and it is gated on the WordPress Consent API rather than on a setting alone. With no consent plugin installed it does nothing: nothing is stored, nothing is sent, and every visitor sees your normal copy.
 * The version a visitor sees is decided in the browser, not on the server. On a cached site WordPress often does not run at all, so a server-rendered version would be written into the page cache and then served to everyone, including crawlers. Your page therefore always contains exactly one description, and a visitor in a test fetches theirs separately.
 * Crawlers are never put into a test. They carry no cookie and give no consent, which is the same rule applied to a first-time visitor: no user agent is examined anywhere.
@@ -210,7 +223,7 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 * New setting for the description block's CSS selector, for themes that do not use the standard WooCommerce layout. A selector that matches nothing means the test changes nothing, so this is worth checking before starting one.
 
 = 4.4.0 =
-* New: optional visitor pageview counting, so ACE can show what a content change did to real traffic rather than only to AI crawlers. Off by default, with its own setting separate from the crawler report.
+* New: optional visitor pageview counting, so Rezolve Ai can show what a content change did to real traffic rather than only to AI crawlers. Off by default, with its own setting separate from the crawler report.
 * Counting uses a small script on published pages rather than server-side hooks. Page caches serve most visitors without WordPress running at all, so a server-side counter would undercount heavily on exactly the sites that are busiest.
 * No cookie, no session, no IP address, hashed or otherwise. Nothing stored can identify a visitor, which is why this reports pageviews and does not claim to report unique visitors. Logged-in editors and administrators are never counted, and neither are crawlers.
 * New: optional daily WooCommerce sales totals, one row per product per day with units and net revenue, read from WooCommerce's own analytics tables so the figures match your Analytics screen. No orders, customers, names, email addresses or postal addresses are sent.
@@ -218,7 +231,7 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 
 = 4.3.1 =
 * A fresh install now opens on things to do, not on setup. The Dashboard leads with a dismissible "Start here" card of local actions (crawler analytics, catalog browsing, feed URLs, publishing preferences), tailored to whether WooCommerce is active.
-* No screen mentions an ACE account on a fresh install. The optional connect notice appears only after the plugin's own crawler analytics have recorded meaningful AI traffic, and it opens with what was measured. Nothing changes about what works: every local feature is on from activation, with or without an account, forever.
+* No screen mentions a Rezolve Ai account on a fresh install. The optional connect notice appears only after the plugin's own crawler analytics have recorded meaningful AI traffic, and it opens with what was measured. Nothing changes about what works: every local feature is on from activation, with or without an account, forever.
 * Uninstall now also removes the plugin's per-user dismissal preferences.
 * All request input is now read, unslashed, and sanitized directly inside each admin-ajax handler, immediately after its nonce check. Helper methods receive plain values and never touch request data, and no static-analysis suppressions for nonce verification remain anywhere in the plugin.
 * Admin scripts and styles are now enqueued from the screen hook suffix WordPress passes to the enqueue callback instead of reading the request URL.
@@ -228,9 +241,9 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 * Bundled the full GPLv2 license text.
 
 = 4.2.0 =
-* Every admin screen now renders without an ACE account. Nothing the plugin does on your own site is held back: AI crawler tracking and its settings, publishing preferences, Article and Product JSON-LD, the Published articles list, the product catalog and its export, and the full review queue all work on activation.
-* Only the controls that call the ACE service (article generation, product enrichment, research runs, scheduled sync, auto-apply, and the optional daily crawler report) ask for an account, and they now say so in place instead of replacing the screen.
-* The API key has moved to its own ACE, then Connection screen. Settings now opens directly on the AI crawler tracking and publishing options, which work straight after activation.
+* Every admin screen now renders without a Rezolve Ai account. Nothing the plugin does on your own site is held back: AI crawler tracking and its settings, publishing preferences, Article and Product JSON-LD, the Published articles list, the product catalog and its export, and the full review queue all work on activation.
+* Only the controls that call the Rezolve Ai service (article generation, product enrichment, research runs, scheduled sync, auto-apply, and the optional daily crawler report) ask for an account, and they now say so in place instead of replacing the screen.
+* The API key has moved to its own Rezolve Ai, then Connection screen. Settings now opens directly on the AI crawler tracking and publishing options, which work straight after activation.
 * The dashboard leads with the numbers read from your own site: AI crawler hits and article counts.
 * The notice about connecting an account can be dismissed and stays dismissed.
 * Nonce verification is an explicit first statement in every admin-ajax handler, checked before any input is read and before any other condition.
@@ -239,29 +252,35 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 
 = 4.1.0 =
 * Product feeds now require a private per-site token in their URLs, with one-click regeneration in Settings, and support conditional requests (Last-Modified/304) so unchanged catalogs cost nothing to re-fetch.
-* Admin screens render instantly from cache and fill in live numbers after paint. No wp-admin page load ever waits on the ACE platform, and during an outage the dashboard shows your last known credit balance instead of zeros.
+* Admin screens render instantly from cache and fill in live numbers after paint. No wp-admin page load ever waits on the Rezolve Ai platform, and during an outage the dashboard shows your last known credit balance instead of zeros.
 * Hardened the Product JSON-LD output against markup breakout, matching the Article emitter.
 * Storefront shortcodes renamed to [agencoen_irl] and [agencoen_internal_links].
 * Interactive requests to the platform now fail fast (12 seconds, no retries) while background jobs keep patient retries. Faster AI crawler detection on busy sites.
 
 = 4.0.0 =
 * WooCommerce is now optional: the plugin activates on any WordPress site, with the commerce suite available when WooCommerce is active.
-* New Content screen: generate long-form articles with your brand voice (built-in, preset, and custom content types), then publish them as posts with SEO meta and Article JSON-LD. Two-way sync with the ACE Content Hub.
+* New Content screen: generate long-form articles with your brand voice (built-in, preset, and custom content types), then publish them as posts with SEO meta and Article JSON-LD. Two-way sync with the Rezolve Ai Content Hub.
 * New AI Search console: manage research prompts (with AI suggestions from your catalog), launch runs across AI answer engines, and explore share of answers, competitors, per-prompt citations, and trends.
-* New native AI crawler analytics: privacy-safe tracking of GPTBot, ClaudeBot, PerplexityBot, and 20+ other AI crawlers with charts, top pages, and an optional daily report to ACE.
-* Redesigned admin matching the ACE app: KPI tiles, segmented tabs, and a dependency-free SVG chart kit (lines, areas, donuts, heatmaps, progress rings).
+* New native AI crawler analytics: privacy-safe tracking of GPTBot, ClaudeBot, PerplexityBot, and 20+ other AI crawlers with charts, top pages, and an optional daily report to Rezolve Ai.
+* Redesigned admin matching the Rezolve Ai app: KPI tiles, segmented tabs, and a dependency-free SVG chart kit (lines, areas, donuts, heatmaps, progress rings).
 * Product enrichment now runs on the platform's durable jobs API with webhook-accelerated polling.
 
 == Upgrade Notice ==
 
+= 4.13.0 =
+Important if you sell variable products. AI shopping agents were being told your stock was empty and your prices were in dollars, and were refusing to buy as a result. This release sends your real stock status, your shop currency, and every variation with its own price and options.
+
+= 4.11.0 =
+Renamed to Rezolve Ai. No action needed: your connection and settings carry over.
+
 = 4.10.0 =
-Your shop can now be found by AI shopping agents. The plugin publishes a Universal Commerce Protocol profile on your own domain, so agents can search your products and send shoppers to a ready-filled basket. Off until you turn it on in ACE, and no sale or payment ever goes through us.
+Your shop can now be found by AI shopping agents. The plugin publishes a Universal Commerce Protocol profile on your own domain, so agents can search your products and send shoppers to a ready-filled basket. Off until you turn it on in Rezolve Ai, and no sale or payment ever goes through us.
 
 = 4.9.1 =
 Fixes SEO titles and meta descriptions being reported as applied on sites with no SEO plugin installed. Affected content was marked done and could never apply, even after installing one later. It now waits in the queue and applies by itself. Recommended for anyone who has run enrichment without Yoast SEO, Rank Math or All in One SEO.
 
 = 4.9.0 =
-ACE can now write product tags and specification attributes onto your products, alongside the SEO title and meta description it already wrote. It only ever adds: your existing tags and specifications are kept, and Revert takes back exactly what it added. Your product categories are never changed.
+Rezolve Ai can now write product tags and specification attributes onto your products, alongside the SEO title and meta description it already wrote. It only ever adds: your existing tags and specifications are kept, and Revert takes back exactly what it added. Your product categories are never changed.
 
 = 4.8.0 =
 Adds a History tab: every test you have finished, what it found, and what it was worth. It now also counts money kept by not rolling out a version that lost, which was previously invisible. Fixes a lift figure that could read lower than it should on a finished test.
@@ -282,7 +301,7 @@ Experiments can now be read at a glance: charts of how each version is doing, a 
 Fixes a blank Experiments screen in 4.6.0. If you opened Experiments and saw nothing, this is the fix. Nothing else changes and no setting is touched.
 
 = 4.6.0 =
-Adds an Experiments screen for WooCommerce stores, and fixes the reason tests could not run: content approved in ACE now reaches this site, and ACE is told when it lands. This is what A/B testing needed in order to run here at all. Nothing new is collected and no setting changes.
+Adds an Experiments screen for WooCommerce stores, and fixes the reason tests could not run: content approved in Rezolve Ai now reaches this site, and Rezolve Ai is told when it lands. This is what A/B testing needed in order to run here at all. Nothing new is collected and no setting changes.
 
 = 4.5.0 =
 Adds optional per-visitor A/B testing. It is off by default and stays off after this upgrade. It is the only part of this plugin that stores a cookie, and it does nothing without visitor consent through the WordPress Consent API.
@@ -294,7 +313,7 @@ Adds optional visitor pageview counting and daily WooCommerce sales totals. Both
 Internal security hardening: every admin-ajax handler now reads and sanitizes its own input right after its nonce check. No action needed on update.
 
 = 4.2.0 =
-Every screen and every local feature now works without an ACE account. The API key has moved to its own Connection screen. No action needed on update.
+Every screen and every local feature now works without a Rezolve Ai account. The API key has moved to its own Connection screen. No action needed on update.
 
 = 4.1.0 =
 Feed URLs now carry a private token: copy the new URLs from Settings into Google and Microsoft after updating. Storefront shortcodes are renamed to [agencoen_irl] and [agencoen_internal_links]. Admin screens no longer wait on the platform to render.

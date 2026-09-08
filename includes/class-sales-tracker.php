@@ -1,6 +1,6 @@
 <?php
 /**
- * Per-product WooCommerce sales, aggregated by day and reported to ACE.
+ * Per-product WooCommerce sales, aggregated by day and reported to Rezolve Ai.
  *
  * WHY THE ANALYTICS LOOKUP TABLES AND NOT wc_get_orders()
  * wc_get_orders() is the correct CRUD API and it is the wrong tool here.

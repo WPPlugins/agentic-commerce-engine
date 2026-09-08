@@ -31,7 +31,7 @@ $agencoen_notice_hits = isset( $data['bots']['total'] ) ? (int) $data['bots']['t
 			?>
 		</strong>
 		<p class="ace-help">
-			<?php esc_html_e( 'The crawler analytics, schema output, and publishing tools you are using stay free and local either way. Connecting an optional ACE account adds work this site cannot do by itself: querying the AI answer engines about your brand, writing articles, and generating product content on ACE servers.', 'agentic-commerce-engine' ); ?>
+			<?php esc_html_e( 'The crawler analytics, schema output, and publishing tools you are using stay free and local either way. Connecting an optional Rezolve Ai account adds work this site cannot do by itself: querying the AI answer engines about your brand, writing articles, and generating product content on Rezolve Ai servers.', 'agentic-commerce-engine' ); ?>
 		</p>
 	</div>
 	<div class="ace-connect-banner-actions">

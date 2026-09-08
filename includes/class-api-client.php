@@ -1,6 +1,6 @@
 <?php
 /**
- * HTTP client for the ACE platform API (v4 surface: /api/v1/plugin/* plus the
+ * HTTP client for the Rezolve Ai platform API (v4 surface: /api/v1/plugin/* plus the
  * public jobs + enrichment + usage endpoints).
  *
  * Speaks the platform envelope: success bodies are `{ "data": ... }` and error
@@ -127,14 +127,26 @@ class Api_Client {
 	 * @return array|\WP_Error
 	 */
 	public function sync_products( $store_id, array $products ) {
-		return $this->request(
-			'POST',
-			'/api/v1/plugin/sync',
-			array(
-				'storeId'  => $store_id,
-				'products' => array_values( $products ),
-			)
+		$body = array(
+			'storeId'  => $store_id,
+			'products' => array_values( $products ),
 		);
+
+		// Store level, so it costs one field per batch rather than one per
+		// product. Until 4.13 nothing sent it and the server defaulted every
+		// WooCommerce catalogue to USD, so a GBP shop was published to shopping
+		// agents priced in dollars. OMITTED rather than sent as null when it
+		// cannot be read: the server treats the key as optional and remembers
+		// the last one it was given, and a null would fail validation for the
+		// whole batch.
+		if ( function_exists( 'get_woocommerce_currency' ) ) {
+			$currency = (string) get_woocommerce_currency();
+			if ( 3 === strlen( $currency ) ) {
+				$body['currency'] = $currency;
+			}
+		}
+
+		return $this->request( 'POST', '/api/v1/plugin/sync', $body );
 	}
 
 	/**
@@ -673,7 +685,7 @@ class Api_Client {
 	 *
 	 * A separate endpoint rather than a sixth action, because it does not only
 	 * change a status: it republishes the winner's copy to this site's own
-	 * products. ACE recomputes the verdict and refuses if the evidence no
+	 * products. Rezolve Ai recomputes the verdict and refuses if the evidence no
 	 * longer supports the arm named here, so this plugin never has to decide.
 	 *
 	 * @param string $store_id      Store id.
@@ -693,7 +705,7 @@ class Api_Client {
 	}
 
 	/**
-	 * Content ACE has approved and is waiting for this site to apply.
+	 * Content Rezolve Ai has approved and is waiting for this site to apply.
 	 *
 	 * The same endpoint the Shopify app pulls. Entries are per FIELD, not per
 	 * product, and the A/B config rides the same batch as the challenger copy
@@ -716,7 +728,7 @@ class Api_Client {
 	 * Report what landed.
 	 *
 	 * This is the half that was missing until 4.6.0. An "applied" result is
-	 * what stamps `pushed_at` on the ACE side, which is what removes the entry
+	 * what stamps `pushed_at` on the Rezolve Ai side, which is what removes the entry
 	 * from the next pull, what makes a version count as live for an A/B test,
 	 * and what puts the push on the merchant's Published screen.
 	 *
@@ -922,7 +934,7 @@ class Api_Client {
 		$code    = 'agencoen_api_error';
 		$message = sprintf(
 			/* translators: %d: HTTP status code. */
-			__( 'The ACE platform returned an error (HTTP %d).', 'agentic-commerce-engine' ),
+			__( 'The Rezolve Ai platform returned an error (HTTP %d).', 'agentic-commerce-engine' ),
 			(int) $status
 		);
 

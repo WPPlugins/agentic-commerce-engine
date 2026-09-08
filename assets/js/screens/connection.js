@@ -1,7 +1,7 @@
 /**
  * Connection screen: health check and disconnect.
  *
- * The connect button itself is wired in ace-core.js, which loads on every ACE
+ * The connect button itself is wired in ace-core.js, which loads on every Rezolve Ai
  * screen, so pasting a key keeps working wherever the form is rendered.
  *
  * @package Agencoen
@@ -49,7 +49,7 @@
 		var disconnect = $( '#ace-disconnect' );
 		if ( disconnect ) {
 			disconnect.addEventListener( 'click', function () {
-				if ( ! window.confirm( t( 'confirmDisconnect', 'Disconnect this site from ACE? Your API key will be removed.' ) ) ) {
+				if ( ! window.confirm( t( 'confirmDisconnect', 'Disconnect this site from Rezolve Ai? Your API key will be removed.' ) ) ) {
 					return;
 				}
 				core.setBusy( disconnect, true );

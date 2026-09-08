@@ -809,7 +809,7 @@
 					 * A REFUSAL BELONGS ON THE PAGE, NOT IN A TOAST.
 					 *
 					 * This used to be a toast alone. A store whose products have
-					 * not reached ACE gets "No products matched that selection.",
+					 * not reached Rezolve Ai gets "No products matched that selection.",
 					 * which is the correct and useful answer -- and it appeared
 					 * for a few seconds beside a button the merchant was still
 					 * looking away from, then vanished. Clicking "Check this

@@ -60,7 +60,7 @@ class Ajax_Aeo extends Ajax_Base {
 	private function require_feature() {
 		if ( ! $this->plugin->settings()->feature_enabled( 'ecomAeo' ) ) {
 			wp_send_json_error(
-				array( 'message' => __( 'AI Search research is not enabled for this ACE deployment.', 'agentic-commerce-engine' ) )
+				array( 'message' => __( 'AI Search research is not enabled for this Rezolve Ai deployment.', 'agentic-commerce-engine' ) )
 			);
 		}
 	}

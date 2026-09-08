@@ -1,7 +1,7 @@
 <?php
 /**
  * Emits Article JSON-LD on singular posts/pages that were materialized from
- * ACE briefs. Mirrors the v3 Product Schema emitter: hook wp_head late, gate
+ * Rezolve Ai briefs. Mirrors the v3 Product Schema emitter: hook wp_head late, gate
  * on the setting, and self-suppress when an SEO plugin already outputs
  * Article schema for the same page.
  *
@@ -56,7 +56,7 @@ class Article_Schema {
 			}
 		}
 
-		// Fallback: ACE-authored posts still get a minimal Article node when the
+		// Fallback: Rezolve Ai authored posts still get a minimal Article node when the
 		// platform graph is missing. Foreign posts get nothing.
 		if ( null === $node ) {
 			if ( '' === (string) get_post_meta( $post_id, Meta::BRIEF_ID, true ) ) {
@@ -114,7 +114,7 @@ class Article_Schema {
 	}
 
 	/**
-	 * Minimal Article node for an ACE post without a stored platform graph.
+	 * Minimal Article node for a Rezolve Ai post without a stored platform graph.
 	 *
 	 * @param int $post_id Post id.
 	 * @return array

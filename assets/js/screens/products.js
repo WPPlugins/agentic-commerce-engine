@@ -1,5 +1,5 @@
 /**
- * Agentic Commerce Engine: Products screen (v4).
+ * Rezolve Ai: Products screen (v4).
  *
  * Paged, searchable, filterable product list with bulk enrichment: status
  * filter tabs, category + sort scoping, row selection with select-all-matching,

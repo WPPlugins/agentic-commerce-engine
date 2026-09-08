@@ -24,7 +24,7 @@ class Ajax extends Ajax_Base {
 	 * never reach wc_* functions.
 	 */
 	public function register() {
-		$core     = array( 'connect', 'disconnect', 'refresh_dashboard', 'save_settings', 'regenerate_feed_token', 'dismiss_connect_notice', 'dismiss_start_card' );
+		$core     = array( 'connect', 'disconnect', 'refresh_dashboard', 'save_settings', 'regenerate_feed_token', 'dismiss_connect_notice', 'dismiss_start_card', 'dismiss_traffic_notice' );
 		$commerce = array(
 			'sync',
 			'enrich',
@@ -125,6 +125,16 @@ class Ajax extends Ajax_Base {
 		check_ajax_referer( self::NONCE_ACTION, 'nonce' );
 		$this->require_manage();
 		Settings::dismiss_connect_notice();
+		wp_send_json_success( array( 'dismissed' => true ) );
+	}
+
+	/**
+	 * Hide the "measurement is off" notice for the current user.
+	 */
+	public function dismiss_traffic_notice() {
+		check_ajax_referer( self::NONCE_ACTION, 'nonce' );
+		$this->require_manage();
+		Settings::dismiss_traffic_notice();
 		wp_send_json_success( array( 'dismissed' => true ) );
 	}
 
@@ -372,10 +382,17 @@ class Ajax extends Ajax_Base {
 			'ab_enabled'      => Settings::OPT_AB_ENABLED,
 			'ab_report'       => Settings::OPT_AB_REPORT,
 		);
+		$agencoen_traffic_before = $settings->is_traffic_report();
 		foreach ( $bools as $field => $option ) {
 			if ( isset( $_POST[ $field ] ) ) {
 				$settings->set_bool( $option, sanitize_text_field( wp_unslash( $_POST[ $field ] ) ) );
 			}
+		}
+		// A dismissal answered the question "do you want to switch this on?".
+		// Once the answer changes, the question is open again, so the notice
+		// comes back rather than staying silenced by a months-old click.
+		if ( $agencoen_traffic_before !== $settings->is_traffic_report() ) {
+			Settings::reset_traffic_notice();
 		}
 
 		if ( isset( $_POST['ab_selector'] ) ) {

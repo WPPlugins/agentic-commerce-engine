@@ -3,7 +3,7 @@
  * Experiments: a thin caching layer over the platform's
  * /api/v1/plugin/experiments/* endpoints.
  *
- * NO STATE IS MIRRORED HERE. ACE owns the experiment, its arms and its result;
+ * NO STATE IS MIRRORED HERE. Rezolve Ai owns the experiment, its arms and its result;
  * this site owns only the per-product config it serves, which `Ab_Test` already
  * stores and reconciles. A local table of experiments would be a second source
  * of truth that goes stale the moment the site is offline for a day, and the
@@ -228,7 +228,7 @@ class Experiments {
 	/**
 	 * Keep the winning version for every shopper, and finish the test.
 	 *
-	 * The arm is a hint. ACE rebuilds the verdict from the same shaping layer
+	 * The arm is a hint. Rezolve Ai rebuilds the verdict from the same shaping layer
 	 * this screen rendered and refuses if it disagrees, so a merchant who left
 	 * the page open overnight cannot publish a version the evidence has since
 	 * stopped supporting.

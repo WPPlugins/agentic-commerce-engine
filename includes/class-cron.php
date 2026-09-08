@@ -55,7 +55,7 @@ class Cron {
 
 	/**
 	 * Daily crawler-log maintenance: prune old rows, then (when opted in)
-	 * report yesterday's aggregates to ACE.
+	 * report yesterday's aggregates to Rezolve Ai.
 	 */
 	public function bot_maintenance() {
 		$this->plugin->bots()->prune();
@@ -133,28 +133,45 @@ class Cron {
 				'pluginVersion' => AGENCOEN_VERSION,
 				'wcVersion'     => defined( 'WC_VERSION' ) ? WC_VERSION : null,
 				'productCount'  => $this->plugin->repository()->count_published(),
+				// What this site is actually measuring. Sent every hour rather
+				// than once at connect time, because both switches live in
+				// wp_options and can be turned off without Rezolve Ai ever hearing.
+				// Until this shipped, nothing on the Rezolve Ai side could tell a site
+				// that had declined tracking from one that had never been asked.
+				'traffic'       => array(
+					'enabled' => $settings->is_traffic_enabled(),
+					'report'  => $settings->is_traffic_report(),
+				),
 			)
 		);
 
 		// Learn (or forget) the UCP delivery token. It rides the heartbeat so
 		// the merchant never has to paste anything, and so turning delivery off
-		// in ACE stops this site serving /.well-known/ucp within the hour
+		// in Rezolve Ai stops this site serving /.well-known/ucp within the hour
 		// rather than leaving a profile pointing at endpoints that now 404.
 		//
-		// Only acted on when the key is PRESENT: an older ACE that does not
+		// Only acted on when the key is PRESENT: an older Rezolve Ai that does not
 		// send it must not read as "delivery is off" and wipe a working token.
 		if ( is_array( $response ) && array_key_exists( 'ucp', $response ) ) {
 			$ucp = is_array( $response['ucp'] ) ? $response['ucp'] : array();
 			Ucp::set_token( isset( $ucp['token'] ) && is_string( $ucp['token'] ) ? $ucp['token'] : '' );
 		}
 
+		// Batch ceiling and supported fields, refreshed hourly. Only acted on
+		// when PRESENT and non-empty, for the same reason as the token above: an
+		// older Rezolve Ai that does not send it must not read as "sync is off"
+		// and wipe a working config.
+		if ( is_array( $response ) && ! empty( $response['syncConfig'] ) && is_array( $response['syncConfig'] ) ) {
+			$settings->save_sync_config( $response['syncConfig'] );
+		}
+
 		// Keep the dashboard balance reasonably fresh.
 		Dashboard::credits( $this->plugin, Dashboard::FETCH_FRESH );
 
-		// Pull anything ACE has approved for this site and report what landed.
+		// Pull anything Rezolve Ai has approved for this site and report what landed.
 		// HOURLY, not daily: the ack is what makes a version count as live for
 		// an A/B test, so a daily tick would put up to a day between a merchant
-		// approving a challenger in ACE and the test being able to start.
+		// approving a challenger in Rezolve Ai and the test being able to start.
 		//
 		// Woo-gated inside `drain()` rather than here, because the guard has to
 		// hold for the manual path too.

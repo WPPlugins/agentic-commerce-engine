@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
 $agencoen_content_status = $plugin->settings()->get_content_status();
 
 /*
- * Generating articles and resuming project briefs run on the ACE service, so
+ * Generating articles and resuming project briefs run on the Rezolve Ai service, so
  * those controls need a connection. The Published tab is a plain WP_Query over
  * this site's own posts (Articles::local_posts()) and always works.
  */
@@ -42,7 +42,7 @@ $agencoen_offline = empty( $connected );
 				<h2 class="ace-card-title"><?php esc_html_e( 'New article', 'agentic-commerce-engine' ); ?></h2>
 
 				<?php if ( $agencoen_offline ) : ?>
-					<p class="ace-help"><?php esc_html_e( 'Writing an article is done by a language model on ACE servers, so this form needs an ACE account. The Published tab below works without one.', 'agentic-commerce-engine' ); ?></p>
+					<p class="ace-help"><?php esc_html_e( 'Writing an article is done by a language model on Rezolve Ai servers, so this form needs a Rezolve Ai account. The Published tab below works without one.', 'agentic-commerce-engine' ); ?></p>
 				<?php endif; ?>
 
 				<div id="agencoen-content-brand-note" class="ace-help"></div>
@@ -133,7 +133,7 @@ $agencoen_offline = empty( $connected );
 	<div data-panel="briefs" hidden>
 		<div class="ace-card">
 			<?php if ( $agencoen_offline ) : ?>
-				<p class="ace-help"><?php esc_html_e( 'Briefs are stored in your ACE project, so this list is empty without an account. Articles already in WordPress are on the Published tab.', 'agentic-commerce-engine' ); ?></p>
+				<p class="ace-help"><?php esc_html_e( 'Briefs are stored in your Rezolve Ai project, so this list is empty without an account. Articles already in WordPress are on the Published tab.', 'agentic-commerce-engine' ); ?></p>
 			<?php endif; ?>
 			<div class="ace-toolbar">
 				<select class="ace-select" id="agencoen-content-briefs-status" <?php disabled( $agencoen_offline ); ?>>

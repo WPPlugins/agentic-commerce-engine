@@ -1,11 +1,11 @@
 /**
- * Agentic Commerce Engine: native SVG chart kit (v4).
+ * Rezolve Ai: native SVG chart kit (v4).
  *
  * Defines window.agencoen.charts: line, sparkline, area (stacked), barsV,
  * barsH, donut, gauge, ring, heatmap. Dependency free; every renderer is
  * (el, data, opts), clears the element, sizes itself from el.clientWidth and
  * re-renders on a shared debounced window resize. Scale math is ported from
- * the ACE app's chart kit (src/components/charts/scales.ts); the x-unified
+ * the Rezolve Ai app's chart kit (src/components/charts/scales.ts); the x-unified
  * hover mirrors LineChart.tsx and the arc math mirrors DonutChart.tsx.
  */
 ( function () {

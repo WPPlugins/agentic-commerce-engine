@@ -40,7 +40,7 @@ class Ajax_Bots extends Ajax_Base {
 	}
 
 	/**
-	 * Manual "Send now": push the last two days of aggregates to ACE.
+	 * Manual "Send now": push the last two days of aggregates to Rezolve Ai.
 	 */
 	public function report_now() {
 		check_ajax_referer( self::NONCE_ACTION, 'nonce' );

@@ -2,10 +2,10 @@
 /**
  * Universal Commerce Protocol surface for this store.
  *
- * Two routes, neither of which ACE can serve from its own domain:
+ * Two routes, neither of which Rezolve Ai can serve from its own domain:
  *
  * 1. `/.well-known/ucp` — the business profile. Shopping agents look for it on
- *    the MERCHANT's origin, so it has to be served here. ACE builds the
+ *    the MERCHANT's origin, so it has to be served here. Rezolve Ai builds the
  *    document; this plugin caches and republishes it.
  * 2. `/ucp/buy/{items}` — the permalink handoff. UCP's compact item path is
  *    `{id}:{qty}` comma separated, which Shopify's cart URL already speaks and
@@ -23,10 +23,10 @@ defined( 'ABSPATH' ) || exit;
  */
 class Ucp {
 
-	/** Option holding the UCP token ACE issued for this project. */
+	/** Option holding the UCP token Rezolve Ai issued for this project. */
 	const OPT_TOKEN = 'agencoen_ucp_token';
 
-	/** Transient holding the profile document fetched from ACE. */
+	/** Transient holding the profile document fetched from Rezolve Ai. */
 	const TRANSIENT_PROFILE = 'agencoen_ucp_profile';
 
 	/**
@@ -34,7 +34,7 @@ class Ucp {
 	 *
 	 * The spec requires a published profile to be cacheable with `max-age` of
 	 * at least 60 seconds and forbids `private`, `no-store` and `no-cache`. An
-	 * hour matches what ACE serves.
+	 * hour matches what Rezolve Ai serves.
 	 */
 	const PROFILE_TTL = HOUR_IN_SECONDS;
 
@@ -120,7 +120,7 @@ class Ucp {
 		$profile = $this->get_profile();
 
 		if ( null === $profile ) {
-			// A 404 is the honest answer when the store is not connected or ACE
+			// A 404 is the honest answer when the store is not connected or Rezolve Ai
 			// is unreachable. Serving a stub profile would be worse: an agent
 			// would negotiate against capabilities that do not exist.
 			status_header( 404 );
@@ -134,7 +134,7 @@ class Ucp {
 		header( 'Content-Type: application/json; charset=utf-8' );
 		header( 'Cache-Control: public, max-age=' . self::PROFILE_TTL );
 		header( 'X-Robots-Tag: noindex' );
-		echo $profile; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Verified JSON from ACE, echoed byte-for-byte so the document stays valid.
+		echo $profile; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Verified JSON from Rezolve Ai, echoed byte-for-byte so the document stays valid.
 		exit;
 	}
 
@@ -172,7 +172,7 @@ class Ucp {
 	}
 
 	/**
-	 * Where ACE serves this store's profile.
+	 * Where Rezolve Ai serves this store's profile.
 	 *
 	 * @return string|null
 	 */
@@ -189,10 +189,10 @@ class Ucp {
 	}
 
 	/**
-	 * Store the UCP token ACE issued for this project, and drop any cached
+	 * Store the UCP token Rezolve Ai issued for this project, and drop any cached
 	 * profile so the next request refetches against the new token.
 	 *
-	 * @param string $token Opaque token from the ACE UCP hub.
+	 * @param string $token Opaque token from the Rezolve Ai UCP hub.
 	 */
 	public static function set_token( $token ) {
 		update_option( self::OPT_TOKEN, sanitize_text_field( $token ), false );
@@ -224,6 +224,23 @@ class Ucp {
 		foreach ( $items as $item ) {
 			// Loading a permalink is explicitly NOT authorisation to place an
 			// order. It only ever fills a cart; the buyer completes checkout.
+			$product = wc_get_product( $item['id'] );
+
+			// From 4.13 the catalogue publishes one UCP variant per WooCommerce
+			// VARIATION, so the id in a buy link is usually a variation id.
+			// Resolved explicitly here, with the parent and the chosen
+			// attributes, rather than relying on WooCommerce reading our intent
+			// from a variation id passed in the product position.
+			if ( $product && $product->is_type( 'variation' ) ) {
+				WC()->cart->add_to_cart(
+					$product->get_parent_id(),
+					$item['quantity'],
+					$product->get_id(),
+					$product->get_variation_attributes()
+				);
+				continue;
+			}
+
 			WC()->cart->add_to_cart( $item['id'], $item['quantity'] );
 		}
 

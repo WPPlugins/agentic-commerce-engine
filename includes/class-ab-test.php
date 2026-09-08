@@ -38,7 +38,7 @@
  * WHY THE JAVASCRIPT IS GENERATED RATHER THAN WRITTEN HERE
  * assets/js/ace-ab-test.js is the SAME file the Shopify theme extension ships,
  * produced by src/lib/experiments/storefront-script.ts. The bucketing hash in it
- * already exists twice: once in the browser and once on the ACE server, which
+ * already exists twice: once in the browser and once on the Rezolve Ai server, which
  * reproduces an assignment months later when a result is read out. A third
  * hand-written copy for WordPress would drift, and when it did, a readout would
  * attribute conversions to the wrong arm and the number would be worse than
@@ -56,7 +56,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Ab_Test {
 
-	/** Post meta holding the storefront config ACE sent for this product. */
+	/** Post meta holding the storefront config Rezolve Ai sent for this product. */
 	const META_CONFIG = '_agencoen_ab_test';
 
 	/** Option holding the per-site hashing salt. Generated once, never sent. */
@@ -115,15 +115,15 @@ class Ab_Test {
 	/* --------------------------------------------------------------------- */
 
 	/**
-	 * Store the config ACE sent for one product, or clear it.
+	 * Store the config Rezolve Ai sent for one product, or clear it.
 	 *
-	 * Clearing on an empty value is not a tidy-up, it is how a test STOPS. ACE
+	 * Clearing on an empty value is not a tidy-up, it is how a test STOPS. Rezolve Ai
 	 * sends no config once fewer than two versions are live, and a stale config
 	 * left behind would keep bucketing visitors into a test that has ended and
 	 * keep reporting conversions that land in no readout.
 	 *
 	 * @param int   $post_id Product id.
-	 * @param array $config  Config from ACE, or empty to clear.
+	 * @param array $config  Config from Rezolve Ai, or empty to clear.
 	 */
 	public function set_config( $post_id, $config ) {
 		$post_id = (int) $post_id;
@@ -184,7 +184,7 @@ class Ab_Test {
 			return;
 		}
 
-		// The platform adapter. Everything else in the config came from ACE.
+		// The platform adapter. Everything else in the config came from Rezolve Ai.
 		$config['p']   = 'wp';
 		$config['rep'] = esc_url_raw( rest_url( 'agencoen/v1/arm' ) );
 
@@ -267,7 +267,7 @@ class Ab_Test {
 		if ( '' === $experiment || '' === $subject || '' === $arm || 'null' === $arm ) {
 			return new \WP_REST_Response( null, 204 );
 		}
-		// Same shape the database and the ACE ingest enforce. Anything else is
+		// Same shape the database and the Rezolve Ai ingest enforce. Anything else is
 		// dropped rather than stored and argued about later.
 		if ( ! preg_match( '/^[a-z0-9]{1,8}$/', $arm ) || 'control' === $arm ) {
 			return new \WP_REST_Response( null, 204 );
@@ -321,7 +321,7 @@ class Ab_Test {
 
 		// One row per visitor per experiment per day, so a visitor who reloads
 		// forty times carries the weight of one. Counting pageviews would make
-		// the variance formula on the ACE side a lie: it assumes independent
+		// the variance formula on the Rezolve Ai side a lie: it assumes independent
 		// observations, and forty reloads are one observation.
 		$wpdb->query(
 			$wpdb->prepare(
@@ -373,7 +373,7 @@ class Ab_Test {
 	/* --------------------------------------------------------------------- */
 
 	/**
-	 * Send recent exposures to ACE.
+	 * Send recent exposures to Rezolve Ai.
 	 *
 	 * Reported as EVENTS rather than as counts, because the readout folds them
 	 * by visitor to decide who converted, and a count cannot be folded. Each row
@@ -419,7 +419,7 @@ class Ab_Test {
 				'subject'    => $row['subject'],
 				// WHICH TEST the arm belongs to. The row has always carried it
 				// -- it is half the unique key on this table -- and it was
-				// simply never sent. Without it ACE could only separate two
+				// simply never sent. Without it Rezolve Ai could only separate two
 				// experiments by time, so a project running two at once pooled
 				// their shoppers in both directions.
 				'experiment' => $row['experiment'],
@@ -430,7 +430,7 @@ class Ab_Test {
 					'day'      => $row['day'],
 					'name'     => 'checkout_completed',
 					'visitor'  => $row['visitor'],
-					// The conversion carries the arm too. Without it the ACE
+					// The conversion carries the arm too. Without it the Rezolve Ai
 					// readout skips the row entirely, because an event with no
 					// arm is a visitor who was never bucketed, and the arm would
 					// show exposures with no outcome.
@@ -445,11 +445,11 @@ class Ab_Test {
 	}
 
 	/**
-	 * Pull the current experiment configs from ACE and store them per product.
+	 * Pull the current experiment configs from Rezolve Ai and store them per product.
 	 *
 	 * A FULL RECONCILE, not an apply of changes. The response is the complete
 	 * set of products running a test right now, so anything this site is holding
-	 * a config for and ACE did not send has stopped, and the config is removed.
+	 * a config for and Rezolve Ai did not send has stopped, and the config is removed.
 	 * That is the only signal a stopped test gives: there is no "experiment
 	 * ended" event, and a config left behind would keep bucketing visitors into
 	 * a test whose results nobody will ever read.
@@ -471,7 +471,7 @@ class Ab_Test {
 		if ( is_wp_error( $response ) ) {
 			// Left exactly as it was. A failed poll is not evidence that a test
 			// ended, and clearing on a network error would stop every running
-			// test on the site the first time ACE was briefly unreachable.
+			// test on the site the first time Rezolve Ai was briefly unreachable.
 			return;
 		}
 
@@ -501,16 +501,16 @@ class Ab_Test {
 	}
 
 	/**
-	 * The WordPress post behind an ACE product id.
+	 * The WordPress post behind a Rezolve Ai product id.
 	 *
-	 * ACE keys content by the identifier the FEED uses, which for this plugin is
+	 * Rezolve Ai keys content by the identifier the FEED uses, which for this plugin is
 	 * the WooCommerce product id as a string. Resolved through the repository so
 	 * a store that keys on SKU keeps working.
 	 */
 	/**
 	 * PUBLIC because `Apply_Queue` resolves the same way.
 	 *
-	 * A queue entry and an A/B config both name a product as ACE knows it,
+	 * A queue entry and an A/B config both name a product as Rezolve Ai knows it,
 	 * usually the merchant's own SKU. Two resolvers would eventually disagree,
 	 * and the failure would be a test configured on one post while its content
 	 * was written to another -- with both halves reporting success.

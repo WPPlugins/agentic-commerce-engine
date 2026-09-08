@@ -19,7 +19,7 @@ $agencoen_credits = $data['credits'];
 
 /*
  * The crawler spark and the local article counts read this site's own tables,
- * so they render either way. Credits and share-of-answers come from ACE.
+ * so they render either way. Credits and share-of-answers come from Rezolve Ai.
  */
 $agencoen_offline = empty( $connected );
 ?>
@@ -102,7 +102,7 @@ $agencoen_offline = empty( $connected );
 
 		<?php if ( ! $agencoen_offline ) : ?>
 			<div class="ace-card ace-chart-card">
-				<h2 class="ace-h3"><?php esc_html_e( 'Credits', 'agentic-commerce-engine' ); ?><button type="button" class="ace-help-icon" data-help="<?php esc_attr_e( 'Your ACE service balance. Generating content for one product or one content type uses about one credit.', 'agentic-commerce-engine' ); ?>" aria-label="<?php esc_attr_e( 'Help', 'agentic-commerce-engine' ); ?>">?</button></h2>
+				<h2 class="ace-h3"><?php esc_html_e( 'Credits', 'agentic-commerce-engine' ); ?><button type="button" class="ace-help-icon" data-help="<?php esc_attr_e( 'Your Rezolve Ai service balance. Generating content for one product or one content type uses about one credit.', 'agentic-commerce-engine' ); ?>" aria-label="<?php esc_attr_e( 'Help', 'agentic-commerce-engine' ); ?>">?</button></h2>
 				<div id="ace-chart-credits" class="ace-chart"></div>
 				<p class="ace-muted ace-center-note" id="ace-credits-caption">
 					<?php

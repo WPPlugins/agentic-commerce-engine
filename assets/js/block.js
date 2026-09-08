@@ -1,5 +1,5 @@
 /**
- * Agentic Commerce Engine — dynamic (server-rendered) editor blocks.
+ * Rezolve Ai — dynamic (server-rendered) editor blocks.
  * No build step: registers directly against the wp.* globals.
  */
 ( function ( blocks, element, serverSideRender ) {
@@ -15,8 +15,8 @@
 
 	blocks.registerBlockType( 'agencoen/irl', {
 		apiVersion: 2,
-		title: 'ACE: IRL scenario cards',
-		description: 'Real-life usage scenarios for this product (from ACE).',
+		title: 'Rezolve Ai: IRL scenario cards',
+		description: 'Real-life usage scenarios for this product (from Rezolve Ai).',
 		icon: 'images-alt2',
 		category: 'widgets',
 		edit: function () {
@@ -29,8 +29,8 @@
 
 	blocks.registerBlockType( 'agencoen/internal-links', {
 		apiVersion: 2,
-		title: 'ACE: Internal links',
-		description: 'AI-suggested related product links (from ACE).',
+		title: 'Rezolve Ai: Internal links',
+		description: 'AI-suggested related product links (from Rezolve Ai).',
 		icon: 'admin-links',
 		category: 'widgets',
 		edit: function () {

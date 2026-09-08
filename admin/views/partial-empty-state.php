@@ -1,8 +1,8 @@
 <?php
 /**
- * Connect screen, shown until the site is linked to ACE. Two columns: the API
+ * Connect screen, shown until the site is linked to Rezolve Ai. Two columns: the API
  * key form on the left (wired by ace-core.js), the brand blurb plus a
- * mode-aware list of what the ACE service adds on the right.
+ * mode-aware list of what the Rezolve Ai service adds on the right.
  *
  * @package Agencoen
  * @var Plugin $plugin  Orchestrator.
@@ -18,9 +18,9 @@ $agencoen_base = isset( $data['baseUrl'] ) ? (string) $data['baseUrl'] : '';
 	<div class="ace-card ace-connect-card">
 		<div class="ace-connect-grid">
 			<div class="ace-connect-form">
-				<h1 class="ace-h1"><?php esc_html_e( 'Connect your site to ACE', 'agentic-commerce-engine' ); ?></h1>
+				<h1 class="ace-h1"><?php esc_html_e( 'Connect your site to Rezolve Ai', 'agentic-commerce-engine' ); ?></h1>
 				<p class="ace-muted">
-					<?php esc_html_e( 'Paste your API key from the ACE platform to add AI writing and AI search research. The crawler analytics and publishing tools on this site do not use it.', 'agentic-commerce-engine' ); ?>
+					<?php esc_html_e( 'Paste your API key from the Rezolve Ai platform to add AI writing and AI search research. The crawler analytics and publishing tools on this site do not use it.', 'agentic-commerce-engine' ); ?>
 				</p>
 
 				<div id="ace-connect-error" class="ace-banner ace-banner-error" style="display:none;"></div>
@@ -48,8 +48,8 @@ $agencoen_base = isset( $data['baseUrl'] ) ? (string) $data['baseUrl'] : '';
 			</div>
 
 			<div class="ace-connect-side">
-				<img class="ace-logo" src="<?php echo esc_url( AGENCOEN_PLUGIN_URL . 'assets/img/authoritas-logo.svg' ); ?>" alt="Authoritas" />
-				<h2 class="ace-h3"><?php esc_html_e( 'What the ACE service adds', 'agentic-commerce-engine' ); ?></h2>
+				<img class="ace-logo" src="<?php echo esc_url( AGENCOEN_PLUGIN_URL . 'assets/img/rezolve-ai-logo.svg' ); ?>" alt="Rezolve Ai" />
+				<h2 class="ace-h3"><?php esc_html_e( 'What the Rezolve Ai service adds', 'agentic-commerce-engine' ); ?></h2>
 				<?php if ( $has_woo ) : ?>
 					<ul class="ace-checklist">
 						<li><?php esc_html_e( 'AI-written product titles, descriptions, and SEO meta, with a before/after review queue', 'agentic-commerce-engine' ); ?></li>

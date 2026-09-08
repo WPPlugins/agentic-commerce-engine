@@ -10,10 +10,10 @@
  *
  * ONE WRITER, TWO CALLERS
  * {@see Apply} (the local flow, driven by Meta::PENDING and Meta::CONTENT) and
- * {@see Apply_Queue} (ACE approved it and hands over one field at a time) both
+ * {@see Apply_Queue} (Rezolve Ai approved it and hands over one field at a time) both
  * come through here. The same principle Apply_Queue already applies to product
  * RESOLUTION, applied to the WRITE: a merchant who enriches from wp-admin and
- * one who approves in the ACE app must end up with the same product.
+ * one who approves in the Rezolve Ai app must end up with the same product.
  *
  * WHY ADDITIVE, AND WHY A LEDGER RATHER THAN A SNAPSHOT
  * The Shopify app replaces a product's whole tag array and restores the old one
@@ -407,7 +407,7 @@ class Native_Fields {
 
 	/**
 	 * Decode a wire value into a list. Accepts a JSON array, an array, or a
-	 * comma-separated string (which the ACE side does not send, but the Shopify
+	 * comma-separated string (which the Rezolve Ai side does not send, but the Shopify
 	 * app's tag handling has always tolerated and a hand-built payload might use).
 	 *
 	 * @param mixed $raw Wire value.

@@ -182,8 +182,8 @@ class Apply {
 	/**
 	 * Write the `woocommerce` payload's tags and attributes onto the product.
 	 *
-	 * Shares Native_Fields with the ACE-driven queue path, so a merchant who
-	 * enriches from wp-admin and one who approves in the ACE app end up with
+	 * Shares Native_Fields with the Rezolve Ai driven queue path, so a merchant who
+	 * enriches from wp-admin and one who approves in the Rezolve Ai app end up with
 	 * the same product. Saves once, and only when something actually changed.
 	 *
 	 * @param int   $product_id Product post id.
@@ -222,7 +222,7 @@ class Apply {
 		$backup     = is_array( $backup ) ? $backup : array();
 
 		// EITHER a backup or a ledger is enough to have something to undo.
-		// A product that only ever received an ACE-approved queue payload has
+		// A product that only ever received a Rezolve Ai approved queue payload has
 		// a Native_Fields ledger and no backup, because the queue path never
 		// calls backup_once(). Requiring a backup here left exactly those
 		// products' tags and attributes unrevertable.

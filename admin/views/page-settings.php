@@ -6,12 +6,12 @@
  * controls it actually renders.
  *
  * Ordered local-first on purpose: the cards a merchant can use straight after
- * activating come before anything that involves the ACE service. The account
+ * activating come before anything that involves the Rezolve Ai service. The account
  * itself is not here at all, it lives on the Connection screen.
  *
  * @package Agencoen
  * @var Plugin $plugin    Orchestrator.
- * @var bool   $connected Whether the site is connected to ACE.
+ * @var bool   $connected Whether the site is connected to Rezolve Ai.
  * @var bool   $has_woo   Whether WooCommerce is active.
  * @var array  $data      Dashboard payload.
  */
@@ -23,7 +23,7 @@ $agencoen_frequency = $agencoen_settings->get_sync_frequency();
 $agencoen_seo_label = $data['seoPlugin'];
 
 /*
- * Local preferences only. Every control here is editable without an ACE
+ * Local preferences only. Every control here is editable without a Rezolve Ai
  * account; the account itself lives on the Connection screen. The handful of
  * controls that do talk to the service (scheduled sync, auto-apply, the
  * optional daily crawler report) say so in place.
@@ -59,20 +59,20 @@ $agencoen_offline = empty( $connected );
 
 		<label class="ace-toggle">
 			<input type="checkbox" id="ace-bots-report" <?php checked( $agencoen_settings->is_bots_report() ); ?> <?php disabled( $agencoen_offline ); ?> />
-			<span><?php esc_html_e( 'Send daily crawler totals to my ACE project', 'agentic-commerce-engine' ); ?></span>
+			<span><?php esc_html_e( 'Send daily crawler totals to my Rezolve Ai project', 'agentic-commerce-engine' ); ?></span>
 		</label>
 		<p class="ace-help ace-indent">
-			<?php esc_html_e( 'Optional. When enabled, ACE receives one aggregate row per crawler per day (crawler name, date, hit count). No IP addresses, cookies, or personal information ever leave your site. This setting covers crawlers only; visitor pageviews are a separate setting below and are off unless you turn them on.', 'agentic-commerce-engine' ); ?>
+			<?php esc_html_e( 'Optional. When enabled, Rezolve Ai receives one aggregate row per crawler per day (crawler name, date, hit count). No IP addresses, cookies, or personal information ever leave your site. This setting covers crawlers only; visitor pageviews are a separate setting below and are off unless you turn them on.', 'agentic-commerce-engine' ); ?>
 		</p>
 		<?php if ( $agencoen_offline ) : ?>
-			<p class="ace-help ace-indent"><?php esc_html_e( 'Tracking, path storage, and retention all run entirely on this site and are active right now. Only the optional daily report, which sends totals to ACE, needs an account.', 'agentic-commerce-engine' ); ?></p>
+			<p class="ace-help ace-indent"><?php esc_html_e( 'Tracking, path storage, and retention all run entirely on this site and are active right now. Only the optional daily report, which sends totals to Rezolve Ai, needs an account.', 'agentic-commerce-engine' ); ?></p>
 		<?php endif; ?>
 	</div>
 
 	<!-- Storefront traffic (4.4) -->
 	<div class="ace-card">
 		<h2 class="ace-card-title"><?php esc_html_e( 'Visitor pageviews', 'agentic-commerce-engine' ); ?></h2>
-		<p class="ace-card-sub"><?php esc_html_e( 'Counts how many times each published page was viewed, so ACE can show what your content changes did to real traffic.', 'agentic-commerce-engine' ); ?></p>
+		<p class="ace-card-sub"><?php esc_html_e( 'Counts how many times each published page was viewed, so Rezolve Ai can show what your content changes did to real traffic.', 'agentic-commerce-engine' ); ?></p>
 
 		<label class="ace-toggle">
 			<input type="checkbox" id="ace-traffic-enabled" <?php checked( $agencoen_settings->is_traffic_enabled() ); ?> />
@@ -87,10 +87,10 @@ $agencoen_offline = empty( $connected );
 
 		<label class="ace-toggle">
 			<input type="checkbox" id="ace-traffic-report" <?php checked( $agencoen_settings->is_traffic_report() ); ?> <?php disabled( $agencoen_offline ); ?> />
-			<span><?php esc_html_e( 'Send daily pageview and sales totals to my ACE project', 'agentic-commerce-engine' ); ?></span>
+			<span><?php esc_html_e( 'Send daily pageview and sales totals to my Rezolve Ai project', 'agentic-commerce-engine' ); ?></span>
 		</label>
 		<p class="ace-help ace-indent">
-			<?php esc_html_e( 'Optional, and separate from the crawler setting above. ACE receives one row per page per day (page, date, view count, and the referring site for visits from search and AI assistants), and for WooCommerce stores one row per product per day (units and revenue). No order details, customer records, names, email addresses or postal addresses are ever sent.', 'agentic-commerce-engine' ); ?>
+			<?php esc_html_e( 'Optional, and separate from the crawler setting above. Rezolve Ai receives one row per page per day (page, date, view count, and the referring site for visits from search and AI assistants), and for WooCommerce stores one row per product per day (units and revenue). No order details, customer records, names, email addresses or postal addresses are ever sent.', 'agentic-commerce-engine' ); ?>
 		</p>
 		<?php if ( $agencoen_offline ) : ?>
 			<p class="ace-help ace-indent"><?php esc_html_e( 'Counting works on its own with no account. Only the daily report needs one.', 'agentic-commerce-engine' ); ?></p>
@@ -100,7 +100,7 @@ $agencoen_offline = empty( $connected );
 	<!-- Per-visitor A/B testing (4.5) -->
 	<div class="ace-card">
 		<h2 class="ace-card-title"><?php esc_html_e( 'A/B test your product copy', 'agentic-commerce-engine' ); ?></h2>
-		<p class="ace-card-sub"><?php esc_html_e( 'Shows different versions of a product description to different visitors and measures which one sells better. Experiments are set up in ACE; this switch decides whether this site takes part.', 'agentic-commerce-engine' ); ?></p>
+		<p class="ace-card-sub"><?php esc_html_e( 'Shows different versions of a product description to different visitors and measures which one sells better. Experiments are set up in Rezolve Ai; this switch decides whether this site takes part.', 'agentic-commerce-engine' ); ?></p>
 
 		<label class="ace-toggle">
 			<input type="checkbox" id="ace-ab-enabled" <?php checked( $agencoen_settings->is_ab_enabled() ); ?> />
@@ -115,10 +115,10 @@ $agencoen_offline = empty( $connected );
 
 		<label class="ace-toggle">
 			<input type="checkbox" id="ace-ab-report" <?php checked( $agencoen_settings->is_ab_report_enabled() ); ?> <?php disabled( $agencoen_offline ); ?> />
-			<span><?php esc_html_e( 'Send results to my ACE project', 'agentic-commerce-engine' ); ?></span>
+			<span><?php esc_html_e( 'Send results to my Rezolve Ai project', 'agentic-commerce-engine' ); ?></span>
 		</label>
 		<p class="ace-help ace-indent">
-			<?php esc_html_e( 'Separate from the switch above, because a test can run without the result leaving this site. ACE receives which version was shown and whether that visitor reached checkout, against a scrambled id that is unique to this site and cannot be linked back to a person or matched with any other site. No names, email addresses, order details or IP addresses are ever sent.', 'agentic-commerce-engine' ); ?>
+			<?php esc_html_e( 'Separate from the switch above, because a test can run without the result leaving this site. Rezolve Ai receives which version was shown and whether that visitor reached checkout, against a scrambled id that is unique to this site and cannot be linked back to a person or matched with any other site. No names, email addresses, order details or IP addresses are ever sent.', 'agentic-commerce-engine' ); ?>
 		</p>
 
 		<label class="ace-field">
@@ -160,7 +160,7 @@ $agencoen_offline = empty( $connected );
 
 		<label class="ace-toggle">
 			<input type="checkbox" id="ace-article-schema" <?php checked( $agencoen_settings->is_article_schema() ); ?> />
-			<span><?php esc_html_e( 'Output Article schema (JSON-LD) on published ACE articles', 'agentic-commerce-engine' ); ?></span>
+			<span><?php esc_html_e( 'Output Article schema (JSON-LD) on published Rezolve Ai articles', 'agentic-commerce-engine' ); ?></span>
 		</label>
 	</div>
 
@@ -189,7 +189,7 @@ $agencoen_offline = empty( $connected );
 			</label>
 			<p class="ace-help ace-indent ace-warn-text"><?php esc_html_e( 'When on, AI changes go live on your products automatically. You can still revert any product from the Review screen.', 'agentic-commerce-engine' ); ?></p>
 			<?php if ( $agencoen_offline ) : ?>
-				<p class="ace-help ace-indent"><?php esc_html_e( 'Scheduled sync and auto-apply send products to ACE for enrichment, so they need an account. The schema and product-page options below work on their own.', 'agentic-commerce-engine' ); ?></p>
+				<p class="ace-help ace-indent"><?php esc_html_e( 'Scheduled sync and auto-apply send products to Rezolve Ai for enrichment, so they need an account. The schema and product-page options below work on their own.', 'agentic-commerce-engine' ); ?></p>
 			<?php endif; ?>
 
 			<label class="ace-toggle">
@@ -201,13 +201,13 @@ $agencoen_offline = empty( $connected );
 				<input type="checkbox" id="ace-auto-append" <?php checked( $agencoen_settings->is_auto_append() ); ?> />
 				<span><?php esc_html_e( 'Show IRL scenarios and internal links on the product page automatically', 'agentic-commerce-engine' ); ?></span>
 			</label>
-			<p class="ace-help ace-indent"><?php esc_html_e( 'Or place them yourself with the [agencoen_irl] and [agencoen_internal_links] shortcodes, or the ACE editor blocks.', 'agentic-commerce-engine' ); ?></p>
+			<p class="ace-help ace-indent"><?php esc_html_e( 'Or place them yourself with the [agencoen_irl] and [agencoen_internal_links] shortcodes, or the Rezolve Ai editor blocks.', 'agentic-commerce-engine' ); ?></p>
 			<?php if ( '' !== $agencoen_seo_label ) : ?>
 				<p class="ace-help ace-indent">
 					<?php
 					printf(
 						/* translators: %s: SEO plugin name. */
-						esc_html__( 'Detected %s. ACE automatically suppresses its schema output when your SEO plugin already emits Product schema, to avoid duplicates.', 'agentic-commerce-engine' ),
+						esc_html__( 'Detected %s. Rezolve Ai automatically suppresses its schema output when your SEO plugin already emits Product schema, to avoid duplicates.', 'agentic-commerce-engine' ),
 						'<strong>' . esc_html( $agencoen_seo_label ) . '</strong>'
 					);
 					?>
@@ -221,7 +221,7 @@ $agencoen_offline = empty( $connected );
 				// land. Enrichment reports the same thing afterwards, per product.
 				?>
 				<p class="ace-help ace-indent">
-					<?php esc_html_e( 'No SEO plugin detected. WordPress has no SEO title or meta description field of its own, so ACE cannot write those until you install Yoast SEO, Rank Math, or All in One SEO. Everything else ACE generates still applies.', 'agentic-commerce-engine' ); ?>
+					<?php esc_html_e( 'No SEO plugin detected. WordPress has no SEO title or meta description field of its own, so Rezolve Ai cannot write those until you install Yoast SEO, Rank Math, or All in One SEO. Everything else Rezolve Ai generates still applies.', 'agentic-commerce-engine' ); ?>
 				</p>
 			<?php endif; ?>
 		</div>
@@ -231,7 +231,7 @@ $agencoen_offline = empty( $connected );
 		<!-- Channel feeds -->
 		<div class="ace-card">
 			<h2 class="ace-card-title"><?php esc_html_e( 'Channel feeds', 'agentic-commerce-engine' ); ?></h2>
-			<p class="ace-card-sub"><?php esc_html_e( 'When you enrich products with a channel feed type, ACE serves the feed at these URLs.', 'agentic-commerce-engine' ); ?></p>
+			<p class="ace-card-sub"><?php esc_html_e( 'When you enrich products with a channel feed type, Rezolve Ai serves the feed at these URLs.', 'agentic-commerce-engine' ); ?></p>
 			<?php
 			$agencoen_feeds = array(
 				'google'    => __( 'Google Merchant', 'agentic-commerce-engine' ),

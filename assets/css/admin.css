@@ -1,7 +1,7 @@
 /**
- * Agentic Commerce Engine: v4 admin design system.
+ * Rezolve Ai: v4 admin design system.
  *
- * Mirrors the ACE app's branding (indigo primary, soft cards, SegmentedTabs,
+ * Mirrors the Rezolve Ai app's branding (indigo primary, soft cards, SegmentedTabs,
  * stat tiles, native-SVG charts). Everything is scoped under .agencoen-wrap so
  * nothing leaks into the rest of wp-admin; the only exceptions are the toast
  * and chart tooltip singletons, which are appended to <body> and styled with

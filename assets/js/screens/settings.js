@@ -1,5 +1,5 @@
 /**
- * Agentic Commerce Engine: Settings screen (v4).
+ * Rezolve Ai: Settings screen (v4).
  *
  * Saves connection, automation, content publishing, AI crawler tracking, and
  * advanced settings through the agencoen_save_settings action. Only the

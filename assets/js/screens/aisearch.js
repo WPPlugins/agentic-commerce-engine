@@ -209,7 +209,7 @@
 				core.setBusy( bots.send, true );
 				core.post( 'bots_report_now', {} ).then( function () {
 					core.setBusy( bots.send, false );
-					core.toast( t( 'botsReported', 'Crawler summary sent to ACE.' ) );
+					core.toast( t( 'botsReported', 'Crawler summary sent to Rezolve Ai.' ) );
 				}, failWith( bots.send ) );
 			} );
 		}
@@ -476,7 +476,7 @@
 
 			if ( ! c.configured ) {
 				note.hidden = false;
-				note.textContent = t( 'aeoNotConfigured', 'AI Search research is not configured for your ACE workspace yet. Finish setup in the ACE dashboard, then reload this page.' );
+				note.textContent = t( 'aeoNotConfigured', 'AI Search research is not configured for your Rezolve Ai workspace yet. Finish setup in the Rezolve Ai dashboard, then reload this page.' );
 				flowForm.hidden = true;
 				runForm.hidden = true;
 				return;

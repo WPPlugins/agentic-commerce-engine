@@ -7,7 +7,7 @@
  *
  * @package Agencoen
  * @var Plugin $plugin    Orchestrator.
- * @var bool   $connected Whether the site is connected to ACE.
+ * @var bool   $connected Whether the site is connected to Rezolve Ai.
  * @var array  $data      Dashboard payload.
  */
 
@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
 			<?php esc_html_e( 'This screen works with your WooCommerce products, so it has nothing to show until WooCommerce is installed. Activate it and this screen starts working straight away, with no other setup.', 'agentic-commerce-engine' ); ?>
 		</p>
 		<ul class="ace-checklist">
-			<li><?php esc_html_e( 'Sync your product catalog to ACE', 'agentic-commerce-engine' ); ?></li>
+			<li><?php esc_html_e( 'Sync your product catalog to Rezolve Ai', 'agentic-commerce-engine' ); ?></li>
 			<li><?php esc_html_e( 'Generate AI product content and approve it in a before/after review queue', 'agentic-commerce-engine' ); ?></li>
 			<li><?php esc_html_e( 'Emit enhanced Product JSON-LD on every product page', 'agentic-commerce-engine' ); ?></li>
 			<li><?php esc_html_e( 'Serve Google, Bing, and Agentic Commerce channel feeds', 'agentic-commerce-engine' ); ?></li>

@@ -346,7 +346,7 @@ class Articles {
 	/* --------------------------------------------------------------------- */
 
 	/**
-	 * Counts of ACE-authored posts, split live vs not-yet-live.
+	 * Counts of Rezolve Ai authored posts, split live vs not-yet-live.
 	 *
 	 * @return array { drafts: int, published: int }
 	 */
@@ -409,7 +409,7 @@ class Articles {
 	}
 
 	/**
-	 * Cheap found_posts count of ACE-authored posts in the given statuses.
+	 * Cheap found_posts count of Rezolve Ai authored posts in the given statuses.
 	 *
 	 * @param string[] $statuses Post statuses.
 	 * @return int

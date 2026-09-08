@@ -1,5 +1,5 @@
 /**
- * Agentic Commerce Engine: Review screen (v4).
+ * Rezolve Ai: Review screen (v4).
  *
  * Approval queue at catalog scale: pending/applied SegmentedTabs (hash-synced
  * via core.tabs), search, paged lists with lazy before/after diffs and

@@ -1,6 +1,6 @@
 <?php
 /**
- * Turns an ACE article payload into a WordPress post.
+ * Turns a Rezolve Ai article payload into a WordPress post.
  *
  * materialize() is idempotent (the brief id is the natural key), writes SEO
  * meta through the Seo_Adapter, and converts the article HTML into Gutenberg
@@ -137,7 +137,7 @@ class Publisher {
 	}
 
 	/**
-	 * Flip an ACE-authored post live.
+	 * Flip a Rezolve Ai authored post live.
 	 *
 	 * @param int $post_id Post id.
 	 * @return string|\WP_Error Permalink of the live post.
@@ -145,7 +145,7 @@ class Publisher {
 	public function publish( $post_id ) {
 		$post_id = (int) $post_id;
 		if ( '' === (string) get_post_meta( $post_id, Meta::BRIEF_ID, true ) ) {
-			return new \WP_Error( 'agencoen_not_ace', __( 'This post was not created by ACE.', 'agentic-commerce-engine' ) );
+			return new \WP_Error( 'agencoen_not_ace', __( 'This post was not created by Rezolve Ai.', 'agentic-commerce-engine' ) );
 		}
 
 		$result = wp_update_post(
@@ -164,7 +164,7 @@ class Publisher {
 	}
 
 	/**
-	 * Trash an ACE-authored post (guarded: never trashes foreign posts).
+	 * Trash a Rezolve Ai authored post (guarded: never trashes foreign posts).
 	 *
 	 * @param int $post_id Post id.
 	 * @return bool

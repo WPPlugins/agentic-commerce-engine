@@ -65,7 +65,7 @@ class Logger {
 	}
 
 	/**
-	 * Remove anything that looks like an ACE API key from a log line.
+	 * Remove anything that looks like a Rezolve Ai API key from a log line.
 	 *
 	 * @param string $message Message.
 	 * @return string

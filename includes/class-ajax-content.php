@@ -192,7 +192,7 @@ class Ajax_Content extends Ajax_Base {
 	 * Three shapes:
 	 *  - { brief_id, post_id }               flip an existing draft live.
 	 *  - { brief_id }                        materialize with the settings status.
-	 *  - { brief_id, post_id, republish:1 }  refetch from ACE and update the post
+	 *  - { brief_id, post_id, republish:1 }  refetch from Rezolve Ai and update the post
 	 *                                        in place, keeping its current status.
 	 */
 	public function content_publish() {
@@ -212,7 +212,7 @@ class Ajax_Content extends Ajax_Base {
 		$publisher = $this->plugin->publisher();
 
 		if ( $post_id > 0 && $republish ) {
-			// Republish: pull the latest article from ACE and update in place.
+			// Republish: pull the latest article from Rezolve Ai and update in place.
 			$detail = $articles->article( $brief_id );
 			if ( is_wp_error( $detail ) ) {
 				wp_send_json_error( $this->error_payload( $detail ) );
@@ -278,7 +278,7 @@ class Ajax_Content extends Ajax_Base {
 	}
 
 	/**
-	 * Trash a materialized post (guarded to ACE-authored posts).
+	 * Trash a materialized post (guarded to Rezolve Ai authored posts).
 	 */
 	public function content_discard() {
 		check_ajax_referer( self::NONCE_ACTION, 'nonce' );

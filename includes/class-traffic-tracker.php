@@ -1,6 +1,6 @@
 <?php
 /**
- * Human pageview counting, and the nightly report back to ACE.
+ * Human pageview counting, and the nightly report back to Rezolve Ai.
  *
  * WHY A JAVASCRIPT BEACON AND NOT A template_redirect HOOK
  * The bot tracker counts on template_redirect, which is fine for crawlers: page
@@ -20,7 +20,7 @@
  * otherwise. That is a deliberate limit, not an oversight: it keeps the plugin
  * clear of WP.org's data-collection requirements and means the site owner does
  * not need a visitor consent mechanism to switch it on. The cost is that this
- * source can report PAGEVIEWS but not sessions or unique visitors, and ACE
+ * source can report PAGEVIEWS but not sessions or unique visitors, and Rezolve Ai
  * shows that limit rather than approximating a smaller number.
  *
  * @package Agencoen
@@ -286,7 +286,7 @@ class Traffic_Tracker {
 	}
 
 	/**
-	 * Send day-level aggregates to ACE.
+	 * Send day-level aggregates to Rezolve Ai.
 	 *
 	 * Opt-in and connection gated, with its OWN checkbox rather than sharing the
 	 * bot-report one. WP.org guideline 7 treats these differently and rightly

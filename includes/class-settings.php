@@ -61,6 +61,8 @@ class Settings {
 	/** Per-user dismissal of the optional-connection notice. */
 	const META_CONNECT_NOTICE = 'agencoen_connect_notice_dismissed';
 	const META_START_CARD     = 'agencoen_start_card_dismissed';
+	/** Per-user dismissal of the "measurement is off" notice. */
+	const META_TRAFFIC_NOTICE = 'agencoen_traffic_notice_dismissed';
 
 	/**
 	 * Seed defaults on activation without clobbering an already-connected store.
@@ -182,6 +184,23 @@ class Settings {
 	}
 
 	/**
+	 * Replace the sync config from a source other than register.
+	 *
+	 * It rides the hourly heartbeat as well, because register reaches a site
+	 * exactly once, at connect time. A server that lowers its batch ceiling
+	 * afterwards could otherwise never tell the sites already connected, which
+	 * is precisely what happened when 4.13 began sending variations inline and
+	 * batches grew.
+	 *
+	 * @param array $sync_config syncConfig payload.
+	 */
+	public function save_sync_config( $sync_config ) {
+		if ( ! empty( $sync_config ) && is_array( $sync_config ) ) {
+			update_option( self::OPT_SYNC_CONFIG, $sync_config );
+		}
+	}
+
+	/**
 	 * Forget the connection (keeps automation prefs).
 	 */
 	public function clear_connection() {
@@ -230,6 +249,41 @@ class Settings {
 		delete_metadata( 'user', 0, self::META_CONNECT_NOTICE, '', true );
 	}
 
+	/* --------------------------------------------------------------------- */
+	/* Traffic notice (per-user, same discipline as the connect notice)       */
+	/* --------------------------------------------------------------------- */
+
+	/**
+	 * Has the current user dismissed the "measurement is off" notice?
+	 *
+	 * @return bool
+	 */
+	public static function traffic_notice_dismissed() {
+		$user_id = get_current_user_id();
+		return $user_id > 0 && '1' === (string) get_user_meta( $user_id, self::META_TRAFFIC_NOTICE, true );
+	}
+
+	/**
+	 * Hide the traffic notice for the current user.
+	 */
+	public static function dismiss_traffic_notice() {
+		$user_id = get_current_user_id();
+		if ( $user_id > 0 ) {
+			update_user_meta( $user_id, self::META_TRAFFIC_NOTICE, '1' );
+		}
+	}
+
+	/**
+	 * Show it again for everyone.
+	 *
+	 * Called when the traffic options change, so a site owner who switches
+	 * reporting off and later wants it back is offered it again rather than
+	 * having silenced the offer permanently with one earlier dismissal.
+	 */
+	public static function reset_traffic_notice() {
+		delete_metadata( 'user', 0, self::META_TRAFFIC_NOTICE, '', true );
+	}
+
 	/**
 	 * Has the current user dismissed the Dashboard "Start here" card?
 	 *
@@ -251,7 +305,7 @@ class Settings {
 	}
 
 	/**
-	 * ACE project id linked to this site (from register/bootstrap).
+	 * Rezolve Ai project id linked to this site (from register/bootstrap).
 	 *
 	 * @return string
 	 */
@@ -485,7 +539,7 @@ class Settings {
 	}
 
 	/**
-	 * @return bool Whether daily aggregates are reported back to ACE (opt-in).
+	 * @return bool Whether daily aggregates are reported back to Rezolve Ai (opt-in).
 	 */
 	public function is_bots_report() {
 		return 'yes' === get_option( self::OPT_BOTS_REPORT, 'no' );
@@ -516,7 +570,7 @@ class Settings {
 	}
 
 	/**
-	 * Whether A/B exposures are reported to ACE.
+	 * Whether A/B exposures are reported to Rezolve Ai.
 	 *
 	 * Its own switch, separate from running the test, for the same reason the
 	 * traffic tracker splits collecting from reporting: a site owner may be
@@ -532,7 +586,7 @@ class Settings {
 	/**
 	 * CSS selector for the block holding the product description.
 	 *
-	 * Empty means "use whatever ACE sent", which is the Storefront default.
+	 * Empty means "use whatever Rezolve Ai sent", which is the Storefront default.
 	 * Themes name this block differently and a selector that matches nothing
 	 * means the script swaps nothing: the test runs for four weeks, both arms
 	 * read identical words, and it reports no difference with no error anywhere
@@ -553,7 +607,7 @@ class Settings {
 	}
 
 	/**
-	 * Whether day-level pageview and sales aggregates are sent to ACE.
+	 * Whether day-level pageview and sales aggregates are sent to Rezolve Ai.
 	 * Default off, and its own checkbox: see the constant above.
 	 *
 	 * @return bool

@@ -1,15 +1,15 @@
 <?php
 /**
- * Applying content ACE approved, and telling ACE it landed.
+ * Applying content Rezolve Ai approved, and telling Rezolve Ai it landed.
  *
  * WHY THIS EXISTS, AND WHAT ITS ABSENCE COST
  * This plugin has always had its own review and apply flow: enrichment results
  * arrive from `/api/v1/jobs/{id}/results`, land in post meta, and `Apply`
- * writes them onto the product. Entirely local. ACE was never told.
+ * writes them onto the product. Entirely local. Rezolve Ai was never told.
  *
  * That was survivable while the only question was "is the content live", which
  * the site can answer for itself. It stopped being survivable when per-visitor
- * A/B shipped in 4.5.0, because on the ACE side a version counts as live only
+ * A/B shipped in 4.5.0, because on the Rezolve Ai side a version counts as live only
  * when its review row is `approved` AND carries a `pushed_at` -- and nothing
  * here ever set one. So `GET /api/v1/plugin/experiments` returned an empty
  * config set on every poll, for every site, forever, and the challenger-copy
@@ -22,14 +22,14 @@
  *
  * WHY IT PULLS RATHER THAN BEING PUSHED
  * Same reason `Ab_Test::sync_configs()` polls. A site offline for a week
- * catches up on its next tick rather than needing ACE to have retried, and a
+ * catches up on its next tick rather than needing Rezolve Ai to have retried, and a
  * site that never connects simply never asks.
  *
  * WHY IT DOES NOT GO THROUGH `Apply`
  * `Apply::apply()` reads `Meta::PENDING` -- content this site requested and is
- * holding. A queue entry is the opposite direction: ACE has already decided,
+ * holding. A queue entry is the opposite direction: Rezolve Ai has already decided,
  * and hands over one field at a time. Routing it through the local flow would
- * mean writing meta purely so it could be read back, and would make an ACE
+ * mean writing meta purely so it could be read back, and would make a Rezolve Ai
  * approval indistinguishable from a local one in the audit trail.
  *
  * @package Agentic_Commerce_Engine
@@ -60,7 +60,7 @@ class Apply_Queue {
 	/**
 	 * Pull, apply, ack.
 	 *
-	 * A failed pull leaves everything alone: an unreachable ACE is not evidence
+	 * A failed pull leaves everything alone: an unreachable Rezolve Ai is not evidence
 	 * that anything changed. A failed APPLY is reported as such and the entry
 	 * stays queued, because the queue selects on `pushed_at IS NULL` and only a
 	 * successful ack clears it.
@@ -132,7 +132,7 @@ class Apply_Queue {
 			// again, and applying the same value twice is harmless. Silently
 			// swallowing it would leave a merchant's Published screen empty
 			// with no account of why.
-			$this->plugin->logger()->error( 'apply-queue ack failed, content is live but ACE was not told: ' . $ack->get_error_message() );
+			$this->plugin->logger()->error( 'apply-queue ack failed, content is live but Rezolve Ai was not told: ' . $ack->get_error_message() );
 			return $counts;
 		}
 
@@ -162,7 +162,7 @@ class Apply_Queue {
 		}
 
 		// ONE resolution rule, shared with Ab_Test. A queue entry names a
-		// product the way ACE knows it -- usually the merchant's own SKU -- and
+		// product the way Rezolve Ai knows it -- usually the merchant's own SKU -- and
 		// a second SKU-to-post resolver here would drift from the one the A/B
 		// config already uses, so a test could be configured on one post and
 		// its content written to another.
@@ -251,14 +251,14 @@ class Apply_Queue {
 				return true;
 		}
 
-		// An unknown field is not a failure to retry forever. A newer ACE may
+		// An unknown field is not a failure to retry forever. A newer Rezolve Ai may
 		// send a field this version cannot write, and reporting it applied
 		// would be a lie; reporting it failed would re-deliver it on every
 		// tick until the site upgrades. Failed is the honest answer, and the
 		// message says which field so the log names the version gap.
 		//
 		// THIS IS ALSO THE CATEGORY GUARD. There is deliberately no `categories`
-		// case above, and no writer for one in Native_Fields, so a future ACE
+		// case above, and no writer for one in Native_Fields, so a future Rezolve Ai
 		// that started sending product categories would land here and be
 		// refused rather than restructuring a merchant's storefront navigation.
 		// Same for `productType`: WooCommerce's product_type is

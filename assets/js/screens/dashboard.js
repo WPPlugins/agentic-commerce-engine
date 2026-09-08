@@ -1,5 +1,5 @@
 /**
- * Agentic Commerce Engine: Dashboard screen (v4).
+ * Rezolve Ai: Dashboard screen (v4).
  *
  * Boots from the inline window.agencoenBoot payload (localized by Assets):
  * KPI stat row, charts grid (coverage donut, score bars, applied-per-day
@@ -110,7 +110,7 @@
 			} ) );
 		}
 
-		// Credits belong to an ACE account; without one there is nothing to show.
+		// Credits belong to a Rezolve Ai account; without one there is nothing to show.
 		if ( cfg.connected ) {
 			var credits = d.credits || {};
 			var creditCap = Math.max( credits.limit || 0, ( credits.used || 0 ) + ( credits.balance || 0 ) );

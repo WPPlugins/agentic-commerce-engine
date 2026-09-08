@@ -1,6 +1,6 @@
 <?php
 /**
- * Receives signed callbacks from the ACE platform.
+ * Receives signed callbacks from the Rezolve Ai platform.
  *
  * Since 4.0 the platform's durable webhook queue posts typed events
  * (enrichment.job.*, article.*, content.published) signed with

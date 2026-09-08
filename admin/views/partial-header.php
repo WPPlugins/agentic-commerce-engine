@@ -1,11 +1,11 @@
 <?php
 /**
- * Branded page header: static aurora accent, brand row (logo + ACE wordmark +
+ * Branded page header: static aurora accent, brand row (logo + Rezolve Ai wordmark +
  * screen title), connection pill, and quick links.
  *
  * @package Agencoen
  * @var Plugin $plugin    Orchestrator.
- * @var bool   $connected Whether the site is connected to ACE.
+ * @var bool   $connected Whether the site is connected to Rezolve Ai.
  * @var bool   $has_woo   Whether WooCommerce is active.
  * @var array  $data      Dashboard payload.
  * @var string $title     Current screen title.
@@ -23,16 +23,16 @@ $agencoen_base = isset( $data['baseUrl'] ) ? (string) $data['baseUrl'] : '';
 	</div>
 	<div class="ace-header-main">
 		<div class="ace-header-brand">
-			<img class="ace-logo" src="<?php echo esc_url( AGENCOEN_PLUGIN_URL . 'assets/img/authoritas-logo.svg' ); ?>" alt="Authoritas" />
+			<img class="ace-logo" src="<?php echo esc_url( AGENCOEN_PLUGIN_URL . 'assets/img/rezolve-ai-logo.svg' ); ?>" alt="Rezolve Ai" />
 			<span class="ace-brand-sep" aria-hidden="true"></span>
 			<div class="ace-brand-copy">
-				<span class="ace-brand-name">ACE</span>
+				<span class="ace-brand-name">Rezolve Ai</span>
 				<span class="ace-brand-title"><?php echo esc_html( isset( $title ) ? $title : '' ); ?></span>
 			</div>
 		</div>
 		<div class="ace-header-side">
-			<nav class="ace-header-links" aria-label="<?php esc_attr_e( 'ACE quick links', 'agentic-commerce-engine' ); ?>">
-				<a href="<?php echo esc_url( $agencoen_base ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Open ACE app', 'agentic-commerce-engine' ); ?></a>
+			<nav class="ace-header-links" aria-label="<?php esc_attr_e( 'Rezolve Ai quick links', 'agentic-commerce-engine' ); ?>">
+				<a href="<?php echo esc_url( $agencoen_base ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Open Rezolve Ai app', 'agentic-commerce-engine' ); ?></a>
 				<a href="<?php echo esc_url( $agencoen_base . '/docs' ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Docs', 'agentic-commerce-engine' ); ?></a>
 			</nav>
 			<?php if ( ! empty( $connected ) ) : ?>

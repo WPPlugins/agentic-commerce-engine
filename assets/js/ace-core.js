@@ -1,5 +1,5 @@
 /**
- * Agentic Commerce Engine: shared admin runtime (v4).
+ * Rezolve Ai: shared admin runtime (v4).
  *
  * Defines window.agencoen.core: the ajax bridge, toasts, formatting helpers,
  * skeletons, SegmentedTabs wiring, stat tiles, chips, a backoff poller, and
@@ -110,7 +110,7 @@
 			toast(
 				esc( err.message || t( 'genericError', 'Something went wrong.' ) ) +
 				' <a href="' + encodeURI( err.accountUrl ) + '" target="_blank" rel="noopener">' +
-				esc( t( 'accountLink', 'Open your ACE account' ) ) + '</a>',
+				esc( t( 'accountLink', 'Open your Rezolve Ai account' ) ) + '</a>',
 				'error',
 				true
 			);
@@ -476,6 +476,24 @@
 	}
 
 	/* ------------------------------------------------------------------ */
+	/* "Nothing is being measured" notice (dismissed per user)             */
+	/* ------------------------------------------------------------------ */
+
+	function wireTrafficNotice() {
+		var notice = document.getElementById( 'ace-traffic-notice' );
+		var btn = document.getElementById( 'ace-traffic-notice-dismiss' );
+		if ( ! notice || ! btn ) {
+			return;
+		}
+		btn.addEventListener( 'click', function () {
+			notice.parentNode.removeChild( notice );
+			post( 'dismiss_traffic_notice', {} ).catch( function () {
+				// Nothing to recover: it reappears on the next page load.
+			} );
+		} );
+	}
+
+	/* ------------------------------------------------------------------ */
 	/* Dashboard "Start here" card (dismissed per user)                    */
 	/* ------------------------------------------------------------------ */
 
@@ -587,6 +605,7 @@
 	document.addEventListener( 'DOMContentLoaded', function () {
 		wireConnect();
 		wireConnectNotice();
+		wireTrafficNotice();
 		wireStartCard();
 		wireHelp();
 		wireSelectOnClick();

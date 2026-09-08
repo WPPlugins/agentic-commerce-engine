@@ -190,7 +190,7 @@ class Poller {
 
 		// The `woocommerce` type carries SEO too, and a merchant may well select
 		// it without also selecting meta tags. LAST in precedence, and only for
-		// a field still empty: when both ran, ACE folded the meta-tags output
+		// a field still empty: when both ran, Rezolve Ai folded the meta-tags output
 		// onto the feed record before enriching it, so the two agree, and
 		// preferring the dedicated type keeps one obvious source of truth.
 		//

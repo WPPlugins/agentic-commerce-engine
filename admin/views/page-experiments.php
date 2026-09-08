@@ -4,7 +4,7 @@
  * cockpit. Every panel is filled by assets/js/screens/experiments.js; nothing
  * here is rendered server-side because none of it lives on this site.
  *
- * ACE owns the experiment, its arms and its result. This site owns only the
+ * Rezolve Ai owns the experiment, its arms and its result. This site owns only the
  * per-product config it serves, which Ab_Test stores and reconciles. So the
  * screen is a view onto the platform, and a stale local copy is exactly the
  * failure it must not have: a test stopped last week still showing as running.
@@ -59,7 +59,7 @@ $agencoen_ab_on = $plugin->settings()->is_ab_enabled();
 	</div>
 
 	<!-- ── History: finished tests, and what testing has been worth ─────── -->
-	<?php // Nothing server-rendered here either. The ledger lives on ACE, and a ?>
+	<?php // Nothing server-rendered here either. The ledger lives on Rezolve Ai, and a ?>
 	<?php // stale local copy of "which version won" is the one thing this      ?>
 	<?php // screen must never show.                                            ?>
 	<div class="ace-panel" data-panel="history" hidden>

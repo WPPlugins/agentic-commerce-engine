@@ -107,7 +107,7 @@ class Db {
 		// A/B exposures. `visitor` is a salted hash computed at write time; the
 		// raw cookie value is never stored. The unique key is one row per
 		// visitor per experiment per day, so a visitor who reloads forty times
-		// carries the weight of one -- the ACE estimator's variance assumes
+		// carries the weight of one -- the Rezolve Ai estimator's variance assumes
 		// independent observations, and forty reloads are one observation.
 		$ab     = self::ab_events_table();
 		$ab_sql = "CREATE TABLE {$ab} (

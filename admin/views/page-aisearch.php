@@ -9,7 +9,7 @@
  *
  * @package Agencoen
  * @var Plugin $plugin    Orchestrator.
- * @var bool   $connected Whether the store is connected to ACE.
+ * @var bool   $connected Whether the store is connected to Rezolve Ai.
  * @var bool   $has_woo   Whether WooCommerce is active (unused here).
  * @var array  $data      Dashboard payload (unused here).
  */
@@ -51,13 +51,13 @@ $agencoen_tab_order = array( 'overview', 'prompts', 'competitors', 'crawlers', '
 			<section data-panel="<?php echo esc_attr( $agencoen_tab_key ); ?>" <?php echo esc_attr( $agencoen_tab_key === $agencoen_default_tab ? '' : 'hidden' ); ?>>
 				<?php if ( ! $agencoen_aeo_enabled ) : ?>
 					<div class="ace-card ace-empty">
-						<h2 class="ace-card-title"><?php esc_html_e( 'AI Search research is not part of this ACE plan', 'agentic-commerce-engine' ); ?></h2>
-						<p><?php esc_html_e( 'Research runs query AI answer engines on ACE servers, and that capability is not included on the ACE account this site is linked to. The Crawlers tab is unaffected: it tracks AI crawler visits directly on this site and needs no account at all.', 'agentic-commerce-engine' ); ?></p>
+						<h2 class="ace-card-title"><?php esc_html_e( 'AI Search research is not part of this Rezolve Ai plan', 'agentic-commerce-engine' ); ?></h2>
+						<p><?php esc_html_e( 'Research runs query AI answer engines on Rezolve Ai servers, and that capability is not included on the Rezolve Ai account this site is linked to. The Crawlers tab is unaffected: it tracks AI crawler visits directly on this site and needs no account at all.', 'agentic-commerce-engine' ); ?></p>
 					</div>
 				<?php else : ?>
 					<div class="ace-card ace-empty">
-						<h2 class="ace-card-title"><?php esc_html_e( 'AI Search research runs on ACE servers', 'agentic-commerce-engine' ); ?></h2>
-						<p><?php esc_html_e( 'Track how AI assistants answer questions about your products, which brands they recommend, and which pages they cite. Querying those engines is work this site cannot do by itself, so it needs an ACE account. The Crawlers tab works without one.', 'agentic-commerce-engine' ); ?></p>
+						<h2 class="ace-card-title"><?php esc_html_e( 'AI Search research runs on Rezolve Ai servers', 'agentic-commerce-engine' ); ?></h2>
+						<p><?php esc_html_e( 'Track how AI assistants answer questions about your products, which brands they recommend, and which pages they cite. Querying those engines is work this site cannot do by itself, so it needs a Rezolve Ai account. The Crawlers tab works without one.', 'agentic-commerce-engine' ); ?></p>
 						<a class="ace-btn ace-btn-primary" href="<?php echo esc_url( admin_url( 'admin.php?page=agencoen-connection' ) ); ?>"><?php esc_html_e( 'Open Connection', 'agentic-commerce-engine' ); ?></a>
 					</div>
 				<?php endif; ?>
@@ -104,7 +104,7 @@ $agencoen_tab_order = array( 'overview', 'prompts', 'competitors', 'crawlers', '
 		<section data-panel="prompts" hidden>
 			<div class="ace-card">
 				<h2 class="ace-card-title"><?php esc_html_e( 'Research prompts', 'agentic-commerce-engine' ); ?></h2>
-				<p class="ace-help"><?php esc_html_e( 'These are the questions ACE asks the AI engines on every run. Add or replace prompts from the Runs tab.', 'agentic-commerce-engine' ); ?></p>
+				<p class="ace-help"><?php esc_html_e( 'These are the questions Rezolve Ai asks the AI engines on every run. Add or replace prompts from the Runs tab.', 'agentic-commerce-engine' ); ?></p>
 				<div class="ace-toolbar">
 					<input
 						type="search"
@@ -241,7 +241,7 @@ $agencoen_tab_order = array( 'overview', 'prompts', 'competitors', 'crawlers', '
 			</select>
 			<label class="ace-toggle">
 				<input type="checkbox" id="agencoen-aeo-bots-report" <?php checked( $plugin->settings()->is_bots_report() ); ?> <?php disabled( ! $connected ); ?> />
-				<span><?php esc_html_e( 'Send daily summary to ACE', 'agentic-commerce-engine' ); ?></span>
+				<span><?php esc_html_e( 'Send daily summary to Rezolve Ai', 'agentic-commerce-engine' ); ?></span>
 			</label>
 			<button type="button" class="ace-btn ace-btn-secondary ace-btn-sm" id="agencoen-aeo-bots-send" <?php disabled( ! $connected ); ?>><?php esc_html_e( 'Send now', 'agentic-commerce-engine' ); ?></button>
 		</div>

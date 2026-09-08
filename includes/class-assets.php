@@ -1,6 +1,6 @@
 <?php
 /**
- * Enqueues the v4 admin bundle on ACE screens only: the design-system
+ * Enqueues the v4 admin bundle on Rezolve Ai screens only: the design-system
  * stylesheet, the shared runtime (ace-core.js), the SVG chart kit
  * (ace-charts.js), and exactly one per-screen script from assets/js/screens/.
  * Localizes agencoenConfig on the core script and inlines the dashboard boot
@@ -52,7 +52,7 @@ class Assets {
 	}
 
 	/**
-	 * Enqueue assets on ACE screens only.
+	 * Enqueue assets on Rezolve Ai screens only.
 	 *
 	 * @param string $hook_suffix Admin page hook suffix passed to admin_enqueue_scripts.
 	 */
@@ -115,7 +115,7 @@ class Assets {
 	 * using the same derivation core used when the pages were registered.
 	 *
 	 * @param string $hook Hook suffix passed to admin_enqueue_scripts.
-	 * @return string Screen key, or '' when this is not an ACE screen.
+	 * @return string Screen key, or '' when this is not a Rezolve Ai screen.
 	 */
 	private function screen_for_hook( $hook ) {
 		foreach ( self::SCREENS as $slug => $screen ) {
@@ -210,7 +210,7 @@ class Assets {
 			'done'              => __( 'Done.', 'agentic-commerce-engine' ),
 			'loadMore'          => __( 'Load more', 'agentic-commerce-engine' ),
 			'saving'            => __( 'Saving…', 'agentic-commerce-engine' ),
-			'accountLink'       => __( 'Open your ACE account', 'agentic-commerce-engine' ),
+			'accountLink'       => __( 'Open your Rezolve Ai account', 'agentic-commerce-engine' ),
 			'expand'            => __( 'Expand', 'agentic-commerce-engine' ),
 			'justNow'           => __( 'just now', 'agentic-commerce-engine' ),
 			/* translators: %s: number of minutes. */
@@ -225,7 +225,7 @@ class Assets {
 			/* Connection */
 			'connecting'        => __( 'Connecting…', 'agentic-commerce-engine' ),
 			'connectError'      => __( 'Could not connect. Check your API key and try again.', 'agentic-commerce-engine' ),
-			'confirmDisconnect' => __( 'Disconnect this site from ACE? Your API key will be removed.', 'agentic-commerce-engine' ),
+			'confirmDisconnect' => __( 'Disconnect this site from Rezolve Ai? Your API key will be removed.', 'agentic-commerce-engine' ),
 
 			/* Sync + enrichment */
 			'syncing'           => __( 'Syncing…', 'agentic-commerce-engine' ),
@@ -303,7 +303,7 @@ class Assets {
 			'appliedPerDay'     => __( 'Products applied per day', 'agentic-commerce-engine' ),
 
 			/* AI Search */
-			'aeoNotConfigured'  => __( 'AI Search research is not set up for this ACE account yet. Finish setup in the ACE app, then reload this page. The Crawlers tab works either way.', 'agentic-commerce-engine' ),
+			'aeoNotConfigured'  => __( 'AI Search research is not set up for this Rezolve Ai account yet. Finish setup in the Rezolve Ai app, then reload this page. The Crawlers tab works either way.', 'agentic-commerce-engine' ),
 			'estimatePrefix'    => __( 'Estimated cost:', 'agentic-commerce-engine' ),
 
 			/*
@@ -358,7 +358,7 @@ class Assets {
 			'botsHitsCol'           => __( 'Hits', 'agentic-commerce-engine' ),
 			'botsLastSeen'          => __( 'Last seen', 'agentic-commerce-engine' ),
 			'saved'                 => __( 'Saved.', 'agentic-commerce-engine' ),
-			'botsReported'          => __( 'Crawler summary sent to ACE.', 'agentic-commerce-engine' ),
+			'botsReported'          => __( 'Crawler summary sent to Rezolve Ai.', 'agentic-commerce-engine' ),
 			'vsPrevRun'             => __( 'vs previous run', 'agentic-commerce-engine' ),
 			'shareOfAnswers'        => __( 'Share of answers', 'agentic-commerce-engine' ),
 			'promptsTracked'        => __( 'Prompts tracked', 'agentic-commerce-engine' ),
@@ -419,12 +419,12 @@ class Assets {
 			'postScheduled'    => __( 'Scheduled', 'agentic-commerce-engine' ),
 			'postPrivate'      => __( 'Private', 'agentic-commerce-engine' ),
 			'statBriefs'       => __( 'Briefs', 'agentic-commerce-engine' ),
-			'statBriefsSub'    => __( 'In your ACE project', 'agentic-commerce-engine' ),
+			'statBriefsSub'    => __( 'In your Rezolve Ai project', 'agentic-commerce-engine' ),
 			'statDrafts'       => __( 'WP drafts', 'agentic-commerce-engine' ),
 			'statDraftsSub'    => __( 'Waiting to go live', 'agentic-commerce-engine' ),
 			'statPublished'    => __( 'Published', 'agentic-commerce-engine' ),
 			'statPublishedSub' => __( 'Live on this site', 'agentic-commerce-engine' ),
-			'addVoice'         => __( 'Add a brand voice in ACE', 'agentic-commerce-engine' ),
+			'addVoice'         => __( 'Add a brand voice in Rezolve Ai', 'agentic-commerce-engine' ),
 			'writingAs'        => __( 'Writing as %s.', 'agentic-commerce-engine' ),
 			'typesBuiltin'     => __( 'Built in', 'agentic-commerce-engine' ),
 			'typesPresets'     => __( 'Presets', 'agentic-commerce-engine' ),
@@ -458,11 +458,11 @@ class Assets {
 			'colUpdated'       => __( 'Updated', 'agentic-commerce-engine' ),
 			'rowView'          => __( 'View', 'agentic-commerce-engine' ),
 			'briefsFailed'     => __( 'Could not load briefs.', 'agentic-commerce-engine' ),
-			'noPosts'          => __( 'No ACE articles in WordPress yet. Generated drafts will appear here.', 'agentic-commerce-engine' ),
+			'noPosts'          => __( 'No Rezolve Ai articles in WordPress yet. Generated drafts will appear here.', 'agentic-commerce-engine' ),
 			'colDate'          => __( 'Date', 'agentic-commerce-engine' ),
 			'rowRepublish'     => __( 'Republish latest', 'agentic-commerce-engine' ),
 			'postsFailed'      => __( 'Could not load articles.', 'agentic-commerce-engine' ),
-			'republished'      => __( 'Updated with the latest version from ACE.', 'agentic-commerce-engine' ),
+			'republished'      => __( 'Updated with the latest version from Rezolve Ai.', 'agentic-commerce-engine' ),
 			'draftUpdated'     => __( 'Draft updated with the latest version.', 'agentic-commerce-engine' ),
 
 			/* Experiments screen */

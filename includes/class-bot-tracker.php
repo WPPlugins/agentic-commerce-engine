@@ -6,7 +6,7 @@
  * into one aggregate row per (day, bot, path) with a single upsert; no IPs,
  * no full user agents, no query strings are ever stored. Cron runs prune()
  * daily (retention + row cap + long-tail folding) and, when the site opted
- * in, report_back() posts day-level aggregates to the ACE platform.
+ * in, report_back() posts day-level aggregates to the Rezolve Ai platform.
  *
  * @package Agencoen
  */
@@ -30,7 +30,7 @@ class Bot_Tracker {
 	const OTHER_PATH     = '(other)';
 	const NOT_FOUND_PATH = '(404)';
 
-	/** Paths reported back to ACE per bot per day. */
+	/** Paths reported back to Rezolve Ai per bot per day. */
 	const REPORT_PATHS = 100;
 
 	/** @var Plugin */
@@ -282,7 +282,7 @@ class Bot_Tracker {
 	/* --------------------------------------------------------------------- */
 
 	/**
-	 * Post the last two days of aggregates (yesterday + today so far) to ACE.
+	 * Post the last two days of aggregates (yesterday + today so far) to Rezolve Ai.
 	 * Re-posting a day is safe: the platform replaces it idempotently.
 	 *
 	 * @return true|\WP_Error True on success (or nothing to send).
@@ -354,7 +354,7 @@ class Bot_Tracker {
 
 		$result = $this->plugin->api()->bot_traffic_ingest( $settings->get_store_id(), $days );
 		if ( is_wp_error( $result ) ) {
-			$this->plugin->logger()->error( 'Crawler report to ACE failed: ' . $result->get_error_message() );
+			$this->plugin->logger()->error( 'Crawler report to Rezolve Ai failed: ' . $result->get_error_message() );
 			return $result;
 		}
 		return true;

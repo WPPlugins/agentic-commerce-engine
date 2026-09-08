@@ -1,6 +1,6 @@
 <?php
 /**
- * Pushes WooCommerce products to the ACE platform in batches of <= maxBatchSize.
+ * Pushes WooCommerce products to the Rezolve Ai platform in batches of <= maxBatchSize.
  *
  * Manual "Sync now" runs the first page inline (instant feedback) and, when the
  * catalog spans more pages, hands the rest to a self-rescheduling cron event so

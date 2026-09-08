@@ -1,11 +1,11 @@
 <?php
 /**
- * Plugin Name:       Agentic Commerce Engine
+ * Plugin Name:       Rezolve Ai
  * Plugin URI:        https://ace.authoritas.com
- * Description:       Free AI crawler analytics, schema output and publishing tools for any WordPress site. Article generation and AI search research additionally use the ACE service.
- * Version:           4.10.0
- * Author:            Authoritas
- * Author URI:        https://authoritas.com
+ * Description:       Free AI crawler analytics, schema output and publishing tools for any WordPress site. Article generation and AI search research additionally use the Rezolve Ai service.
+ * Version:           4.13.0
+ * Author:            Rezolve Ai Limited
+ * Author URI:        https://rezolve.com
  * License:           GPLv2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       agentic-commerce-engine
@@ -30,7 +30,7 @@ defined( 'ABSPATH' ) || exit;
  * Constants
  * -------------------------------------------------------------------------
  */
-define( 'AGENCOEN_VERSION', '4.10.0' );
+define( 'AGENCOEN_VERSION', '4.13.0' );
 define( 'AGENCOEN_PLUGIN_FILE', __FILE__ );
 define( 'AGENCOEN_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AGENCOEN_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -98,7 +98,7 @@ function agencoen_requirements_error() {
 	if ( version_compare( PHP_VERSION, '8.0', '<' ) ) {
 		return sprintf(
 			/* translators: %s: current PHP version. */
-			__( 'Agentic Commerce Engine requires PHP 8.0 or higher. You are running %s.', 'agentic-commerce-engine' ),
+			__( 'Rezolve Ai requires PHP 8.0 or higher. You are running %s.', 'agentic-commerce-engine' ),
 			PHP_VERSION
 		);
 	}
