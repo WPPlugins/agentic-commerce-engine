@@ -171,6 +171,28 @@
 				'</div></div><div class="ace-rev-body" hidden></div></div>';
 		}
 
+		// The two tab counts are rendered once by PHP and then owned by this
+		// screen. Only the pending one was ever updated, so approving anything
+		// left "Applied" reading whatever it said when the page loaded --
+		// approve every suggestion and the screen showed "Pending 0 / Applied
+		// 0" next to an empty list, which reads as the work having been thrown
+		// away. It had not been; a reload showed the real number.
+		//
+		// Rows are removed from the DOM rather than re-fetched, so the counts
+		// are adjusted the same way. A full reload of either list would reset
+		// paging and throw away a merchant's "Load more" position.
+		function bumpCount( id, delta ) {
+			var el = $( id );
+			if ( ! el ) {
+				return;
+			}
+			var n = parseInt( String( el.textContent ).replace( /[^0-9]/g, '' ), 10 );
+			if ( isNaN( n ) ) {
+				return;
+			}
+			el.textContent = core.num( Math.max( 0, n + delta ) );
+		}
+
 		function loadPending( reset ) {
 			if ( reset ) {
 				pending.page = 1;
@@ -208,6 +230,13 @@
 					appliedList.insertAdjacentHTML( 'beforeend', html );
 				}
 				$( '#ace-applied-more' ).hidden = d.page >= d.totalPages;
+				// Authoritative whenever the panel is actually fetched, so any
+				// drift the per-row arithmetic could introduce is corrected the
+				// moment the merchant opens the tab.
+				var appliedCount = $( '#ace-count-applied' );
+				if ( appliedCount && 'undefined' !== typeof d.total ) {
+					appliedCount.textContent = core.num( d.total );
+				}
 				applied.loaded = true;
 			} ).catch( core.errorToast );
 		}
@@ -247,6 +276,11 @@
 				if ( window.confirm( t( 'confirmApproveAll', 'Apply every pending suggestion to your live products?' ) ) ) {
 					drainServer( 'approve_batch', { search: pending.search }, function () {
 						loadPending( true );
+						// The whole queue just moved to applied. Re-fetch rather
+						// than count it: a batch can be interrupted, so the
+						// server's number is the only one worth showing.
+						applied.loaded = false;
+						loadApplied( true );
 					} );
 				}
 			} );
@@ -287,6 +321,8 @@
 				core.post( 'approve', { product_id: id } ).then( function () {
 					core.toast( t( 'applied', 'Applied to your product.' ), 'success' );
 					item.parentNode.removeChild( item );
+					bumpCount( '#ace-count-pending', -1 );
+					bumpCount( '#ace-count-applied', 1 );
 				} ).catch( function ( err ) {
 					core.setBusy( btn, false );
 					core.errorToast( err );
@@ -296,6 +332,8 @@
 				core.post( 'dismiss', { product_id: id } ).then( function () {
 					core.toast( t( 'dismissed', 'Dismissed.' ), 'info' );
 					item.parentNode.removeChild( item );
+					// Dismissed leaves the queue without becoming applied.
+					bumpCount( '#ace-count-pending', -1 );
 				} ).catch( function ( err ) {
 					core.setBusy( btn, false );
 					core.errorToast( err );
@@ -305,6 +343,8 @@
 				core.post( 'revert', { product_id: id } ).then( function () {
 					core.toast( t( 'reverted', 'Reverted to the original.' ), 'success' );
 					item.parentNode.removeChild( item );
+					// Reverting is the only row action on the applied list.
+					bumpCount( '#ace-count-applied', -1 );
 				} ).catch( function ( err ) {
 					core.setBusy( btn, false );
 					core.errorToast( err );

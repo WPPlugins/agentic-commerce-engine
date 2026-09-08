@@ -152,9 +152,45 @@ class Poller {
 	}
 
 	/**
-	 * Derive the flat review-diff fields from per-content-type results. Mirrors
-	 * the platform's deriveFlatFields: product-description feeds description +
-	 * a 160-char short description; meta-tags feeds seo_title/seo_description.
+	 * Shorten prose to fit a length, without cutting a word in half.
+	 *
+	 * `post_excerpt` is shown on the live product page, so a hard character
+	 * slice is visible to shoppers: a real store came back reading "...outdoor
+	 * enthusiasts who deman…". Backing up to the last space before the limit
+	 * costs a few characters and never produces a fragment. A single word
+	 * longer than the limit has no space to back up to, so it still gets the
+	 * hard cut rather than an empty string.
+	 *
+	 * @param string $text  Plain text, already whitespace-collapsed.
+	 * @param int    $limit Maximum length including the ellipsis.
+	 * @return string
+	 */
+	private static function shorten( $text, $limit ) {
+		$mb  = function_exists( 'mb_substr' ) && function_exists( 'mb_strlen' );
+		$len = $mb ? mb_strlen( $text ) : strlen( $text );
+		if ( $len <= $limit ) {
+			return $text;
+		}
+		$room = $limit - 1; // The ellipsis is one character.
+		$cut  = $mb ? mb_substr( $text, 0, $room ) : substr( $text, 0, $room );
+		$space = $mb ? mb_strrpos( $cut, ' ' ) : strrpos( $cut, ' ' );
+		if ( false !== $space && $space > 0 ) {
+			$cut = $mb ? mb_substr( $cut, 0, $space ) : substr( $cut, 0, $space );
+		}
+		return rtrim( $cut, " \t\n\r\0\x0B,;:." ) . '…';
+	}
+
+	/**
+	 * Derive the flat review-diff fields from per-content-type results.
+	 *
+	 * `product-description` feeds description and a short description;
+	 * `meta-tags` feeds seo_title/seo_description.
+	 *
+	 * NOTE: the platform's `product-description` payload carries `description`,
+	 * `cta`, `attributes` and `specifications` -- there is no short description
+	 * in it, so this derives one. `Enrichment::normalize_enriched` still
+	 * accepts a `short_description` alias for the day one is generated, and it
+	 * takes precedence over anything derived here.
 	 *
 	 * @param array $per_type Per-content-type payloads.
 	 * @return array<string,string>
@@ -168,11 +204,7 @@ class Poller {
 		if ( isset( $pd['description'] ) && is_string( $pd['description'] ) && '' !== $pd['description'] ) {
 			$flat['description'] = $pd['description'];
 			$text                = trim( preg_replace( '/\s+/', ' ', wp_strip_all_tags( $pd['description'] ) ) );
-			if ( function_exists( 'mb_substr' ) && function_exists( 'mb_strlen' ) ) {
-				$flat['short_description'] = mb_strlen( $text ) > 160 ? mb_substr( $text, 0, 157 ) . '…' : $text;
-			} else {
-				$flat['short_description'] = strlen( $text ) > 160 ? substr( $text, 0, 157 ) . '…' : $text;
-			}
+			$flat['short_description'] = self::shorten( $text, 160 );
 		}
 
 		$meta = array();

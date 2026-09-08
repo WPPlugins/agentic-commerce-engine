@@ -384,7 +384,7 @@ class Ab_Test {
 		if ( ! $this->is_enabled() || ! $this->plugin->settings()->is_ab_report_enabled() ) {
 			return;
 		}
-		$store_id = $this->plugin->settings()->store_id();
+		$store_id = $this->plugin->settings()->get_store_id();
 		if ( ! $store_id ) {
 			return;
 		}
@@ -462,7 +462,7 @@ class Ab_Test {
 			$this->clear_all_configs();
 			return;
 		}
-		$store_id = $this->plugin->settings()->store_id();
+		$store_id = $this->plugin->settings()->get_store_id();
 		if ( ! $store_id ) {
 			return;
 		}
@@ -475,10 +475,18 @@ class Ab_Test {
 			return;
 		}
 
-		$configs = isset( $response['data']['configs'] ) ? $response['data']['configs'] : array();
-		if ( ! is_array( $configs ) ) {
-			return;
-		}
+		// `Api_Client::parse_response()` UNWRAPS the `data` envelope, so a body of
+		// `{"data":{"configs":[...]}}` arrives here as `['configs' => [...]]`.
+		// Reaching through a second `data` key therefore always found nothing,
+		// and the reconcile loop below reads "nothing" as "no product is running
+		// a test" and deletes every stored config -- including the ones the
+		// apply queue had just delivered. So a test could never reach the
+		// storefront, and any config that did was wiped on the next tick.
+		// Every other caller in this plugin already reads the unwrapped shape;
+		// `Apply_Queue::drain()` reads `$response['items']`.
+		$configs = isset( $response['configs'] ) && is_array( $response['configs'] )
+			? $response['configs']
+			: array();
 
 		$seen = array();
 		foreach ( $configs as $entry ) {

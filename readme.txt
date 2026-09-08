@@ -4,7 +4,7 @@ Tags: ai, seo, woocommerce, ai search, content
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 4.13.0
+Stable tag: 4.13.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -137,6 +137,11 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 8. The Settings screen with publishing, automation, and crawler tracking options.
 
 == Changelog ==
+
+= 4.13.1 =
+* Fixed: A/B tests could not run at all. Fetching the live test settings and sending results back both stopped on an internal error, so a test set up in Rezolve Ai never reached the shop and never reported anything. Pausing or stopping a test from this screen failed with a critical error for the same reason.
+* Fixed: even once that was past, the shop read the list of running tests from the wrong place, so it always saw an empty list and removed the test settings it already had. A test could reach a product page and then be taken back off it on the next check-in.
+* Also fixed, on the Rezolve Ai side and already live for every shop with no update needed here: the test settings sent to WooCommerce shops pointed at a part of the page that only exists on Shopify themes, so a running test showed every shopper the same words.
 
 = 4.13.0 =
 * Fixed: shops selling variable products were being shown to AI shopping agents as out of stock, even when everything was in stock. Agents that believed it refused to buy. The plugin now sends each product's real stock status, so what agents see matches your shop.
