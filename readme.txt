@@ -4,7 +4,7 @@ Tags: ai, seo, woocommerce, ai search, content
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 4.13.1
+Stable tag: 4.13.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -137,6 +137,9 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 8. The Settings screen with publishing, automation, and crawler tracking options.
 
 == Changelog ==
+
+= 4.13.2 =
+* Improved: an A/B test now looks for your description in several of the usual places instead of one. If your theme names that block differently, the test used to run for weeks swapping nothing and report no difference between two versions nobody was ever shown. Setting the block selector yourself still wins; it is now tried first rather than instead of the rest.
 
 = 4.13.1 =
 * Fixed: A/B tests could not run at all. Fetching the live test settings and sending results back both stopped on an internal error, so a test set up in Rezolve Ai never reached the shop and never reported anything. Pausing or stopping a test from this screen failed with a critical error for the same reason.

@@ -23,13 +23,28 @@ if(!EXP||!SUBJ||!ARMS||!ARMS.length)return;
 // below has one shape to handle rather than two.
 var WP=C.p==="wp",REP=C.rep||"";
 var ELS=[];
+// "sels" is the candidate chain, "sel" the single selector an older server
+// still writes. A chain because ONE selector is a guess and a wrong guess is
+// silent: querySelector returns null, the swap does nothing, both arms render
+// the merchant's own words, and the run reports no difference between two
+// versions that were never different.
+function chainOf(e){
+  var out=[];
+  if(e.sels&&e.sels.length){
+    for(var k=0;k<e.sels.length;k++){if(typeof e.sels[k]==='string'&&e.sels[k])out.push(e.sels[k])}
+  }
+  if(!out.length&&typeof e.sel==='string'&&e.sel)out.push(e.sel);
+  return out;
+}
 if(C.els&&C.els.length){
   for(var ei=0;ei<C.els.length;ei++){
     var e0=C.els[ei];
-    if(e0&&typeof e0.ct==='string'&&typeof e0.sel==='string'&&e0.sel)ELS.push({ct:e0.ct,sel:e0.sel})
+    if(!e0||typeof e0.ct!=='string')continue;
+    var c0=chainOf(e0);
+    if(c0.length)ELS.push({ct:e0.ct,sels:c0})
   }
 }
-else if(SEL){ELS.push({ct:"product-description",sel:SEL})}
+else if(SEL){ELS.push({ct:"product-description",sels:[SEL]})}
 if(!ELS.length)return;
 var ARMCK="_ace_arm_"+EXP,VIDCK="_ace_vid";
 
@@ -90,13 +105,18 @@ function apply(){
       for(var i=0;i<got.length;i++){
         var g=got[i];
         if(!g||typeof g.html!=='string'||!g.html)continue;
-        var sel=null;
-        for(var j=0;j<ELS.length;j++){if(ELS[j].ct===g.ct){sel=ELS[j].sel;break}}
+        var sels=null;
+        for(var j=0;j<ELS.length;j++){if(ELS[j].ct===g.ct){sels=ELS[j].sels;break}}
         // An element the config did not ask for is DROPPED, not guessed at. The
         // server decides what an arm contains; the theme decides where it goes,
         // and a swap with no selector has nowhere it belongs.
-        if(!sel)continue;
-        var t=document.querySelector(sel);
+        if(!sels||!sels.length)continue;
+        // First match wins. Ordered best-guess first by the server, so a theme
+        // that names its description block the usual way is hit immediately and
+        // an unusual one still gets a chance instead of silently swapping
+        // nothing.
+        var t=null;
+        for(var q=0;q<sels.length&&!t;q++){try{t=document.querySelector(sels[q])}catch(e2){t=null}}
         if(t)t.innerHTML=g.html;
       }
     })['catch'](function(){});

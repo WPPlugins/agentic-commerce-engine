@@ -188,19 +188,31 @@ class Ab_Test {
 		$config['p']   = 'wp';
 		$config['rep'] = esc_url_raw( rest_url( 'agencoen/v1/arm' ) );
 
-		// The theme's own selector wins when the site owner has set one: they
-		// are looking at their theme and we are not. A selector that matches
-		// nothing means the script swaps nothing and the test reports two arms
-		// reading identical words, which is the failure this setting exists to
-		// prevent.
+		// The theme's own selector LEADS when the site owner has set one: they
+		// are looking at their theme and we are not. It leads rather than
+		// replaces, because a selector that matches nothing means the script
+		// swaps nothing and the test reports two arms reading identical words,
+		// which is the failure this setting exists to prevent. Trying the usual
+		// candidates after theirs cannot produce that outcome, and every
+		// candidate the server sends is a description container, so a fallback
+		// lands on the same kind of block.
 		$selector = $this->plugin->settings()->ab_selector();
 		if ( $selector ) {
 			$config['sel'] = $selector;
 			if ( ! empty( $config['els'] ) && is_array( $config['els'] ) ) {
 				foreach ( $config['els'] as $i => $el ) {
-					if ( isset( $el['ct'] ) && 'product-description' === $el['ct'] ) {
-						$config['els'][ $i ]['sel'] = $selector;
+					if ( ! isset( $el['ct'] ) || 'product-description' !== $el['ct'] ) {
+						continue;
 					}
+					$chain = array();
+					if ( ! empty( $el['sels'] ) && is_array( $el['sels'] ) ) {
+						$chain = $el['sels'];
+					} elseif ( ! empty( $el['sel'] ) ) {
+						$chain = array( $el['sel'] );
+					}
+					array_unshift( $chain, $selector );
+					$config['els'][ $i ]['sel']  = $selector;
+					$config['els'][ $i ]['sels'] = array_values( array_unique( $chain ) );
 				}
 			}
 		}
