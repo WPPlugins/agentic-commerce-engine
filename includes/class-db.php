@@ -104,6 +104,13 @@ class Db {
 		) {$charset};";
 		dbDelta( $pages_sql );
 
+		// A/B exposures. Two outcome flags per exposure row rather than two more
+		// rows: the unique key is one row per visitor per experiment per day, and
+		// a shopper who added to a basket and then bought is still one shopper.
+		// `carted` is new in 4.14.0 and arrives by dbDelta on the version bump;
+		// it defaults to 0, so existing rows read as "did not add", which is the
+		// truth for them -- nothing was watching that step when they were written.
+		//
 		// A/B exposures. `visitor` is a salted hash computed at write time; the
 		// raw cookie value is never stored. The unique key is one row per
 		// visitor per experiment per day, so a visitor who reloads forty times
@@ -118,6 +125,7 @@ class Db {
 			arm varchar(8) NOT NULL default '',
 			visitor char(40) NOT NULL,
 			converted tinyint(1) unsigned NOT NULL default 0,
+			carted tinyint(1) unsigned NOT NULL default 0,
 			PRIMARY KEY  (id),
 			UNIQUE KEY day_exp_visitor (day,experiment,visitor),
 			KEY day_exp (day,experiment),

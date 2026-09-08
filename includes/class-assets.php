@@ -325,6 +325,7 @@ class Assets {
 			'whenWillIKnow'     => __( 'When will I know?', 'agentic-commerce-engine' ),
 			'projectionPending' => __( 'Once both versions have been seen by enough shoppers, this shows the range narrowing and projects the day it becomes readable.', 'agentic-commerce-engine' ),
 			'whereDropOff'      => __( 'Where shoppers drop off', 'agentic-commerce-engine' ),
+			'basketNotCounted'  => __( 'The basket step is not shown because this site does not report it. Rezolve Ai 4.14.0 and later count it, and it appears here on its own once every version has been seen adding to a basket.', 'agentic-commerce-engine' ),
 			'measuredProperly'  => __( 'Is this being measured properly?', 'agentic-commerce-engine' ),
 			'unattributed'      => __( 'shoppers could not be tied to this test because another split was running at the same time, so they are left out rather than guessed at.', 'agentic-commerce-engine' ),
 			'whatItFound'       => __( 'What it found', 'agentic-commerce-engine' ),

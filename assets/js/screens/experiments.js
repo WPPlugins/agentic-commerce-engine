@@ -332,6 +332,15 @@
 
 			html += '<h3>' + esc( t( 'whereDropOff', 'Where shoppers drop off' ) ) + '</h3>';
 			html += '<div class="ace-chart" id="ace-exp-funnel"></div>';
+			/* A step this site cannot count is left out of the chart rather than
+			   drawn as a zero, the same way the money panel below is absent
+			   rather than showing 0 when order value is not reported. Without
+			   this sentence an absent row looks like a chart that lost a step. */
+			if ( d.funnels && d.funnels.length &&
+				( d.funnels[ 0 ].unmeasured || [] ).indexOf( 'carted' ) !== -1 ) {
+				html += '<p class="ace-card-sub">' + esc( t( 'basketNotCounted',
+					'The basket step is not shown because this site does not report it. Rezolve Ai 4.14.0 and later count it, and it appears here on its own once every version has been seen adding to a basket.' ) ) + '</p>';
+			}
 
 			html += '<h3>' + esc( t( 'measuredProperly', 'Is this being measured properly?' ) ) + '</h3>';
 			html += '<div class="ace-grid-2">';

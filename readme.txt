@@ -4,7 +4,7 @@ Tags: ai, seo, woocommerce, ai search, content
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 4.13.2
+Stable tag: 4.14.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -137,6 +137,10 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 8. The Settings screen with publishing, automation, and crawler tracking options.
 
 == Changelog ==
+
+= 4.14.0 =
+* Added: A/B tests now count the basket step. The "Where shoppers drop off" chart shows how many shoppers each version got as far as adding to a basket, not just how many read the page and how many checked out. A version that wins at the basket and loses at checkout tells you something a single conversion number cannot.
+* Fixed: until now that step was never counted on WooCommerce, and the chart drew it as a flat zero, which reads as "nobody added anything to a basket". It also made the basket look like the worst step of every test. Shops still on an older version now see the step left out with a note, instead of a zero that was never measured.
 
 = 4.13.2 =
 * Improved: an A/B test now looks for your description in several of the usual places instead of one. If your theme names that block differently, the test used to run for weeks swapping nothing and report no difference between two versions nobody was ever shown. Setting the block selector yourself still wins; it is now tried first rather than instead of the rest.

@@ -98,6 +98,11 @@ class Ab_Test {
 		// The order-received page is never cached (it is order-specific), so PHP
 		// genuinely runs here and the visitor's cookie is on the request.
 		add_action( 'woocommerce_thankyou', array( $this, 'record_conversion' ) );
+		// The basket step. Fires on the add-to-cart action rather than on a
+		// cart page view, so a shopper who adds and never opens the cart is
+		// still counted, and a shopper who reloads the cart is not counted
+		// twice -- the row is an upsert on (day, experiment, visitor) anyway.
+		add_action( 'woocommerce_add_to_cart', array( $this, 'record_cart' ) );
 	}
 
 	/** Is the feature switched on for this site? Off unless explicitly enabled. */
@@ -380,6 +385,38 @@ class Ab_Test {
 		);
 	}
 
+	/**
+	 * Mark this visitor's recent exposures as having reached a basket.
+	 *
+	 * The same shape and the same attribution window as `record_conversion`,
+	 * for the same reason: a shopper who reads a product today and adds it on
+	 * Thursday was persuaded by what they read today. Kept as a separate flag
+	 * rather than folded into `converted`, because a version that wins on
+	 * basket adds and loses on checkouts loses the merchant money, and that
+	 * contrast is the whole point of drawing the step.
+	 */
+	public function record_cart() {
+		if ( ! $this->is_enabled() ) {
+			return;
+		}
+		$visitor = $this->visitor_hash();
+		if ( ! $visitor ) {
+			return;
+		}
+
+		global $wpdb;
+		$table = self::events_table();
+		$since = gmdate( 'Y-m-d', time() - ( self::ATTRIBUTION_DAYS * DAY_IN_SECONDS ) );
+
+		$wpdb->query(
+			$wpdb->prepare(
+				"UPDATE {$table} SET carted = 1 WHERE visitor = %s AND day >= %s",
+				$visitor,
+				$since
+			)
+		);
+	}
+
 	/* --------------------------------------------------------------------- */
 	/* Reporting                                                              */
 	/* --------------------------------------------------------------------- */
@@ -407,7 +444,7 @@ class Ab_Test {
 
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT day, experiment, subject, arm, visitor, converted
+				"SELECT day, experiment, subject, arm, visitor, converted, carted
 				 FROM {$table} WHERE day >= %s ORDER BY day DESC, id ASC LIMIT %d",
 				$since,
 				self::REPORT_ROWS
@@ -436,6 +473,24 @@ class Ab_Test {
 				// their shoppers in both directions.
 				'experiment' => $row['experiment'],
 			);
+			if ( ! empty( $row['carted'] ) ) {
+				$events[] = array(
+					// ':cart', not ':a', which would read as arm "a" at a glance.
+					// Deterministic like its siblings, so re-sending a day is a
+					// no-op: 'wpab:X', 'wpab:X:cart' and 'wpab:X:c' are three
+					// distinct ids for the three steps of one exposure.
+					'uid'        => 'wpab:' . $base . ':cart',
+					'day'        => $row['day'],
+					'name'       => 'product_added_to_cart',
+					'visitor'    => $row['visitor'],
+					// The arm, for the same reason the conversion carries it:
+					// an event with no arm is a visitor who was never bucketed,
+					// and the step would show exposures with no outcome.
+					'variant'    => $row['arm'],
+					'subject'    => $row['subject'],
+					'experiment' => $row['experiment'],
+				);
+			}
 			if ( ! empty( $row['converted'] ) ) {
 				$events[] = array(
 					'uid'      => 'wpab:' . $base . ':c',
