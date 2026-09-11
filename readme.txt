@@ -4,7 +4,7 @@ Tags: ai, seo, woocommerce, ai search, content
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 4.14.0
+Stable tag: 4.15.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -137,6 +137,11 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 8. The Settings screen with publishing, automation, and crawler tracking options.
 
 == Changelog ==
+
+= 4.15.0 =
+* Added: what you approve, dismiss or revert on this site now shows up in Rezolve Ai too. Until now the two review screens could not see each other, so a product you had already dealt with here still looked untouched there, and the counts on your Rezolve Ai dashboard were missing everything you had done from WordPress.
+* Added: a one-time catch-up runs after this update and sends the decisions you already made, so your history appears rather than only what you do from now on. It runs in the background, a few products at a time.
+* Note: nothing new is collected about your shoppers, and nothing is applied to your products that was not already applied. This only reports decisions you had already made.
 
 = 4.14.0 =
 * Added: A/B tests now count the basket step. The "Where shoppers drop off" chart shows how many shoppers each version got as far as adding to a basket, not just how many read the page and how many checked out. A version that wins at the basket and loses at checkout tells you something a single conversion number cannot.

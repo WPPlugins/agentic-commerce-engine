@@ -43,6 +43,8 @@ $agencoen_hooks = array(
 	'agencoen_bot_prune',
 	'agencoen_bot_report',
 	'agencoen_content_poll',
+	'agencoen_review_sync',
+	'agencoen_review_backfill',
 );
 foreach ( $agencoen_hooks as $agencoen_hook ) {
 	wp_clear_scheduled_hook( $agencoen_hook );

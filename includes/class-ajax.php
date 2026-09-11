@@ -415,6 +415,39 @@ class Ajax extends Ajax_Base {
 		if ( isset( $_POST['content_author'] ) ) {
 			update_option( Settings::OPT_CONTENT_AUTHOR, max( 0, (int) $_POST['content_author'] ) );
 		}
+		/*
+		 * Where IRL cards and internal links sit on the product page.
+		 *
+		 * Saved locally AND pushed to the platform, because this is one choice
+		 * with three editors: the web app, the Shopify app and this screen. A
+		 * local-only save would be overwritten by the next hourly heartbeat,
+		 * which mirrors the platform's value down. Pushing first means the
+		 * merchant's change survives that round trip.
+		 *
+		 * Validation lives in Settings::save_placement(), which drops anything
+		 * outside the vocabulary rather than letting a malformed value blank
+		 * the storefront.
+		 */
+		$agencoen_placement = array();
+		foreach ( Settings::placeable_types() as $agencoen_type ) {
+			$agencoen_field = 'placement_' . str_replace( '-', '_', $agencoen_type );
+			if ( isset( $_POST[ $agencoen_field ] ) ) {
+				$agencoen_placement[ $agencoen_type ] = sanitize_key( wp_unslash( $_POST[ $agencoen_field ] ) );
+			}
+		}
+		if ( ! empty( $agencoen_placement ) ) {
+			$settings->save_placement( $agencoen_placement );
+			if ( $settings->is_connected() ) {
+				// Best effort: the local save already happened, and the merchant
+				// should not see an error because the platform was briefly
+				// unreachable. The next heartbeat reconciles either way.
+				$this->plugin->api()->update_content_placement(
+					$settings->get_store_id(),
+					$settings->get_placements()
+				);
+			}
+		}
+
 		if ( isset( $_POST['bots_retention'] ) ) {
 			$days = (int) $_POST['bots_retention'];
 			update_option( Settings::OPT_BOTS_RETENTION, in_array( $days, array( 30, 90, 180 ), true ) ? $days : 90 );

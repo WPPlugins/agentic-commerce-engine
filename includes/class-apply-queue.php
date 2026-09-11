@@ -249,6 +249,52 @@ class Apply_Queue {
 				}
 				$product->save();
 				return true;
+
+			/*
+			 * The three additive content types (4.15.0).
+			 *
+			 * WHY THEY WERE MISSING. Rezolve Ai's apply queue deliberately did
+			 * not send them, on the stated grounds that they were applied by
+			 * the plugin's own enrichment flow -- which is true only for
+			 * content this site requested. Content a merchant approved in the
+			 * Rezolve Ai web app never travelled at all, so approving a schema
+			 * graph or a set of IRL cards there did nothing here, for ever.
+			 *
+			 * They write the SAME meta as `Apply::apply_content_types`, so the
+			 * frontend renderers and the feed serializers need no change and
+			 * `Apply::revert()` already knows how to take them down.
+			 */
+			case 'jsonLd':
+				$graph = json_decode( $value, true );
+				if ( ! is_array( $graph ) || empty( $graph ) ) {
+					return 'unreadable JSON-LD payload';
+				}
+				update_post_meta( $post_id, Meta::JSONLD, $graph );
+				return true;
+
+			case 'irlCards':
+				$decoded   = json_decode( $value, true );
+				// `{ cards, selectedIndex }` is the wire shape; a bare array is
+				// accepted too, matching apply_content_types' tolerance.
+				$scenarios = ( is_array( $decoded ) && isset( $decoded['cards'] ) && is_array( $decoded['cards'] ) )
+					? $decoded['cards']
+					: $decoded;
+				if ( ! is_array( $scenarios ) || empty( $scenarios ) ) {
+					return 'no usable IRL scenarios in payload';
+				}
+				update_post_meta( $post_id, Meta::IRL, $scenarios );
+				return true;
+
+			case 'internalLinks':
+				$decoded = json_decode( $value, true );
+				$links   = ( is_array( $decoded ) && isset( $decoded['links'] ) && is_array( $decoded['links'] ) )
+					? $decoded['links']
+					: $decoded;
+				if ( ! is_array( $links ) || empty( $links ) ) {
+					return 'no usable internal links in payload';
+				}
+				update_post_meta( $post_id, Meta::LINKS, $links );
+				return true;
 		}
 
 		// An unknown field is not a failure to retry forever. A newer Rezolve Ai may

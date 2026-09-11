@@ -170,5 +170,23 @@ class Db {
 		if ( ! wp_next_scheduled( 'agencoen_bot_prune' ) ) {
 			wp_schedule_event( time() + DAY_IN_SECONDS, 'daily', 'agencoen_bot_prune' );
 		}
+
+		// Arm the one-time walk that tells Rezolve Ai about decisions this site
+		// made before it could report them.
+		//
+		// This is the ONLY way that history can ever reach the web review queue.
+		// The Shopify half of the same work backfills with one SQL pass because
+		// those rows live in Rezolve Ai's own database; this site's live in
+		// `wp_postmeta` on the merchant's server, where no query from Rezolve Ai
+		// can reach. So the plugin has to volunteer it.
+		//
+		// A cursor of -1 means a previous run finished, and must not restart.
+		$backfill_cursor = get_option( 'agencoen_review_backfill_cursor', null );
+		if ( -1 !== (int) $backfill_cursor && ! wp_next_scheduled( Cron::REVIEW_BACKFILL ) ) {
+			if ( null === $backfill_cursor ) {
+				add_option( 'agencoen_review_backfill_cursor', 0, '', false );
+			}
+			wp_schedule_single_event( time() + 120, Cron::REVIEW_BACKFILL );
+		}
 	}
 }

@@ -78,6 +78,9 @@ final class Plugin {
 	/** @var Apply_Queue */
 	private $apply_queue;
 
+	/** @var Review_Sync */
+	private $review_sync;
+
 	/** @var Experiments */
 	private $experiments;
 
@@ -157,6 +160,7 @@ final class Plugin {
 		$this->sales          = new Sales_Tracker( $this );
 		$this->ab_test        = new Ab_Test( $this );
 		$this->apply_queue    = new Apply_Queue( $this );
+		$this->review_sync    = new Review_Sync( $this );
 		$this->experiments    = new Experiments( $this );
 		$this->brand          = new Brand( $this );
 		$this->cron           = new Cron( $this );
@@ -307,6 +311,11 @@ final class Plugin {
 	/** @return Ab_Test */
 	public function apply_queue() {
 		return $this->apply_queue;
+	}
+
+	/** @return Review_Sync */
+	public function review_sync() {
+		return $this->review_sync;
 	}
 
 	public function experiments() {

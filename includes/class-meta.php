@@ -42,6 +42,21 @@ final class Meta {
 	 */
 	const NATIVE_WRITES = '_agencoen_native_writes';
 
+	/**
+	 * Review-sync bookkeeping (plugin 4.15.0).
+	 *
+	 * SYNC_DIRTY carries `{ reason, at }`, not merely a flag, and the reason is
+	 * load-bearing: `Apply::revert()` puts a product back to STATUS_ENRICHED, so a
+	 * reporter that read only the current status would announce a just-reverted
+	 * product to Rezolve Ai as a FRESH proposal, and the web review queue would
+	 * offer the merchant content they had explicitly taken down.
+	 */
+	const SYNC_DIRTY    = '_agencoen_review_dirty';
+	/** contentType => Rezolve Ai review item id, returned by the last report. */
+	const REVIEW_IDS    = '_agencoen_review_ids';
+	/** Consecutive failed report attempts, for backoff and for the admin notice. */
+	const SYNC_ATTEMPTS = '_agencoen_review_attempts';
+
 	const STATUS_QUEUED    = 'queued';
 	const STATUS_ENRICHED  = 'enriched';
 	const STATUS_APPLIED   = 'applied';

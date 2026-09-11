@@ -23,6 +23,10 @@ class Cron {
 	const BOT_PRUNE      = 'agencoen_bot_prune';
 	const BOT_REPORT     = 'agencoen_bot_report';
 	const CONTENT_POLL   = 'agencoen_content_poll';
+	/** Report this site's review decisions back to Rezolve Ai (4.15.0). */
+	const REVIEW_SYNC    = 'agencoen_review_sync';
+	/** One-time walk of existing decisions, armed by a version bump. */
+	const REVIEW_BACKFILL = 'agencoen_review_backfill';
 	const SWEEP_LIMIT    = 100;
 
 	/** @var Plugin */
@@ -44,6 +48,8 @@ class Cron {
 		add_action( self::BOT_PRUNE, array( $this, 'bot_maintenance' ) );
 		add_action( self::BOT_REPORT, array( $this, 'bot_report' ) );
 		add_action( self::CONTENT_POLL, array( $this->plugin->articles(), 'poll_job' ), 10, 1 );
+		add_action( self::REVIEW_SYNC, array( $this->plugin->review_sync(), 'drain' ) );
+		add_action( self::REVIEW_BACKFILL, array( $this->plugin->review_sync(), 'backfill' ) );
 
 		if ( $this->plugin->has_woo() ) {
 			add_action( self::SYNC_HOOK, array( $this, 'scheduled_sync' ) );
@@ -165,6 +171,15 @@ class Cron {
 			$settings->save_sync_config( $response['syncConfig'] );
 		}
 
+		// Where storefront content goes, refreshed hourly. Same PRESENT-only
+		// rule as the two above: an older Rezolve Ai that does not send it must
+		// not read as "no placement" and move the merchant's cards. This is the
+		// path that keeps a choice made in the web app or the Shopify app
+		// honoured on this storefront without the merchant touching anything.
+		if ( is_array( $response ) && ! empty( $response['contentPlacement'] ) && is_array( $response['contentPlacement'] ) ) {
+			$settings->save_placement( $response['contentPlacement'] );
+		}
+
 		// Keep the dashboard balance reasonably fresh.
 		Dashboard::credits( $this->plugin, Dashboard::FETCH_FRESH );
 
@@ -176,6 +191,12 @@ class Cron {
 		// Woo-gated inside `drain()` rather than here, because the guard has to
 		// hold for the manual path too.
 		$this->plugin->apply_queue()->drain();
+
+		// And the opposite direction: what this site's merchant decided.
+		// Hourly for the same reason -- a day of disagreement between this
+		// Review screen and the one in Rezolve Ai is indistinguishable from the
+		// split this exists to close.
+		$this->plugin->review_sync()->drain();
 	}
 
 	/**

@@ -110,8 +110,17 @@ class Review {
 	 */
 	public function dismiss( $product_id ) {
 		$product_id = (int) $product_id;
+		// Capture the fields BEFORE the pending meta goes. Dismissing deletes the
+		// only record of what was proposed, so a reporter run an hour later would
+		// find nothing to dismiss and the decision would never reach Rezolve Ai.
+		$decisions = $this->plugin->review_sync()->build_decisions( $product_id, 'dismiss' );
+		$fields    = array();
+		foreach ( $decisions as $decision ) {
+			$fields[] = $decision['field'];
+		}
 		delete_post_meta( $product_id, Meta::PENDING );
 		update_post_meta( $product_id, Meta::STATUS, Meta::STATUS_DISMISSED );
+		$this->plugin->review_sync()->mark_dirty( $product_id, 'dismiss', $fields );
 		$this->plugin->repository()->bust_counts_cache();
 		return true;
 	}

@@ -21,6 +21,7 @@ class Settings {
 	const OPT_SYNC_CONFIG    = 'agencoen_sync_config';
 	const OPT_CONTENT_TYPES  = 'agencoen_content_types';
 	const OPT_AUTO_APPEND    = 'agencoen_auto_append';
+	const OPT_PLACEMENT      = 'agencoen_content_placement';
 	const OPT_AUTO_SYNC      = 'agencoen_auto_sync';
 	const OPT_SYNC_FREQUENCY = 'agencoen_sync_frequency';
 	const OPT_AUTO_APPLY     = 'agencoen_auto_apply';
@@ -181,6 +182,12 @@ class Settings {
 		if ( isset( $extra['features'] ) && is_array( $extra['features'] ) ) {
 			$this->save_features( $extra['features'] );
 		}
+		// Where storefront content goes. Mirrored from the platform so a
+		// merchant who set it in the web app or the Shopify app sees the same
+		// choice here, and the storefront has one answer.
+		if ( isset( $extra['contentPlacement'] ) && is_array( $extra['contentPlacement'] ) ) {
+			$this->save_placement( $extra['contentPlacement'] );
+		}
 	}
 
 	/**
@@ -211,6 +218,7 @@ class Settings {
 		delete_option( self::OPT_PROJECT_ID );
 		delete_option( self::OPT_PLATFORM );
 		delete_option( self::OPT_FEATURES );
+		delete_option( self::OPT_PLACEMENT );
 		delete_transient( Dashboard::CREDITS_TRANSIENT );
 		delete_transient( Dashboard::CREDITS_BACKOFF );
 		Dashboard::reset_memo();
@@ -392,10 +400,89 @@ class Settings {
 	/**
 	 * Whether to auto-append IRL cards + internal links to the storefront page.
 	 *
+	 * SUPERSEDED by get_placement(), which says WHERE rather than just whether.
+	 * Kept because it is still the master switch: a merchant who turned
+	 * auto-append off before placement existed must not have content reappear
+	 * under them on upgrade.
+	 *
 	 * @return bool
 	 */
 	public function is_auto_append() {
 		return 'yes' === get_option( self::OPT_AUTO_APPEND, 'yes' );
+	}
+
+	/**
+	 * Valid placements. Mirrors CONTENT_PLACEMENTS in
+	 * src/lib/content-placement.ts, which is the platform's vocabulary and the
+	 * one the Shopify app speaks too.
+	 *
+	 * @return string[]
+	 */
+	public static function placements() {
+		return array( 'below_description', 'above_description', 'bottom_of_page', 'manual', 'hidden' );
+	}
+
+	/**
+	 * Content types whose position the merchant chooses.
+	 *
+	 * @return string[]
+	 */
+	public static function placeable_types() {
+		return array( 'irl-cards', 'internal-links' );
+	}
+
+	/**
+	 * Where a content type renders on the product page.
+	 *
+	 * The value is mirrored from the platform (bootstrap -> save_placement) so
+	 * a merchant who set it in the web app or the Shopify app sees the same
+	 * thing here, and vice versa. An unknown or missing value falls back to
+	 * 'below_description' rather than to 'hidden': losing content the merchant
+	 * approved is a worse failure than putting it somewhere they did not pick.
+	 *
+	 * @param string $type One of placeable_types().
+	 * @return string
+	 */
+	public function get_placement( $type ) {
+		$stored = get_option( self::OPT_PLACEMENT, array() );
+		$value  = is_array( $stored ) && isset( $stored[ $type ] ) ? $stored[ $type ] : '';
+		if ( in_array( $value, self::placements(), true ) ) {
+			return $value;
+		}
+		return 'below_description';
+	}
+
+	/**
+	 * @return array<string,string> Every placeable type, defaults filled in.
+	 */
+	public function get_placements() {
+		$out = array();
+		foreach ( self::placeable_types() as $type ) {
+			$out[ $type ] = $this->get_placement( $type );
+		}
+		return $out;
+	}
+
+	/**
+	 * Persist a placement map, dropping anything not in the vocabulary so a
+	 * malformed payload cannot blank the storefront.
+	 *
+	 * @param array $placement Map of content type to placement.
+	 */
+	public function save_placement( $placement ) {
+		$clean = array();
+		foreach ( self::placeable_types() as $type ) {
+			if ( ! isset( $placement[ $type ] ) ) {
+				continue;
+			}
+			$value = is_string( $placement[ $type ] ) ? $placement[ $type ] : '';
+			if ( in_array( $value, self::placements(), true ) ) {
+				$clean[ $type ] = $value;
+			}
+		}
+		if ( ! empty( $clean ) ) {
+			update_option( self::OPT_PLACEMENT, array_merge( (array) get_option( self::OPT_PLACEMENT, array() ), $clean ) );
+		}
 	}
 
 	/* --------------------------------------------------------------------- */

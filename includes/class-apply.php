@@ -128,6 +128,17 @@ class Apply {
 		update_post_meta( $product_id, Meta::STATUS, Meta::STATUS_APPLIED );
 		update_post_meta( $product_id, Meta::APPLIED_AT, gmdate( 'c' ) );
 		update_post_meta( $product_id, Meta::APPLIED_TYPES, array_keys( $applied_types ) );
+
+		// Tell Rezolve Ai, so its review queue stops listing this product as
+		// waiting and its Published screen can show it as live. A meta write only:
+		// the merchant's click must never wait on an HTTP call, and the hourly
+		// drain does the talking.
+		//
+		// Hooked HERE rather than in `Review::approve()`, which merely delegates
+		// to this method. Auto-apply and the cron sweep also arrive here, and all
+		// three are genuine approvals; one hook covers them.
+		$this->plugin->review_sync()->mark_dirty( $product_id, 'approve' );
+
 		$this->plugin->repository()->bust_counts_cache();
 		Feeds::touch();
 
@@ -267,6 +278,13 @@ class Apply {
 		delete_post_meta( $product_id, Meta::APPLIED_TYPES );
 
 		update_post_meta( $product_id, Meta::STATUS, Meta::STATUS_ENRICHED );
+
+		// The reason matters, and this is the case it exists for. A revert puts
+		// the product back to STATUS_ENRICHED, which by status alone is
+		// indistinguishable from a fresh proposal -- so a reporter reading only
+		// the status would announce content the merchant just took down as newly
+		// ready to review.
+		$this->plugin->review_sync()->mark_dirty( $product_id, 'revert' );
 		delete_post_meta( $product_id, Meta::APPLIED_AT );
 		$this->plugin->repository()->bust_counts_cache();
 		Feeds::touch();

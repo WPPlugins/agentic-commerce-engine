@@ -202,6 +202,49 @@ $agencoen_offline = empty( $connected );
 				<span><?php esc_html_e( 'Show IRL scenarios and internal links on the product page automatically', 'agentic-commerce-engine' ); ?></span>
 			</label>
 			<p class="ace-help ace-indent"><?php esc_html_e( 'Or place them yourself with the [agencoen_irl] and [agencoen_internal_links] shortcodes, or the Rezolve Ai editor blocks.', 'agentic-commerce-engine' ); ?></p>
+
+			<?php
+			/*
+			 * Where each piece of storefront content goes.
+			 *
+			 * IRL cards and internal links are separate content fields, not part
+			 * of the product description, so something has to say where on the
+			 * page they land. This used to be the single checkbox above and
+			 * nothing else: on or off, always in the same spot. The same choice
+			 * is editable in the Rezolve Ai web app and in the Shopify app, and
+			 * all three read and write one value on the platform, so a merchant
+			 * running both a WooCommerce and a Shopify store sets it once.
+			 */
+			$agencoen_placement_labels = array(
+				'below_description' => __( 'Below the product description', 'agentic-commerce-engine' ),
+				'above_description' => __( 'Above the product description', 'agentic-commerce-engine' ),
+				'bottom_of_page'    => __( 'Bottom of the product page', 'agentic-commerce-engine' ),
+				'manual'            => __( 'Wherever I place it myself', 'agentic-commerce-engine' ),
+				'hidden'            => __( 'Do not show it on the page', 'agentic-commerce-engine' ),
+			);
+			$agencoen_type_labels      = array(
+				'irl-cards'      => __( 'IRL scenario cards', 'agentic-commerce-engine' ),
+				'internal-links' => __( 'Internal links', 'agentic-commerce-engine' ),
+			);
+			foreach ( \Agencoen\Settings::placeable_types() as $agencoen_type ) :
+				$agencoen_field_id = 'ace-placement-' . $agencoen_type;
+				$agencoen_current  = $agencoen_settings->get_placement( $agencoen_type );
+				?>
+				<p class="ace-field ace-indent">
+					<label for="<?php echo esc_attr( $agencoen_field_id ); ?>">
+						<?php echo esc_html( isset( $agencoen_type_labels[ $agencoen_type ] ) ? $agencoen_type_labels[ $agencoen_type ] : $agencoen_type ); ?>
+					</label>
+					<select id="<?php echo esc_attr( $agencoen_field_id ); ?>" data-ace-placement="<?php echo esc_attr( $agencoen_type ); ?>">
+						<?php foreach ( $agencoen_placement_labels as $agencoen_value => $agencoen_label ) : ?>
+							<option value="<?php echo esc_attr( $agencoen_value ); ?>" <?php selected( $agencoen_current, $agencoen_value ); ?>>
+								<?php echo esc_html( $agencoen_label ); ?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+				</p>
+				<?php
+			endforeach;
+			?>
 			<?php if ( '' !== $agencoen_seo_label ) : ?>
 				<p class="ace-help ace-indent">
 					<?php

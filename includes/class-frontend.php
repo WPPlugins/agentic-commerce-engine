@@ -33,7 +33,24 @@ class Frontend {
 		add_shortcode( 'agencoen_irl', array( $this, 'shortcode_irl' ) );
 		add_shortcode( 'agencoen_internal_links', array( $this, 'shortcode_links' ) );
 		add_action( 'init', array( $this, 'register_blocks' ) );
-		add_action( 'woocommerce_after_single_product_summary', array( $this, 'auto_append' ), 25 );
+		/*
+		 * PLACEMENT, NOT ONE HARDCODED HOOK.
+		 *
+		 * This used to be a single `woocommerce_after_single_product_summary`
+		 * registration behind one global on/off toggle, so a merchant could
+		 * have the cards or not have them, and that was the whole choice.
+		 * Meanwhile the Shopify app guessed at a position by scanning the DOM.
+		 * Two platforms, two different answers, neither of them the
+		 * merchant's. Now both read the same per-content-type placement from
+		 * the platform. See src/lib/content-placement.ts.
+		 *
+		 * Registered per content type, because a merchant can reasonably want
+		 * the scenario card under the description and the internal links at
+		 * the very bottom.
+		 */
+		foreach ( Settings::placeable_types() as $agencoen_type ) {
+			$this->register_placement( $agencoen_type );
+		}
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles' ) );
 	}
 
@@ -119,17 +136,76 @@ class Frontend {
 	}
 
 	/**
-	 * Auto-append IRL cards + internal links below the product summary.
+	 * Hook one content type onto the action its placement maps to.
+	 *
+	 * `manual` and `hidden` register nothing: the first means the merchant
+	 * places the shortcode or block themselves, the second means they asked
+	 * for the content to stay off the page entirely (it still reaches feeds
+	 * and AI agents, which is the point of keeping it generated).
+	 *
+	 * `above_description` runs at priority 19 inside
+	 * `woocommerce_single_product_summary`, one below the core
+	 * `woocommerce_template_single_excerpt` at 20, so it lands immediately
+	 * above the short description rather than somewhere near it.
+	 *
+	 * @param string $type One of Settings::placeable_types().
 	 */
-	public function auto_append() {
+	private function register_placement( $type ) {
+		$placement = $this->plugin->settings()->get_placement( $type );
+
+		$hook     = '';
+		$priority = 25;
+		if ( 'below_description' === $placement ) {
+			$hook = 'woocommerce_after_single_product_summary';
+		} elseif ( 'above_description' === $placement ) {
+			$hook     = 'woocommerce_single_product_summary';
+			$priority = 19;
+		} elseif ( 'bottom_of_page' === $placement ) {
+			$hook = 'woocommerce_after_single_product';
+		}
+
+		if ( '' === $hook ) {
+			return;
+		}
+
+		add_action(
+			$hook,
+			function () use ( $type ) {
+				$this->render_placed( $type );
+			},
+			$priority
+		);
+	}
+
+	/**
+	 * Echo one placed content type on a product page.
+	 *
+	 * `is_auto_append()` remains the master switch. It predates placement, and
+	 * a merchant who turned auto-append off must not have content reappear
+	 * under them on upgrade just because placement now defaults to a position.
+	 *
+	 * @param string $type One of Settings::placeable_types().
+	 */
+	private function render_placed( $type ) {
 		if ( ! $this->plugin->settings()->is_auto_append() ) {
 			return;
 		}
 		if ( ! function_exists( 'is_product' ) || ! is_product() ) {
 			return;
 		}
-		$pid  = (int) get_queried_object_id();
-		$html = $this->render_irl_html( $pid ) . $this->render_links_html( $pid );
+		$pid = (int) get_queried_object_id();
+		if ( ! $pid ) {
+			return;
+		}
+
+		if ( 'irl-cards' === $type ) {
+			$html = $this->render_irl_html( $pid );
+		} elseif ( 'internal-links' === $type ) {
+			$html = $this->render_links_html( $pid );
+		} else {
+			return;
+		}
+
 		if ( '' !== $html ) {
 			echo wp_kses_post( $html );
 		}

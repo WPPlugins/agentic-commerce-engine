@@ -71,6 +71,22 @@
 				payload[ field ] = v;
 			}
 		} );
+		/*
+		 * Placement selects are discovered by attribute rather than listed by
+		 * id, so adding a third placeable content type on the platform needs no
+		 * change here. The field name matches what save_settings() reads:
+		 * placement_<type with dashes as underscores>.
+		 */
+		Array.prototype.forEach.call(
+			document.querySelectorAll( '[data-ace-placement]' ),
+			function ( sel ) {
+				var type = sel.getAttribute( 'data-ace-placement' );
+				if ( type && sel.value ) {
+					payload[ 'placement_' + type.replace( /-/g, '_' ) ] = sel.value;
+				}
+			}
+		);
+
 		var base = $( '#ace-base-url-setting' );
 		if ( base && base.value.trim() ) {
 			payload.base_url = base.value.trim();

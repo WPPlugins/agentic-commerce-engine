@@ -121,6 +121,9 @@ class Enrichment {
 			update_post_meta( $id, Meta::SCORE, isset( $product['score'] ) ? $product['score'] : '' );
 			update_post_meta( $id, Meta::ENRICHED_AT, isset( $product['enrichedAt'] ) ? (string) $product['enrichedAt'] : gmdate( 'c' ) );
 			update_post_meta( $id, Meta::STATUS, Meta::STATUS_ENRICHED );
+			// A new proposal is a state Rezolve Ai should know about too, so its
+			// queue and this one show the same work.
+			$this->plugin->review_sync()->mark_dirty( $id, 'enrich' );
 			++$ingested;
 
 			if ( $auto_apply ) {

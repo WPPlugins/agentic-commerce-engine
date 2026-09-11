@@ -170,6 +170,33 @@ class Api_Client {
 	}
 
 	/**
+	 * PATCH /api/v1/plugin/content-placement — where IRL cards and internal
+	 * links sit on the product page.
+	 *
+	 * Pushed rather than kept local because this one choice has three editors:
+	 * the web app, the embedded Shopify app and this site's settings screen.
+	 * The platform holds the value and the hourly heartbeat mirrors it back
+	 * down, so a local-only save would be undone within the hour.
+	 *
+	 * PARTIAL by design: send only the types being changed, and the platform
+	 * merges onto what is stored.
+	 *
+	 * @param string $store_id  Rezolve Ai store id.
+	 * @param array  $placement Map of content type to placement.
+	 * @return array|\WP_Error
+	 */
+	public function update_content_placement( $store_id, array $placement ) {
+		return $this->request(
+			'PATCH',
+			'/api/v1/plugin/content-placement',
+			array(
+				'storeId'   => $store_id,
+				'placement' => $placement,
+			)
+		);
+	}
+
+	/**
 	 * GET /api/v1/usage — credits + rate limit + job counts.
 	 *
 	 * @return array|\WP_Error
@@ -743,6 +770,35 @@ class Api_Client {
 			array(
 				'storeId' => $store_id,
 				'results' => array_values( $results ),
+			)
+		);
+	}
+
+	/**
+	 * Report what this site's merchant decided about proposed content.
+	 *
+	 * THE DIRECTION THE ACK DOES NOT COVER. `apply_queue_ack()` above answers
+	 * "did the write land on the store" for content Rezolve Ai had already
+	 * approved. It has nothing to say about a decision made HERE: a dismissal
+	 * has no push at all, and an approval made on this plugin's Review screen was
+	 * never told to Rezolve Ai in any form. That is why the web review queue kept
+	 * listing products this site had already dealt with.
+	 *
+	 * Platform-agnostic on the server: the same endpoint serves the embedded
+	 * Shopify app, and the destination recorded for any push is derived from the
+	 * store's platform rather than assumed.
+	 *
+	 * @param string $store_id  Rezolve Ai store id.
+	 * @param array  $decisions List of { productId, field, status, decidedAt?, error? }.
+	 * @return array|\WP_Error
+	 */
+	public function review_decisions( $store_id, array $decisions ) {
+		return $this->request(
+			'POST',
+			'/api/v1/plugin/review-decisions',
+			array(
+				'storeId'   => $store_id,
+				'decisions' => array_values( $decisions ),
 			)
 		);
 	}

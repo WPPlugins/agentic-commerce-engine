@@ -997,9 +997,13 @@
 
 			var body = rows.map( function ( r ) {
 				var o = r.outcome;
+				/* NOT "Running": a row with no ledger entry may be a draft,
+				   paused or discarded test. statusLabel/statusTone come from
+				   the platform so this screen, the Shopify app and the web app
+				   describe the same row with the same word. */
 				var verdictCell = o
 					? core.chip( toneToChip( o.tone ), o.label )
-					: core.chip( 'neutral', t( 'stillRunning', 'Running' ) );
+					: core.chip( toneToChip( r.statusTone ), r.statusLabel || t( 'stillRunning', 'Running' ) );
 
 				/* A withheld number and a measured nothing must never share a
 				   cell. `lift` is null whenever the claim gate refused. */
