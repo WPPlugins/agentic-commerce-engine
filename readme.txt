@@ -4,7 +4,7 @@ Tags: ai, seo, woocommerce, ai search, content
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 4.16.0
+Stable tag: 4.16.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -137,6 +137,10 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 8. The Settings screen with publishing, automation, and crawler tracking options.
 
 == Changelog ==
+
+= 4.16.1 =
+* Fixed: a product you approved straight after enrichment could reappear in Review a minute later, marked ready to review again, because the same results were collected twice. Content you applied stayed live; only the review status was reset. With auto-apply on, the second collection could apply the same content again. Each enrichment is now collected exactly once, and a product you have already approved, dismissed or sent for enrichment again is left alone.
+* Fixed: if the results of an enrichment could not be fetched, the products waiting on them could be marked as failed or left waiting for good. The plugin now tries again.
 
 = 4.16.0 =
 * Added: five more things to enrich. Product title, highlights (short benefit bullets), product Q&A, product attributes and image alt text now appear in the enrichment picker, once your Rezolve Ai account supports them.
@@ -293,6 +297,9 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 * Product enrichment now runs on the platform's durable jobs API with webhook-accelerated polling.
 
 == Upgrade Notice ==
+
+= 4.16.1 =
+Fixes approved products reappearing in Review shortly after enrichment, and a case where auto-apply could apply the same content twice. Recommended for everyone on 4.16.0.
 
 = 4.16.0 =
 Adds highlights, product Q&A, product attributes, image alt text and product title enrichment. Approving a title or alt text now writes it onto the live product, and approving alt text replaces what each image had. Revert undoes both.

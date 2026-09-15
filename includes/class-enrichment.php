@@ -93,12 +93,37 @@ class Enrichment {
 	/**
 	 * Ingest normalized results from the status endpoint into the review queue.
 	 *
-	 * @param array $products Array of { id, status, enrichedData, score, enrichedAt }.
+	 * ONCE PER PRODUCT, AND ONLY INTO A PRODUCT STILL WAITING ON THIS JOB
+	 * A finished job's results stay readable on the platform for as long as the
+	 * job exists, and two paths read them: `Ajax::poll_status()` drives the
+	 * poller inline while the Products screen is open, and the WP-Cron event
+	 * `schedule_poll()` armed keeps its own schedule. Until this guard existed,
+	 * whichever ran second ingested the job again. On a real store a
+	 * product was enriched, approved and applied, then a storefront page load
+	 * fired the stale cron poll and the applied product reappeared as pending in
+	 * Review. With auto-apply on, the same replay would apply it a second time.
+	 *
+	 * So a result lands only on a product that is still STATUS_QUEUED and whose
+	 * Meta::JOB_ID is the job being ingested. Anything else was decided already
+	 * (enriched, applied, dismissed, reverted, failed) or has been asked for
+	 * again under a newer job whose results must not be overwritten by these.
+	 *
+	 * The status write is a compare-and-swap (`$prev_value`), because the read
+	 * above it cannot stop two polls that are running at the same moment. Only
+	 * the poll whose swap lands tells Review_Sync and auto-applies; the loser has
+	 * at most rewritten the same job's payload over itself.
+	 *
+	 * @param array  $products Array of { id, status, enrichedData, score, enrichedAt }.
+	 * @param string $job_id   The job these results belong to. Optional only so
+	 *                         an older caller keeps working; without it the
+	 *                         product must still be queued, but its job is not
+	 *                         checked.
 	 * @return int Number ingested as ready-for-review.
 	 */
-	public function ingest_results( array $products ) {
+	public function ingest_results( array $products, $job_id = '' ) {
 		$ingested   = 0;
 		$auto_apply = $this->plugin->settings()->is_auto_apply();
+		$job_id     = (string) $job_id;
 
 		foreach ( $products as $product ) {
 			if ( ! is_array( $product ) ) {
@@ -108,6 +133,10 @@ class Enrichment {
 			$status = isset( $product['status'] ) ? (string) $product['status'] : '';
 			if ( ! $id || 'enriched' !== $status ) {
 				continue; // 'pending' items stay queued for the next poll.
+			}
+
+			if ( ! $this->awaits_results( $id, $job_id ) ) {
+				continue; // Already ingested, decided, or re-queued under a newer job.
 			}
 
 			$fields  = $this->normalize_enriched( isset( $product['enrichedData'] ) ? (array) $product['enrichedData'] : array() );
@@ -120,7 +149,12 @@ class Enrichment {
 			update_post_meta( $id, Meta::CONTENT, $content );
 			update_post_meta( $id, Meta::SCORE, isset( $product['score'] ) ? $product['score'] : '' );
 			update_post_meta( $id, Meta::ENRICHED_AT, isset( $product['enrichedAt'] ) ? (string) $product['enrichedAt'] : gmdate( 'c' ) );
-			update_post_meta( $id, Meta::STATUS, Meta::STATUS_ENRICHED );
+			// Status LAST, so a request that dies part way leaves the product
+			// queued and the next poll ingests it, rather than an enriched
+			// product with nothing to review.
+			if ( ! update_post_meta( $id, Meta::STATUS, Meta::STATUS_ENRICHED, Meta::STATUS_QUEUED ) ) {
+				continue; // Another poll claimed this product first.
+			}
 			// A new proposal is a state Rezolve Ai should know about too, so its
 			// queue and this one show the same work.
 			$this->plugin->review_sync()->mark_dirty( $id, 'enrich' );
@@ -135,6 +169,20 @@ class Enrichment {
 			$this->plugin->repository()->bust_counts_cache();
 		}
 		return $ingested;
+	}
+
+	/**
+	 * Whether a product is still waiting on results, from this job if one is named.
+	 *
+	 * @param int    $id     Product id.
+	 * @param string $job_id Job id, or '' to check the status alone.
+	 * @return bool
+	 */
+	private function awaits_results( $id, $job_id ) {
+		if ( Meta::STATUS_QUEUED !== get_post_meta( $id, Meta::STATUS, true ) ) {
+			return false;
+		}
+		return '' === $job_id || (string) get_post_meta( $id, Meta::JOB_ID, true ) === $job_id;
 	}
 
 	/**
@@ -185,10 +233,19 @@ class Enrichment {
 	/**
 	 * Schedule a status poll for a job (idempotent per job).
 	 *
+	 * A job the poller has already finished is not scheduled again. The
+	 * platform's completion webhook can land after the Products screen has
+	 * already ingested the job inline, and an event armed then would only wake
+	 * up to find nothing to do.
+	 *
 	 * @param string $job_id Job id.
 	 * @param int    $delay  Seconds from now.
 	 */
 	public function schedule_poll( $job_id, $delay = 30 ) {
+		$job_id = (string) $job_id;
+		if ( Poller::is_finished( $job_id ) ) {
+			return;
+		}
 		if ( ! wp_next_scheduled( self::POLL_HOOK, array( $job_id ) ) ) {
 			wp_schedule_single_event( time() + (int) $delay, self::POLL_HOOK, array( $job_id ) );
 		}

@@ -43,12 +43,25 @@ class Poller {
 	/**
 	 * Poll one job. Reschedules itself until a terminal state or the cap.
 	 *
+	 * Two callers reach this for the same job: the WP-Cron event and
+	 * `Ajax::poll_status()`, which drives it inline while the Products screen
+	 * is open. Whichever finishes the job first records that (see `finish()`),
+	 * so the other, and any cron event still armed, returns here without
+	 * reading the results again. `Enrichment::ingest_results()` refuses a
+	 * second ingest per product on its own; this stops the wasted round trips
+	 * and the polling itself.
+	 *
 	 * @param string $job_id Job id.
 	 */
 	public function poll( $job_id ) {
 		$job_id   = (string) $job_id;
 		$settings = $this->plugin->settings();
 		if ( '' === $job_id || ! $settings->is_connected() ) {
+			return;
+		}
+
+		if ( self::is_finished( $job_id ) ) {
+			wp_clear_scheduled_hook( Enrichment::POLL_HOOK, array( $job_id ) );
 			return;
 		}
 
@@ -64,19 +77,26 @@ class Poller {
 		switch ( $status ) {
 			case 'completed':
 			case 'partial':
-				$this->ingest_job( $job_id );
-				$this->clear_attempts( $job_id );
+				if ( ! $this->ingest_job( $job_id ) ) {
+					// The results could not be read, so nothing below may run: a
+					// partial job would mark every product that is only waiting on
+					// this page as failed, and finishing would leave the rest queued
+					// with no poll left to collect them. Try again instead.
+					$this->reschedule_or_give_up( $job_id );
+					return;
+				}
 				if ( 'partial' === $status ) {
 					// Whatever did not come back enriched is failed, not pending.
 					$this->plugin->enrichment()->mark_job_failed( $job_id, __( 'Some products failed to enrich.', 'agentic-commerce-engine' ) );
 				}
+				$this->finish( $job_id );
 				break;
 
 			case 'failed':
 			case 'cancelled':
-				$this->clear_attempts( $job_id );
 				$message = isset( $job['error']['message'] ) ? (string) $job['error']['message'] : '';
 				$this->plugin->enrichment()->mark_job_failed( $job_id, $message );
+				$this->finish( $job_id );
 				break;
 
 			case 'pending':
@@ -91,7 +111,12 @@ class Poller {
 	 * Pull every results page for a finished job and hand the mapped products
 	 * to the enrichment ingester.
 	 *
+	 * A page that fails part way is safe to retry from page one: the pages
+	 * already read have moved their products out of STATUS_QUEUED, and the
+	 * ingester skips those.
+	 *
 	 * @param string $job_id Job id.
+	 * @return bool False when a results page could not be read.
 	 */
 	private function ingest_job( $job_id ) {
 		$page = 1;
@@ -99,19 +124,21 @@ class Poller {
 			$batch = $this->plugin->api()->job_results( $job_id, $page, self::RESULTS_PAGE );
 			if ( is_wp_error( $batch ) ) {
 				$this->plugin->logger()->error( "Results fetch failed for job {$job_id}: " . $batch->get_error_message() );
-				return;
+				return false;
 			}
 			$rows = isset( $batch['items'] ) && is_array( $batch['items'] ) ? $batch['items'] : array();
 			if ( empty( $rows ) ) {
-				return;
+				return true;
 			}
 
-			$this->plugin->enrichment()->ingest_results( self::map_job_results( $rows ) );
+			$this->plugin->enrichment()->ingest_results( self::map_job_results( $rows ), $job_id );
 
 			$meta       = isset( $batch['_meta']['pagination'] ) ? $batch['_meta']['pagination'] : array();
 			$total_page = isset( $meta['totalPages'] ) ? (int) $meta['totalPages'] : 1;
 			++$page;
 		} while ( $page <= $total_page && $page <= 50 );
+
+		return true;
 	}
 
 	/* --------------------------------------------------------------------- */
@@ -264,16 +291,54 @@ class Poller {
 		++$attempts;
 
 		if ( $attempts >= self::MAX_POLLS ) {
-			$this->clear_attempts( $job_id );
 			$this->plugin->enrichment()->mark_job_failed(
 				$job_id,
 				$message ? $message : __( 'Enrichment timed out.', 'agentic-commerce-engine' )
 			);
+			$this->finish( $job_id );
 			return;
 		}
 
 		set_transient( $key, $attempts, HOUR_IN_SECONDS );
 		$this->plugin->enrichment()->schedule_poll( $job_id, self::INTERVAL );
+	}
+
+	/**
+	 * Whether a job has already reached a terminal state and been handled.
+	 *
+	 * @param string $job_id Job id.
+	 * @return bool
+	 */
+	public static function is_finished( $job_id ) {
+		return false !== get_transient( self::finished_key( (string) $job_id ) );
+	}
+
+	/**
+	 * Record that a job is done and stop polling it.
+	 *
+	 * The marker is a transient rather than an option so it cannot pile up one
+	 * row per job forever: a day comfortably outlives any poll that was already
+	 * in flight when the job finished, and the armed event is cleared here
+	 * anyway. It is an optimisation, not the guarantee. If it expires or an
+	 * object cache evicts it early, a late poll reads the results again and
+	 * `Enrichment::ingest_results()` still ingests nothing twice.
+	 *
+	 * @param string $job_id Job id.
+	 */
+	private function finish( $job_id ) {
+		$this->clear_attempts( $job_id );
+		set_transient( self::finished_key( $job_id ), 1, DAY_IN_SECONDS );
+		// schedule_poll() passes the job id as the only arg, and WP-Cron matches
+		// events on their args, so this must be the same one-element array.
+		wp_clear_scheduled_hook( Enrichment::POLL_HOOK, array( (string) $job_id ) );
+	}
+
+	/**
+	 * @param string $job_id Job id.
+	 * @return string
+	 */
+	private static function finished_key( $job_id ) {
+		return 'agencoen_poll_done_' . md5( $job_id );
 	}
 
 	/**
