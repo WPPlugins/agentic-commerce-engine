@@ -216,7 +216,8 @@ class Review {
 				'id'        => $id,
 				'name'      => $product->get_name(),
 				'edit_link' => get_edit_post_link( $id, 'raw' ),
-				'score'     => get_post_meta( $id, Meta::SCORE, true ),
+				// Measured product-level quality, or null. See Quality::product_overall().
+				'score'     => Quality::cached_overall( $id ),
 				'diff'      => $this->diff_for( $id ),
 			);
 		}

@@ -80,7 +80,7 @@ $agencoen_offline = empty( $connected );
 				<div id="ace-chart-coverage" class="ace-chart"><div class="ace-skeleton ace-skeleton-block ace-skeleton-chart"></div></div>
 			</div>
 			<div class="ace-card ace-chart-card">
-				<h2 class="ace-h3"><?php esc_html_e( 'AI score distribution', 'agentic-commerce-engine' ); ?><button type="button" class="ace-help-icon" data-help="<?php esc_attr_e( 'AI quality scores for enriched products, grouped into buckets from 0 to 100.', 'agentic-commerce-engine' ); ?>" aria-label="<?php esc_attr_e( 'Help', 'agentic-commerce-engine' ); ?>">?</button></h2>
+				<h2 class="ace-h3"><?php esc_html_e( 'Quality score distribution', 'agentic-commerce-engine' ); ?><button type="button" class="ace-help-icon" data-help="<?php esc_attr_e( 'Quality scores measured by Rezolve Ai for products with content waiting for review or applied, grouped from 0 to 100. Products with nothing measured yet are counted as Not scored.', 'agentic-commerce-engine' ); ?>" aria-label="<?php esc_attr_e( 'Help', 'agentic-commerce-engine' ); ?>">?</button></h2>
 				<div id="ace-chart-scores" class="ace-chart"><div class="ace-skeleton ace-skeleton-block ace-skeleton-chart"></div></div>
 			</div>
 			<div class="ace-card ace-chart-card ace-chart-wide">
@@ -118,7 +118,7 @@ $agencoen_offline = empty( $connected );
 		<?php endif; ?>
 
 		<div class="ace-card ace-chart-card ace-chart-wide" id="ace-card-sov" hidden>
-			<h2 class="ace-h3"><?php esc_html_e( 'Share of Brand Mentions in AI answers', 'agentic-commerce-engine' ); ?><button type="button" class="ace-help-icon" data-help="<?php esc_attr_e( 'How often AI answers mention your brand across your tracked prompts, from your AI Search research runs.', 'agentic-commerce-engine' ); ?>" aria-label="<?php esc_attr_e( 'Help', 'agentic-commerce-engine' ); ?>">?</button></h2>
+			<h2 class="ace-h3"><?php esc_html_e( 'Your brand in AI answers', 'agentic-commerce-engine' ); ?><button type="button" class="ace-help-icon" data-help="<?php esc_attr_e( 'The share of AI answers that name your brand in each AI Search research run.', 'agentic-commerce-engine' ); ?>" aria-label="<?php esc_attr_e( 'Help', 'agentic-commerce-engine' ); ?>">?</button></h2>
 			<div id="ace-chart-sov" class="ace-chart"></div>
 			<p class="ace-help">
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=agencoen-aisearch' ) ); ?>"><?php esc_html_e( 'Open AI Search', 'agentic-commerce-engine' ); ?></a>

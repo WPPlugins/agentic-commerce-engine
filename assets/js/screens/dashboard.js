@@ -36,7 +36,8 @@
 		return out;
 	}
 
-	var SCORE_COLORS = [ '#f43f5e', '#f59e0b', '#eab308', '#84cc16', '#10b981' ];
+	// Five score buckets, low to high, then grey for "Not scored".
+	var SCORE_COLORS = [ '#f43f5e', '#f59e0b', '#eab308', '#84cc16', '#10b981', '#9ca3af' ];
 
 	/* ------------------------------------------------------------------ */
 	/* KPI stat row                                                        */
@@ -93,17 +94,27 @@
 			} ) );
 		}
 
+		// `aeo` is null until a research run has a snapshot. Once it exists, a
+		// null rate means Rezolve Ai could not measure the brand (or is too old
+		// to send the field): that is n/a, not a prompt to go and set things up.
 		var aeo = d.aeo || null;
-		if ( aeo && aeo.brandMentionRatePct != null ) {
+		if ( aeo && typeof aeo.yourMentionRatePct === 'number' ) {
 			tiles.push( core.statTile( {
-				label: t( 'shareOfMentions', 'Share of Brand Mentions' ),
-				value: core.pct( aeo.brandMentionRatePct ),
-				sub: t( 'sovSub', 'of AI answers mention your brand' ),
+				label: t( 'yourBrandInAnswers', 'Your brand in AI answers' ),
+				value: core.pct( aeo.yourMentionRatePct ),
+				sub: t( 'yourBrandSub', 'of AI answers name your brand' ),
+				accent: 'amber'
+			} ) );
+		} else if ( aeo ) {
+			tiles.push( core.statTile( {
+				label: t( 'yourBrandInAnswers', 'Your brand in AI answers' ),
+				value: t( 'notAvailable', 'n/a' ),
+				sub: t( 'notMeasuredRun', 'Could not be measured for this run.' ),
 				accent: 'amber'
 			} ) );
 		} else {
 			tiles.push( core.statTile( {
-				label: t( 'shareOfMentions', 'Share of Brand Mentions' ),
+				label: t( 'yourBrandInAnswers', 'Your brand in AI answers' ),
 				value: t( 'notMeasured', 'Not measured yet' ),
 				sub: t( 'sovSetup', 'Run AI search research to measure this.' ),
 				accent: 'amber'
@@ -211,24 +222,26 @@
 
 		var sovCard = $( '#ace-card-sov' );
 		var sovEl = $( '#ace-chart-sov' );
-		var trend = ( d.aeo && d.aeo.trend ) || [];
+		// Only runs where your brand was measured. A null rate is skipped, never
+		// drawn as 0, and the snapshot's any-brand rate is never plotted here.
+		var trendPoints = ( ( d.aeo && d.aeo.trend ) || [] ).filter( function ( p ) {
+			return p && p.date && typeof p.yourMentionRatePct === 'number' && isFinite( p.yourMentionRatePct );
+		} ).map( function ( p ) {
+			return { x: core.fmtDate( p.date ), y: p.yourMentionRatePct };
+		} );
 		if ( sovCard && sovEl ) {
-			if ( trend.length ) {
+			if ( trendPoints.length ) {
 				sovCard.hidden = false;
 				charts.line( sovEl, {
 					series: [ {
-						name: t( 'shareOfMentions', 'Share of Brand Mentions' ),
+						name: t( 'yourBrandInAnswers', 'Your brand in AI answers' ),
 						color: charts.palette[ 0 ],
-						points: trend.map( function ( p ) {
-							// Plot the metric the card is titled after; older
-							// payloads only carried share of answers.
-							var y = p.brandMentionRatePct != null ? p.brandMentionRatePct : p.shareOfAnswersPct;
-							return { x: String( p.date ).slice( 5 ), y: Number( y ) || 0 };
-						} )
+						points: trendPoints
 					} ]
 				}, {
 					height: 220,
 					showLegend: false,
+					yMax: 100,
 					yFmt: function ( v ) {
 						return core.pct( v );
 					}

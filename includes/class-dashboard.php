@@ -175,9 +175,12 @@ class Dashboard {
 
 		return array(
 			'coverage' => $coverage,
+			// Measured quality, read from the cache Quality keeps. The sixth
+			// bucket is products with content but no score yet, shown rather
+			// than left out, so an empty chart cannot pass for a good one.
 			'scores'   => array(
-				'labels'  => array( '0-20', '20-40', '40-60', '60-80', '80-100' ),
-				'buckets' => $has_woo ? $repo->score_distribution() : array_fill( 0, 5, 0 ),
+				'labels'  => array( '0-20', '20-40', '40-60', '60-80', '80-100', __( 'Not scored', 'agentic-commerce-engine' ) ),
+				'buckets' => $has_woo ? $repo->quality_distribution() : array_fill( 0, 6, 0 ),
 			),
 			'activity' => $has_woo ? $repo->applied_per_day( 14 ) : self::empty_activity( 14 ),
 		);

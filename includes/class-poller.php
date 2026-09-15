@@ -149,6 +149,11 @@ class Poller {
 	 * Map unified-job result rows ({ productId, content: {type: value} }) into
 	 * the ingest shape ({ id, status, enrichedData, contentTypes, ... }).
 	 *
+	 * There is deliberately no `score`. Until 4.17.0 this set it to a literal 90
+	 * for every row, and that number was shown to merchants as a quality score
+	 * although nothing had measured anything. Quality now comes from Rezolve
+	 * Ai's own scoring, read by {@see Quality}, and is absent until it exists.
+	 *
 	 * @param array $rows Result rows from /api/v1/jobs/{id}/results.
 	 * @return array
 	 */
@@ -171,7 +176,6 @@ class Poller {
 				'status'       => 'enriched',
 				'enrichedData' => self::derive_flat_fields( $per_type ),
 				'contentTypes' => $per_type,
-				'score'        => 90,
 				'enrichedAt'   => gmdate( 'c' ),
 			);
 		}

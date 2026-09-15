@@ -3,8 +3,9 @@
  *
  * Approval queue at catalog scale: pending/applied SegmentedTabs (hash-synced
  * via core.tabs), search, paged lists with lazy before/after diffs and
- * per-content-type previews, approve/dismiss/revert row actions, and a
- * server-driven approve-all batch with progress.
+ * per-content-type previews, measured quality scores with re-score,
+ * approve/dismiss/revert row actions, and a server-driven approve-all batch
+ * with progress.
  */
 ( function () {
 	'use strict';
@@ -33,6 +34,176 @@
 	}
 	function stripTags( s ) {
 		return String( s == null ? '' : s ).replace( /<[^>]*>/g, ' ' ).replace( /\s+/g, ' ' ).trim();
+	}
+	/** core.esc leaves quotes alone, which is only safe outside an attribute. */
+	function attr( s ) {
+		return core.esc( s ).replace( /"/g, '&quot;' );
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* Quality scores                                                      */
+	/*                                                                     */
+	/* Every number here is one Rezolve Ai measured, read through the      */
+	/* quality_get action. Until 4.17.0 this screen showed "Score 90" for  */
+	/* every product, a literal nothing had measured. So nothing below     */
+	/* defaults a value: a missing number says "Not scored", and a failed  */
+	/* read says it failed rather than passing for "Not scored".           */
+	/* ------------------------------------------------------------------ */
+
+	/** Seconds between reads while a re-score is on its way, and when to stop. */
+	var RESCORE_POLL_MS = 5000;
+	var RESCORE_GIVE_UP_MS = 120000;
+
+	function isScore( v ) {
+		return 'number' === typeof v && isFinite( v );
+	}
+
+	/** The words the web review queue uses, at the same thresholds. */
+	function qualityWord( score ) {
+		if ( score >= 90 ) {
+			return t( 'qualityExcellent', 'Excellent' );
+		}
+		if ( score >= 80 ) {
+			return t( 'qualityVeryGood', 'Very Good' );
+		}
+		if ( score >= 70 ) {
+			return t( 'qualityGood', 'Good' );
+		}
+		return t( 'qualityNeedsWork', 'Needs Improvement' );
+	}
+
+	function qualityTone( score ) {
+		if ( score >= 90 ) {
+			return 'excellent';
+		}
+		if ( score >= 80 ) {
+			return 'verygood';
+		}
+		if ( score >= 70 ) {
+			return 'good';
+		}
+		return 'weak';
+	}
+
+	/**
+	 * The chip beside a product name. No chip at all until something has been
+	 * read, because "Not scored" before the first read would be a guess.
+	 */
+	function scoreChipHtml( known, overall ) {
+		if ( isScore( overall ) ) {
+			return core.chip( 'info', fmt( t( 'scoreLabel', 'Score %s' ), overall ) );
+		}
+		return known ? core.chip( 'neutral', t( 'notScored', 'Not scored' ) ) : '';
+	}
+
+	function tileHtml( label, value, emptyText ) {
+		var body = isScore( value )
+			? '<div class="ace-q-tile-value">' + core.esc( value ) + '%</div><div class="ace-q-tile-word">' + core.esc( qualityWord( value ) ) + '</div>'
+			: '<div class="ace-q-tile-empty">' + core.esc( emptyText ) + '</div>';
+		return '<div class="ace-q-tile ' + ( isScore( value ) ? 'is-' + qualityTone( value ) : 'is-none' ) + '">' +
+			'<div class="ace-q-tile-label">' + core.esc( label ) + '</div>' + body + '</div>';
+	}
+
+	function rescoreButtonHtml( group, label, busy ) {
+		return '<button type="button" class="ace-btn ace-btn-secondary ace-btn-sm ace-q-rescore" data-key="' + attr( group.key ) + '" data-fields="' + attr( ( group.fields || [] ).join( ',' ) ) + '"' + ( busy ? ' disabled' : '' ) + '>' +
+			core.esc( busy ? t( 'qualityScoring', 'Scoring…' ) : label ) + '</button>';
+	}
+
+	/** One scored piece of content: its state line, four tiles and reasoning. */
+	function qualityGroupHtml( group, busy ) {
+		var q = group.quality || {};
+		var state = q.state || 'unscored';
+		var html = '<div class="ace-q-group"><div class="ace-q-group-title">' + core.esc( group.label || '' ) + '</div>';
+
+		if ( ! group.found ) {
+			return html + '<div class="ace-q-banner"><p>' + core.esc( t( 'qualityNotReceived', 'Not scored yet. Rezolve Ai has not received this content for review yet, so there is nothing to score. It is sent automatically, usually within the hour.' ) ) + '</p></div></div>';
+		}
+
+		if ( 'unscored' === state ) {
+			html += '<div class="ace-q-banner"><p>' + core.esc( t( 'qualityUnscored', 'Not scored yet. Scores usually appear within a few minutes of the content being saved.' ) ) + '</p>' +
+				rescoreButtonHtml( group, t( 'qualityScoreNow', 'Score now' ), busy ) + '</div>';
+		} else {
+			if ( 'stale' === state || 'outdated' === state ) {
+				var banner = 'stale' === state
+					? t( 'qualityStale', 'This content was edited after it was scored, so these scores may be out of date. A new score is on its way.' )
+					: t( 'qualityOutdated', 'These scores were measured under an earlier scoring rubric. An updated score is on its way.' );
+				html += '<div class="ace-q-banner is-warning"><p>' + core.esc( banner ) + '</p>' +
+					rescoreButtonHtml( group, t( 'qualityRescoreNow', 'Re-score now' ), busy ) + '</div>';
+			} else {
+				var date = q.scoredAt ? core.fmtDate( q.scoredAt ) : '';
+				var line = isScore( q.overall )
+					? fmt( t( 'qualityScored', 'Scored %1$s · Overall %2$s' ), date, q.overall )
+					: fmt( t( 'qualityScoredOn', 'Scored %s' ), date );
+				html += '<div class="ace-q-meta"><p>' + core.esc( line ) + '</p>' +
+					rescoreButtonHtml( group, t( 'qualityRescore', 'Re-score' ), busy ) + '</div>';
+			}
+
+			var notScored = t( 'notScored', 'Not scored' );
+			html += '<div class="ace-q-tiles">' +
+				tileHtml( t( 'qualityContent', 'Content Quality' ), q.contentQuality, notScored ) +
+				tileHtml( t( 'qualitySeo', 'SEO Score' ), q.seoScore, notScored ) +
+				tileHtml( t( 'qualityAi', 'AI Readability' ), q.aiReadability, notScored ) +
+				// No voice on the project is a different fact from a voice that
+				// was not scored, and the fix for it is different too.
+				tileHtml( t( 'qualityBrand', 'Brand Voice' ), q.brandVoice, false === q.brandVoiceConfigured ? t( 'qualityNoVoice', 'No brand voice set' ) : notScored ) +
+				'</div>';
+
+			if ( q.reasoning ) {
+				html += '<details class="ace-q-why"><summary>' + core.esc( t( 'qualityWhy', 'Why these scores' ) ) + '</summary><p>' + core.esc( q.reasoning ) + '</p></details>';
+			}
+		}
+
+		if ( group.differentVersion ) {
+			html += '<p class="ace-q-note">' + core.esc( t( 'qualityOtherVersion', 'These scores describe a different version of this content.' ) ) + '</p>';
+		}
+		if ( busy || group.scoringQueued ) {
+			html += '<p class="ace-q-note">' + core.esc( t( 'qualityQueued', 'A new score is being measured. This usually takes under a minute.' ) ) + '</p>';
+		}
+		return html + '</div>';
+	}
+
+	/**
+	 * The quality section of an expanded product.
+	 *
+	 * @param {Object|undefined} view    quality_get's view, or undefined while loading.
+	 * @param {Object}           waiting Group keys with a re-score in flight.
+	 */
+	function qualityHtml( view, waiting ) {
+		var title = '<div class="ace-ct-title">' + core.esc( t( 'qualityTitle', 'Quality scores' ) ) + '</div>';
+		if ( ! view ) {
+			return title + '<div class="ace-skeleton ace-skeleton-text" style="width:60%"></div>';
+		}
+
+		var notice = '';
+		if ( view.offline ) {
+			notice = t( 'qualityOffline', 'Connect this site to Rezolve Ai to see up to date quality scores.' );
+		} else if ( view.error ) {
+			notice = view.known
+				? t( 'qualityCached', 'These are the last scores read from Rezolve Ai. They could not be refreshed just now.' )
+				: t( 'qualityUnavailable', 'Quality scores could not be loaded just now. Try again in a moment.' );
+		}
+		var html = title + ( notice ? '<div class="ace-q-banner is-warning"><p>' + core.esc( notice ) + '</p></div>' : '' );
+
+		if ( ! view.known ) {
+			return html;
+		}
+		var groups = view.groups || [];
+		if ( ! groups.length ) {
+			return html + '<p class="ace-muted">' + core.esc( t( 'qualityNothing', 'There is no content on this product to score.' ) ) + '</p>';
+		}
+		return html + groups.map( function ( group ) {
+			return qualityGroupHtml( group, !! ( waiting && waiting[ group.key ] ) );
+		} ).join( '' );
+	}
+
+	function findGroup( view, key ) {
+		var groups = ( view && view.groups ) || [];
+		for ( var i = 0; i < groups.length; i++ ) {
+			if ( groups[ i ].key === key ) {
+				return groups[ i ];
+			}
+		}
+		return null;
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -207,11 +378,110 @@
 		var list = $( '#ace-review-list' );
 		var appliedList = $( '#ace-applied-list' );
 
+		// Product id => the last quality view read, and => group keys with a
+		// re-score in flight ({ before: scoredAt, started: ms }).
+		var quality = {};
+		var waiting = {};
+		var pollTimers = {};
+
+		function itemsFor( id ) {
+			return Array.prototype.slice.call( root.querySelectorAll( '.ace-rev-item[data-id="' + attr( id ) + '"]' ) );
+		}
+
+		function renderQuality( id ) {
+			var key = String( id );
+			itemsFor( key ).forEach( function ( item ) {
+				var section = $( '.ace-quality', item );
+				if ( section ) {
+					section.innerHTML = qualityHtml( quality[ key ], waiting[ key ] );
+				}
+			} );
+		}
+
+		function applyQuality( view ) {
+			var key = String( view.id );
+			quality[ key ] = view;
+			// A failed read with nothing cached leaves the chip as the list drew
+			// it, rather than replacing a real cached score with nothing.
+			if ( view.known || ! view.error ) {
+				itemsFor( key ).forEach( function ( item ) {
+					var chip = $( '.ace-rev-score', item );
+					if ( chip ) {
+						chip.innerHTML = scoreChipHtml( view.known, view.overall );
+					}
+				} );
+			}
+			renderQuality( key );
+		}
+
+		function loadQuality( ids ) {
+			if ( ! ids.length ) {
+				return;
+			}
+			core.post( 'quality_get', { ids: ids } ).then( function ( d ) {
+				( d.products || [] ).forEach( applyQuality );
+			} ).catch( function ( err ) {
+				ids.forEach( function ( id ) {
+					if ( ! quality[ id ] ) {
+						quality[ id ] = { id: id, known: false, overall: null, groups: [], error: ( err && err.message ) || true };
+					}
+					renderQuality( id );
+				} );
+			} );
+		}
+
+		/**
+		 * A re-score is settled once its group's scoredAt moves, or abandoned
+		 * after RESCORE_GIVE_UP_MS. The score still lands on the platform either
+		 * way; this only stops the screen asking.
+		 */
+		function settleRescores( id, view ) {
+			var pending = waiting[ id ] || {};
+			Object.keys( pending ).forEach( function ( key ) {
+				var group = findGroup( view, key );
+				var scoredAt = group && group.quality ? group.quality.scoredAt : null;
+				if ( scoredAt && scoredAt !== pending[ key ].before ) {
+					delete pending[ key ];
+				} else if ( Date.now() - pending[ key ].started > RESCORE_GIVE_UP_MS ) {
+					delete pending[ key ];
+					core.toast( t( 'qualityTimedOut', 'The new score is taking longer than usual. It will appear here once it is ready.' ), 'info' );
+				}
+			} );
+		}
+
+		function pollRescore( id ) {
+			if ( pollTimers[ id ] ) {
+				return;
+			}
+			pollTimers[ id ] = window.setTimeout( function () {
+				pollTimers[ id ] = null;
+				if ( ! itemsFor( id ).length ) {
+					// Approved or dismissed meanwhile: nothing left to update.
+					delete waiting[ id ];
+					return;
+				}
+				core.post( 'quality_get', { ids: [ id ] } ).then( function ( d ) {
+					var view = ( d.products || [] )[ 0 ];
+					if ( view ) {
+						settleRescores( id, view );
+						applyQuality( view );
+					}
+				} ).catch( function () {
+					/* transient read error; the next tick retries */
+				} ).then( function () {
+					if ( waiting[ id ] && Object.keys( waiting[ id ] ).length ) {
+						pollRescore( id );
+					}
+				} );
+			}, RESCORE_POLL_MS );
+		}
+
 		function itemHtml( item ) {
 			var chips = ( item.fields || [] ).map( function ( f ) {
 				return '<span class="ace-fieldchip">' + core.esc( f ) + '</span>';
 			} ).join( '' );
-			var score = item.score ? core.chip( 'info', fmt( t( 'scoreLabel', 'Score %s' ), item.score ) ) : '';
+			var q = item.quality || {};
+			var score = '<span class="ace-rev-score">' + scoreChipHtml( !! q.known, q.overall ) + '</span>';
 			return '<div class="ace-rev-item" data-id="' + item.id + '">' +
 				'<div class="ace-rev-head">' +
 				'<button type="button" class="ace-rev-toggle" aria-label="' + core.esc( t( 'expand', 'Expand' ) ) + '"><span class="ace-caret">&rsaquo;</span></button>' +
@@ -253,6 +523,7 @@
 			core.post( 'review_list', { page: pending.page, search: pending.search } ).then( function ( d ) {
 				var html = d.items.map( itemHtml ).join( '' );
 				if ( 1 === pending.page ) {
+					quality = {};
 					list.innerHTML = d.items.length ? html : '<div class="ace-empty"><p>' + core.esc( t( 'noPending', 'Nothing to review right now.' ) ) + '</p></div>';
 				} else {
 					list.insertAdjacentHTML( 'beforeend', html );
@@ -262,6 +533,10 @@
 				if ( count ) {
 					count.textContent = core.num( d.total );
 				}
+				// The list painted cached chips; now read what is current.
+				loadQuality( d.items.map( function ( item ) {
+					return String( item.id );
+				} ) );
 			} ).catch( core.errorToast );
 		}
 
@@ -354,8 +629,9 @@
 					if ( ! body.getAttribute( 'data-loaded' ) ) {
 						core.skeleton( body, 'text' );
 						core.post( 'review_diff', { product_id: id } ).then( function ( d ) {
-							body.innerHTML = renderDiffHtml( d.diff || [] ) + renderContentHtml( d.content || {} ) + renderExtrasHtml( d.extras || {} );
+							body.innerHTML = '<div class="ace-quality"></div>' + renderDiffHtml( d.diff || [] ) + renderContentHtml( d.content || {} ) + renderExtrasHtml( d.extras || {} );
 							body.setAttribute( 'data-loaded', '1' );
+							renderQuality( id );
 						} ).catch( core.errorToast );
 					}
 				} else {
@@ -386,6 +662,27 @@
 					item.parentNode.removeChild( item );
 					// Dismissed leaves the queue without becoming applied.
 					bumpCount( '#ace-count-pending', -1 );
+				} ).catch( function ( err ) {
+					core.setBusy( btn, false );
+					core.errorToast( err );
+				} );
+			} else if ( btn.classList.contains( 'ace-q-rescore' ) ) {
+				var groupKey = btn.getAttribute( 'data-key' ) || '';
+				var fields = ( btn.getAttribute( 'data-fields' ) || '' ).split( ',' ).filter( function ( f ) {
+					return '' !== f;
+				} );
+				var current = findGroup( quality[ id ], groupKey );
+				var before = current && current.quality ? current.quality.scoredAt : null;
+				core.setBusy( btn, true, t( 'qualityScoring', 'Scoring…' ) );
+				core.post( 'quality_rescore', { product_id: id, fields: fields } ).then( function ( d ) {
+					waiting[ id ] = waiting[ id ] || {};
+					waiting[ id ][ groupKey ] = { before: before, started: Date.now() };
+					if ( d.product ) {
+						applyQuality( d.product );
+					} else {
+						renderQuality( id );
+					}
+					pollRescore( id );
 				} ).catch( function ( err ) {
 					core.setBusy( btn, false );
 					core.errorToast( err );

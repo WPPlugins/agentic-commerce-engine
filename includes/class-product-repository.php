@@ -18,8 +18,13 @@ defined( 'ABSPATH' ) || exit;
  */
 class Product_Repository {
 
-	const COUNTS_TRANSIENT = 'agencoen_status_counts';
-	const SCORE_TRANSIENT  = 'agencoen_score_dist';
+	const COUNTS_TRANSIENT  = 'agencoen_status_counts';
+	/**
+	 * Cached quality distribution. A new name in 4.17.0 rather than the old
+	 * `agencoen_score_dist`, whose five buckets counted the hardcoded 90s, so no
+	 * stale value from before the upgrade can be served in the new shape.
+	 */
+	const QUALITY_TRANSIENT = 'agencoen_quality_dist';
 
 	/**
 	 * One page of published product ids.
@@ -142,7 +147,7 @@ class Product_Repository {
 	 */
 	public function bust_counts_cache() {
 		delete_transient( self::COUNTS_TRANSIENT );
-		delete_transient( self::SCORE_TRANSIENT );
+		delete_transient( self::QUALITY_TRANSIENT );
 		Dashboard::reset_memo();
 	}
 
@@ -196,7 +201,7 @@ class Product_Repository {
 		}
 		if ( 'score' === $orderby ) {
 			$joins        .= " LEFT JOIN {$wpdb->postmeta} sc ON sc.post_id = p.ID AND sc.meta_key = %s ";
-			$join_params[] = Meta::SCORE;
+			$join_params[] = Meta::QUALITY_OVERALL;
 		}
 
 		$where        = " WHERE p.post_type = 'product' AND p.post_status = 'publish' ";
@@ -219,7 +224,10 @@ class Product_Repository {
 				$order = ' ORDER BY p.post_title ASC ';
 				break;
 			case 'score':
-				$order = ' ORDER BY ( sc.meta_value + 0 ) DESC, p.post_modified DESC ';
+				// Measured quality, highest first. Products with nothing measured
+				// have no QUALITY_OVERALL row at all and sort after every scored
+				// one, rather than as a 0 among the weakest.
+				$order = ' ORDER BY ( sc.meta_value IS NULL ) ASC, ( sc.meta_value + 0 ) DESC, p.post_modified DESC ';
 				break;
 			default:
 				$order = ' ORDER BY p.post_modified DESC ';
@@ -301,30 +309,86 @@ class Product_Repository {
 	}
 
 	/**
-	 * Distribution of enrichment scores in five buckets (0-20 .. 80-100). Cached.
+	 * Measured quality across products with pending or applied content: five
+	 * buckets (0-20 .. 80-100) and a sixth for products with nothing measured.
+	 * Cached.
 	 *
-	 * @return int[] Five counts.
+	 * The population is products that HAVE content to score. A dismissed or
+	 * never-enriched product is not "Not scored", it is not in question, and
+	 * counting it would bury the real unscored backlog under the whole catalog.
+	 *
+	 * @return int[] Six counts: the five buckets, then "Not scored".
 	 */
-	public function score_distribution() {
-		$cached = get_transient( self::SCORE_TRANSIENT );
-		if ( is_array( $cached ) ) {
+	public function quality_distribution() {
+		$cached = get_transient( self::QUALITY_TRANSIENT );
+		if ( is_array( $cached ) && 6 === count( $cached ) ) {
 			return $cached;
 		}
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.PreparedSQL, WordPress.DB.PreparedSQLPlaceholders, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB -- aggregate, cached in a transient just below.
-		$rows = $wpdb->get_results( $wpdb->prepare( "SELECT FLOOR( LEAST( 99, GREATEST( 0, CAST( meta_value AS UNSIGNED ) ) ) / 20 ) AS bucket, COUNT(*) AS n FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value REGEXP '^[0-9]+' GROUP BY bucket", Meta::SCORE ) );
+		// phpcs:ignore WordPress.DB.PreparedSQL, WordPress.DB.PreparedSQLPlaceholders, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB -- aggregate, cached in a transient just below; only table names are interpolated.
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT CASE WHEN q.meta_value IS NULL THEN 5 ELSE FLOOR( LEAST( 99, GREATEST( 0, CAST( q.meta_value AS UNSIGNED ) ) ) / 20 ) END AS bucket, COUNT( DISTINCT p.ID ) AS n
+				 FROM {$wpdb->posts} p
+				 INNER JOIN {$wpdb->postmeta} st ON st.post_id = p.ID AND st.meta_key = %s AND st.meta_value IN ( %s, %s )
+				 LEFT JOIN {$wpdb->postmeta} q ON q.post_id = p.ID AND q.meta_key = %s
+				 WHERE p.post_type = 'product' AND p.post_status = 'publish'
+				 GROUP BY bucket",
+				Meta::STATUS,
+				Meta::STATUS_ENRICHED,
+				Meta::STATUS_APPLIED,
+				Meta::QUALITY_OVERALL
+			)
+		);
 
-		$dist = array_fill( 0, 5, 0 );
+		$dist = array_fill( 0, 6, 0 );
 		if ( is_array( $rows ) ) {
 			foreach ( $rows as $row ) {
 				$b = (int) $row->bucket;
-				if ( $b >= 0 && $b < 5 ) {
+				if ( $b >= 0 && $b < 6 ) {
 					$dist[ $b ] = (int) $row->n;
 				}
 			}
 		}
-		set_transient( self::SCORE_TRANSIENT, $dist, 5 * MINUTE_IN_SECONDS );
+		set_transient( self::QUALITY_TRANSIENT, $dist, 5 * MINUTE_IN_SECONDS );
 		return $dist;
+	}
+
+	/**
+	 * Products whose cached quality most needs refreshing, oldest first.
+	 *
+	 * Pending or applied content only, since nothing else has a score to read.
+	 * Never-fetched products come before everything, then the oldest fetch.
+	 * Anything fetched since `$fetched_before` is skipped: the Review screen
+	 * reads fresh whenever it is open, and re-reading those would spend the
+	 * batch on products that are already current.
+	 *
+	 * @param int $limit          Max ids.
+	 * @param int $fetched_before Unix time; skip products fetched after it.
+	 * @return int[]
+	 */
+	public function ids_for_quality_refresh( $limit, $fetched_before ) {
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.PreparedSQL, WordPress.DB.PreparedSQLPlaceholders, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB -- background batch selection; parameterized, only table names interpolated; intentionally uncached.
+		$ids = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT DISTINCT p.ID
+				 FROM {$wpdb->posts} p
+				 INNER JOIN {$wpdb->postmeta} st ON st.post_id = p.ID AND st.meta_key = %s AND st.meta_value IN ( %s, %s )
+				 LEFT JOIN {$wpdb->postmeta} qa ON qa.post_id = p.ID AND qa.meta_key = %s
+				 WHERE p.post_type = 'product' AND p.post_status = 'publish'
+				   AND ( qa.meta_value IS NULL OR ( qa.meta_value + 0 ) < %d )
+				 ORDER BY ( qa.meta_value IS NULL ) DESC, ( qa.meta_value + 0 ) ASC, p.ID ASC
+				 LIMIT %d",
+				Meta::STATUS,
+				Meta::STATUS_ENRICHED,
+				Meta::STATUS_APPLIED,
+				Meta::QUALITY_AT,
+				(int) $fetched_before,
+				max( 1, (int) $limit )
+			)
+		);
+		return array_map( 'intval', (array) $ids );
 	}
 
 	/**

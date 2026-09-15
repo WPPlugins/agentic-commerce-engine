@@ -81,6 +81,9 @@ final class Plugin {
 	/** @var Review_Sync */
 	private $review_sync;
 
+	/** @var Quality */
+	private $quality;
+
 	/** @var Experiments */
 	private $experiments;
 
@@ -161,6 +164,7 @@ final class Plugin {
 		$this->ab_test        = new Ab_Test( $this );
 		$this->apply_queue    = new Apply_Queue( $this );
 		$this->review_sync    = new Review_Sync( $this );
+		$this->quality        = new Quality( $this );
 		$this->experiments    = new Experiments( $this );
 		$this->brand          = new Brand( $this );
 		$this->cron           = new Cron( $this );
@@ -316,6 +320,11 @@ final class Plugin {
 	/** @return Review_Sync */
 	public function review_sync() {
 		return $this->review_sync;
+	}
+
+	/** @return Quality */
+	public function quality() {
+		return $this->quality;
 	}
 
 	public function experiments() {

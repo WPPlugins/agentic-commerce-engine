@@ -26,7 +26,7 @@ defined( 'ABSPATH' ) || exit;
 			</a>
 			<?php if ( $has_woo ) : ?>
 				<a class="ace-btn ace-btn-secondary ace-btn-sm" href="<?php echo esc_url( admin_url( 'admin.php?page=agencoen-products' ) ); ?>">
-					<?php esc_html_e( 'Browse your catalog with AI readiness scores', 'agentic-commerce-engine' ); ?>
+					<?php esc_html_e( 'Browse your catalog with measured quality scores', 'agentic-commerce-engine' ); ?>
 				</a>
 				<a class="ace-btn ace-btn-secondary ace-btn-sm" href="<?php echo esc_url( admin_url( 'admin.php?page=agencoen-settings' ) ); ?>">
 					<?php esc_html_e( 'Copy your Google and Microsoft feed URLs', 'agentic-commerce-engine' ); ?>

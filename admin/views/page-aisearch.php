@@ -79,21 +79,21 @@ $agencoen_tab_order = array( 'overview', 'prompts', 'competitors', 'crawlers', '
 				<div class="ace-stat-grid" id="agencoen-aeo-overview-stats">
 					<div class="ace-skeleton"></div>
 				</div>
+				<p class="ace-help" id="agencoen-aeo-brand-names" hidden></p>
+				<div class="ace-card">
+					<h2 class="ace-card-title"><?php esc_html_e( 'Your brand in AI answers over time', 'agentic-commerce-engine' ); ?></h2>
+					<p class="ace-help"><?php esc_html_e( 'The share of AI answers naming your brand in each run, next to the share naming any brand at all.', 'agentic-commerce-engine' ); ?></p>
+					<div class="ace-chart" id="agencoen-aeo-trend"><div class="ace-skeleton"></div></div>
+					<p class="ace-help" id="agencoen-aeo-trend-note" hidden></p>
+				</div>
 				<div class="ace-grid-2">
 					<div class="ace-card">
-						<h2 class="ace-card-title"><?php esc_html_e( 'Share of answers over time', 'agentic-commerce-engine' ); ?></h2>
-						<div class="ace-chart" id="agencoen-aeo-trend"><div class="ace-skeleton"></div></div>
-					</div>
-					<div class="ace-card">
-						<h2 class="ace-card-title"><?php esc_html_e( 'Brand presence in AI answers', 'agentic-commerce-engine' ); ?></h2>
-						<div class="ace-chart" id="agencoen-aeo-presence"><div class="ace-skeleton"></div></div>
-					</div>
-					<div class="ace-card">
 						<h2 class="ace-card-title"><?php esc_html_e( 'Most cited domains', 'agentic-commerce-engine' ); ?></h2>
+						<p class="ace-help" id="agencoen-aeo-own-site" hidden></p>
 						<div class="ace-chart" id="agencoen-aeo-domains"><div class="ace-skeleton"></div></div>
 					</div>
 					<div class="ace-card">
-						<h2 class="ace-card-title"><?php esc_html_e( 'Most mentioned brands', 'agentic-commerce-engine' ); ?></h2>
+						<h2 class="ace-card-title"><?php esc_html_e( 'How often AI answers name each brand', 'agentic-commerce-engine' ); ?></h2>
 						<div class="ace-chart" id="agencoen-aeo-entities"><div class="ace-skeleton"></div></div>
 					</div>
 				</div>
@@ -122,11 +122,12 @@ $agencoen_tab_order = array( 'overview', 'prompts', 'competitors', 'crawlers', '
 		<section data-panel="competitors" hidden>
 			<div class="ace-card">
 				<h2 class="ace-card-title"><?php esc_html_e( 'Brands AI assistants recommend', 'agentic-commerce-engine' ); ?></h2>
-				<p class="ace-help"><?php esc_html_e( 'How often each brand appears across all AI answers in the latest run. Your brand is highlighted.', 'agentic-commerce-engine' ); ?></p>
+				<p class="ace-help"><?php esc_html_e( 'The share of AI answers naming each brand in the latest run. One answer can name several brands, so the shares add up to more than 100%. Your brand is highlighted.', 'agentic-commerce-engine' ); ?></p>
 				<div class="ace-chart" id="agencoen-aeo-competitors-chart"><div class="ace-skeleton"></div></div>
+				<p class="ace-help" id="agencoen-aeo-competitors-note" hidden></p>
 			</div>
 			<div class="ace-card">
-				<h2 class="ace-card-title"><?php esc_html_e( 'Mention counts', 'agentic-commerce-engine' ); ?></h2>
+				<h2 class="ace-card-title"><?php esc_html_e( 'Share of answers by brand', 'agentic-commerce-engine' ); ?></h2>
 				<div id="agencoen-aeo-competitors-table"><div class="ace-skeleton"></div></div>
 			</div>
 		</section>

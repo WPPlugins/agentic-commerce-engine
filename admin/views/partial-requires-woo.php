@@ -25,7 +25,7 @@ defined( 'ABSPATH' ) || exit;
 			<li><?php esc_html_e( 'Generate AI product content and approve it in a before/after review queue', 'agentic-commerce-engine' ); ?></li>
 			<li><?php esc_html_e( 'Emit enhanced Product JSON-LD on every product page', 'agentic-commerce-engine' ); ?></li>
 			<li><?php esc_html_e( 'Serve Google, Bing, and Agentic Commerce channel feeds', 'agentic-commerce-engine' ); ?></li>
-			<li><?php esc_html_e( 'Track per-product AI readiness scores', 'agentic-commerce-engine' ); ?></li>
+			<li><?php esc_html_e( 'See measured quality scores for the content on every product', 'agentic-commerce-engine' ); ?></li>
 		</ul>
 		<div class="ace-dependency-actions">
 			<?php if ( current_user_can( 'install_plugins' ) ) : ?>

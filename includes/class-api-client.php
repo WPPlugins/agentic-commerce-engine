@@ -804,6 +804,52 @@ class Api_Client {
 	}
 
 	/**
+	 * The quality scores Rezolve Ai has measured for this site's proposals.
+	 *
+	 * POST although it changes nothing: a review page asks about up to 200
+	 * (product, field) pairs at once, which does not fit a query string. The
+	 * response is one entry per request item, in request order, and every
+	 * number in it is a measurement or null. See {@see Quality}.
+	 *
+	 * @param string $store_id Rezolve Ai store id.
+	 * @param array  $items    List of { productId, field, jobId? }, at most 200.
+	 * @return array|\WP_Error { items: entry[] }.
+	 */
+	public function quality( $store_id, array $items ) {
+		return $this->request(
+			'POST',
+			'/api/v1/plugin/quality',
+			array(
+				'storeId' => $store_id,
+				'items'   => array_values( $items ),
+			)
+		);
+	}
+
+	/**
+	 * Ask Rezolve Ai to score content again: the Review screen's Re-score button.
+	 *
+	 * Queued, not answered inline. A score is a 10 to 20 second AI call, so the
+	 * 202 only says what was queued, and the caller reads `quality()` again until
+	 * `scoredAt` moves. Capped at 25 items by the platform, since each is a paid
+	 * call.
+	 *
+	 * @param string $store_id Rezolve Ai store id.
+	 * @param array  $items    List of { productId, field, jobId? }, at most 25.
+	 * @return array|\WP_Error { queued, items: entry[] }.
+	 */
+	public function quality_rescore( $store_id, array $items ) {
+		return $this->request(
+			'POST',
+			'/api/v1/plugin/quality/rescore',
+			array(
+				'storeId' => $store_id,
+				'items'   => array_values( $items ),
+			)
+		);
+	}
+
+	/**
 	 * Per-visitor A/B exposures.
 	 *
 	 * The ONLY payload this client sends that carries a per-visitor value, and

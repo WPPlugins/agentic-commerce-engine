@@ -158,11 +158,6 @@ class Review_Sync {
 			return array();
 		}
 
-		$pending = get_post_meta( $product_id, Meta::PENDING, true );
-		$pending = is_array( $pending ) ? $pending : array();
-		$content = get_post_meta( $product_id, Meta::CONTENT, true );
-		$content = is_array( $content ) ? $content : array();
-
 		// Fields the caller captured before deleting the meta they live in win
 		// outright: re-deriving from an emptied `Meta::PENDING` would report
 		// nothing and the dismissal would never reach Rezolve Ai.
@@ -178,6 +173,50 @@ class Review_Sync {
 			}
 			return $decisions;
 		}
+
+		$fields = self::proposal_fields( $product_id, $status );
+		if ( empty( $fields ) ) {
+			return array();
+		}
+
+		$decided_at = (string) get_post_meta( $product_id, Meta::APPLIED_AT, true );
+		if ( '' === $decided_at ) {
+			$decided_at = (string) get_post_meta( $product_id, Meta::ENRICHED_AT, true );
+		}
+
+		$decisions = array();
+		foreach ( $fields as $field ) {
+			$decision = array(
+				'productId' => (string) $product_id,
+				'field'     => $field,
+				'status'    => $remote,
+			);
+			if ( '' !== $decided_at ) {
+				$decision['decidedAt'] = $decided_at;
+			}
+			$decisions[] = $decision;
+		}
+		return $decisions;
+	}
+
+	/**
+	 * The platform field names a product currently holds a proposal for.
+	 *
+	 * Shared by the decisions report above and by {@see Quality}, which asks
+	 * Rezolve Ai for the scores of exactly these fields. One derivation, so the
+	 * plugin can never report a decision about a field it does not ask the
+	 * score of, or the other way round.
+	 *
+	 * @param int    $product_id Product id.
+	 * @param string $status     Meta::STATUS value.
+	 * @return string[] Unique field names, in a stable order.
+	 */
+	public static function proposal_fields( $product_id, $status ) {
+		$product_id = (int) $product_id;
+		$pending    = get_post_meta( $product_id, Meta::PENDING, true );
+		$pending    = is_array( $pending ) ? $pending : array();
+		$content    = get_post_meta( $product_id, Meta::CONTENT, true );
+		$content    = is_array( $content ) ? $content : array();
 
 		$fields = array();
 		foreach ( array( 'title', 'description', 'seo_title', 'seo_description' ) as $field ) {
@@ -235,29 +274,69 @@ class Review_Sync {
 			}
 		}
 
-		$fields = array_values( array_unique( $fields ) );
-		if ( empty( $fields ) ) {
-			return array();
+		return array_values( array_unique( $fields ) );
+	}
+
+	/**
+	 * The review-sync tick: report decisions, then refresh cached quality scores.
+	 *
+	 * One tick rather than a new cron event, because both are "keep this site's
+	 * review state and Rezolve Ai's in step", both already ride the hourly
+	 * heartbeat, and one scheduled event is one thing to keep alive. Decisions
+	 * go first: a product whose decision just reached Rezolve Ai is one whose
+	 * review row, and so whose score, now exists.
+	 *
+	 * @return array{reported:int,skipped:int,failed:int}
+	 */
+	public function run() {
+		$counts = $this->drain();
+		$this->refresh_quality();
+		return $counts;
+	}
+
+	/**
+	 * Refresh cached quality scores for products with pending or applied content.
+	 *
+	 * Without this the Products screen and the dashboard, which read only the
+	 * cache, would show whatever was true the last time a merchant happened to
+	 * open Review, and a product scored after that would read "Not scored" for
+	 * ever.
+	 *
+	 * Bounded three ways, since every product is a read against Rezolve Ai:
+	 * at most `Quality::REFRESH_LIMIT` products, oldest fetch first (never
+	 * fetched before anything), none fetched within the last hour, and the whole
+	 * refresh at most once per `Quality::REFRESH_INTERVAL`. `drain()` re-arms a
+	 * tick every minute while a backlog of decisions clears, and that must not
+	 * turn into a read of 200 products a minute.
+	 *
+	 * @param int $limit Products per pass.
+	 * @return int Products refreshed.
+	 */
+	public function refresh_quality( $limit = Quality::REFRESH_LIMIT ) {
+		if ( ! $this->plugin->settings()->is_connected() ) {
+			return 0;
+		}
+		if ( false !== get_transient( Quality::REFRESH_LOCK ) ) {
+			return 0;
+		}
+		set_transient( Quality::REFRESH_LOCK, 1, Quality::REFRESH_INTERVAL );
+
+		$ids = $this->plugin->repository()->ids_for_quality_refresh( (int) $limit, time() - HOUR_IN_SECONDS );
+		if ( empty( $ids ) ) {
+			return 0;
 		}
 
-		$decided_at = (string) get_post_meta( $product_id, Meta::APPLIED_AT, true );
-		if ( '' === $decided_at ) {
-			$decided_at = (string) get_post_meta( $product_id, Meta::ENRICHED_AT, true );
-		}
-
-		$decisions = array();
-		foreach ( $fields as $field ) {
-			$decision = array(
-				'productId' => (string) $product_id,
-				'field'     => $field,
-				'status'    => $remote,
+		$result = $this->plugin->quality()->fetch( $ids );
+		if ( ! empty( $result['errors'] ) ) {
+			// Cached scores stay as they were: a failed read is not a reason to
+			// forget a measurement. The next tick retries the same products,
+			// because their fetch time did not move.
+			$this->plugin->logger()->log(
+				'quality refresh could not read ' . count( $result['errors'] ) . ' products: ' . reset( $result['errors'] ),
+				'warning'
 			);
-			if ( '' !== $decided_at ) {
-				$decision['decidedAt'] = $decided_at;
-			}
-			$decisions[] = $decision;
 		}
-		return $decisions;
+		return count( $result['records'] );
 	}
 
 	/**

@@ -24,13 +24,25 @@
 
 		var COLOR_YOURS = '#6366f1';
 		var COLOR_OTHERS = '#94a3b8';
-		var COLOR_MUTED = '#cbd5e1';
+		// The "any brand" trend line has no inline labels, so it needs 3:1
+		// contrast against the card, which COLOR_OTHERS misses.
+		var COLOR_CONTEXT = '#64748b';
+		// The snapshot keeps the 15 most-cited domains (src/lib/aeo/snapshots.ts).
+		var DOMAIN_CAP = 15;
 
 		function t( key, fallback ) { return i18n[ key ] || fallback; }
+		function fmt( template ) {
+			var args = Array.prototype.slice.call( arguments, 1 );
+			return String( template ).replace( /%(\d+)\$s/g, function ( m, n ) {
+				var v = args[ parseInt( n, 10 ) - 1 ];
+				return v == null ? '' : String( v );
+			} );
+		}
 		function byId( id ) { return document.getElementById( id ); }
+		function isNum( value ) { return typeof value === 'number' && isFinite( value ); }
+		/** A percentage, or "n/a" when it was not measured. Never a made-up 0%. */
 		function fmtPct( value ) {
-			var n = typeof value === 'number' && isFinite( value ) ? value : 0;
-			return ( Math.round( n * 10 ) / 10 ) + '%';
+			return isNum( value ) ? core.pct( value ) : t( 'notAvailable', 'n/a' );
 		}
 		function failWith( btn ) {
 			return function ( err ) {
@@ -223,7 +235,6 @@
 			var stats = byId( 'agencoen-aeo-overview-stats' );
 			core.skeleton( stats, 'tiles' );
 			core.skeleton( byId( 'agencoen-aeo-trend' ), 'chart' );
-			core.skeleton( byId( 'agencoen-aeo-presence' ), 'chart' );
 			core.skeleton( byId( 'agencoen-aeo-domains' ), 'chart' );
 			core.skeleton( byId( 'agencoen-aeo-entities' ), 'chart' );
 
@@ -249,11 +260,18 @@
 			if ( body ) { body.hidden = false; }
 			if ( empty ) { empty.hidden = true; }
 
+			// `visibility` is what these tiles and charts draw. The snapshot's own
+			// kpis.brandMentionRatePct counts answers naming ANY brand, and
+			// kpis.shareOfAnswersPct is not a share, so neither is ever shown as
+			// the merchant's brand. An older Rezolve Ai without `visibility`
+			// renders n/a. See src/lib/aeo/visibility-metrics.ts.
 			var kpis = data.kpis || {};
+			var vis = data.visibility || null;
 			var delta = data.delta || null;
+			var rate = vis ? vis.yourMentionRatePct : null;
 
 			function ptsTrend( value ) {
-				if ( ! delta || typeof value !== 'number' ) { return null; }
+				if ( ! isNum( value ) ) { return null; }
 				return {
 					dir: value >= 0 ? 'up' : 'down',
 					text: ( value >= 0 ? '+' : '' ) + ( Math.round( value * 10 ) / 10 ) + ' pts ' + t( 'vsPrevRun', 'vs previous run' )
@@ -262,77 +280,186 @@
 
 			byId( 'agencoen-aeo-overview-stats' ).innerHTML =
 				core.statTile( {
-					label: t( 'shareOfMentions', 'Share of brand mentions' ),
-					value: fmtPct( kpis.brandMentionRatePct ),
+					label: t( 'yourBrandInAnswers', 'Your brand in AI answers' ),
+					value: fmtPct( rate ),
 					accent: 'indigo',
-					trend: ptsTrend( delta ? delta.brandMentionRatePct : null )
+					sub: mentionSub( vis ),
+					trend: ptsTrend( delta ? delta.yourMentionRatePct : null )
 				} ) +
+				core.statTile( rankTile( vis ) ) +
 				core.statTile( {
-					label: t( 'shareOfAnswers', 'Share of answers' ),
-					value: fmtPct( kpis.shareOfAnswersPct ),
-					accent: 'violet',
-					trend: ptsTrend( delta ? delta.shareOfAnswersPct : null )
-				} ) +
-				core.statTile( {
-					label: t( 'promptsTracked', 'Prompts tracked' ),
-					value: core.num( kpis.prompts || 0 ),
-					accent: 'cyan'
+					label: t( 'anyBrandInAnswers', 'Answers naming any brand' ),
+					value: fmtPct( vis ? vis.anyBrandMentionRatePct : null ),
+					accent: 'cyan',
+					sub: t( 'anyBrandSub', 'How often answers recommend a brand at all.' )
 				} ) +
 				core.statTile( {
 					label: t( 'aiResponses', 'AI responses' ),
-					value: core.num( kpis.responses || 0 ),
+					value: isNum( kpis.responses ) ? core.num( kpis.responses ) : t( 'notAvailable', 'n/a' ),
 					accent: 'emerald',
 					sub: data.runDate ? t( 'lastRun', 'Latest run' ) + ' ' + core.fmtDate( data.runDate ) : ''
 				} );
 
-			// SOV trend line.
-			var sovPoints = [];
-			var mentionPoints = [];
+			renderBrandNames( byId( 'agencoen-aeo-brand-names' ), vis );
+
+			// Your brand vs any brand, both as % of answers on one 0 to 100 axis.
+			// A null point is unmeasured and is skipped, never drawn as 0.
+			var yourPoints = [];
+			var anyPoints = [];
+			var engineSets = {};
 			( data.trend || [] ).forEach( function ( p ) {
 				if ( ! p || ! p.date ) { return; }
 				var x = core.fmtDate( p.date );
-				if ( typeof p.shareOfAnswersPct === 'number' ) { sovPoints.push( { x: x, y: p.shareOfAnswersPct } ); }
-				if ( typeof p.brandMentionRatePct === 'number' ) { mentionPoints.push( { x: x, y: p.brandMentionRatePct } ); }
+				if ( isNum( p.yourMentionRatePct ) ) { yourPoints.push( { x: x, y: p.yourMentionRatePct } ); }
+				if ( isNum( p.anyBrandMentionRatePct ) ) { anyPoints.push( { x: x, y: p.anyBrandMentionRatePct } ); }
+				if ( p.engines && p.engines.length ) { engineSets[ p.engines.slice().sort().join( ',' ) ] = true; }
 			} );
-			charts.line( byId( 'agencoen-aeo-trend' ), {
-				series: [
-					{ name: t( 'shareOfAnswers', 'Share of answers' ), color: COLOR_YOURS, points: sovPoints },
-					{ name: t( 'mentionRate', 'Brand mention rate' ), color: '#06b6d4', points: mentionPoints }
-				]
-			}, { height: 220, unified: true, yFmt: function ( v ) { return v + '%'; } } );
+			var trendSeries = [];
+			if ( yourPoints.length >= 2 ) {
+				trendSeries.push( { name: t( 'yourBrand', 'Your brand' ), color: COLOR_YOURS, points: yourPoints } );
+			}
+			if ( anyPoints.length >= 2 ) {
+				trendSeries.push( { name: t( 'anyBrand', 'Any brand' ), color: COLOR_CONTEXT, points: anyPoints } );
+			}
+			var trendEl = byId( 'agencoen-aeo-trend' );
+			var trendNote = byId( 'agencoen-aeo-trend-note' );
+			if ( trendSeries.length ) {
+				charts.line( trendEl, { series: trendSeries }, {
+					height: 220,
+					unified: true,
+					showLegend: true,
+					yMax: 100,
+					yFmt: function ( v ) { return core.pct( v ); }
+				} );
+			} else {
+				trendEl.innerHTML = emptyHtml( ( data.trend || [] ).length < 2
+					? t( 'trendOneRun', 'The trend line appears after your second completed run.' )
+					: t( 'trendUnmeasured', 'Your brand could not be measured in enough runs to draw a line.' ) );
+			}
+			if ( trendNote ) {
+				var varied = trendSeries.length > 0 && Object.keys( engineSets ).length > 1;
+				trendNote.hidden = ! varied;
+				trendNote.textContent = varied
+					? t( 'enginesVaried', 'Some runs asked different AI engines, so their points are not strictly comparable.' )
+					: '';
+			}
 
-			// Presence donut.
-			var responses = kpis.responses || 0;
-			var withBrand = kpis.responsesWithBrandMention || 0;
-			var withoutBrand = Math.max( 0, responses - withBrand );
-			charts.donut( byId( 'agencoen-aeo-presence' ), [
-				{ label: t( 'answersWithBrand', 'Mention your brand' ), value: withBrand, color: COLOR_YOURS },
-				{ label: t( 'answersWithoutBrand', 'No brand mention' ), value: withoutBrand, color: COLOR_MUTED }
-			], {
-				inner: 0.68,
-				centerLabel: responses > 0 ? fmtPct( kpis.brandMentionRatePct ) : '',
-				legend: true
+			renderDomains( data.topDomains || [] );
+
+			charts.barsH( byId( 'agencoen-aeo-entities' ), brandRows( data.topEntities, vis, 10 ).rows, {
+				valueFmt: function ( v ) { return core.pct( v ); }
 			} );
-
-			// Top domains.
-			charts.barsH( byId( 'agencoen-aeo-domains' ), ( data.topDomains || [] ).slice( 0, 10 ).map( function ( d ) {
-				return { label: d.domain || '', value: d.count || 0 };
-			} ), {} );
-
-			// Top entities (your brand highlighted).
-			charts.barsH( byId( 'agencoen-aeo-entities' ), entityBars( data.topEntities, 10 ), {} );
 		}
 
-		function entityBars( list, cap ) {
-			var rows = ( list || [] ).map( function ( e ) {
-				return {
-					label: e.entity || '',
-					value: e.total || 0,
-					color: e.isYours ? COLOR_YOURS : COLOR_OTHERS
-				};
+		function mentionSub( vis ) {
+			if ( vis && isNum( vis.yourMentionCount ) && isNum( vis.mentionBase ) ) {
+				return fmt( t( 'namedInOf', 'Named in %1$s of %2$s answers.' ), core.num( vis.yourMentionCount ), core.num( vis.mentionBase ) );
+			}
+			return t( 'notMeasuredRun', 'Could not be measured for this run.' );
+		}
+
+		function rankTile( vis ) {
+			var tile = {
+				label: t( 'yourRank', 'Your rank' ),
+				value: t( 'notAvailable', 'n/a' ),
+				accent: 'violet',
+				sub: t( 'notMeasuredRun', 'Could not be measured for this run.' )
+			};
+			if ( ! vis ) { return tile; }
+			var named = core.num( vis.brandsNamed || 0 ) + ( vis.brandsListCapped ? '+' : '' );
+			if ( isNum( vis.yourRank ) ) {
+				tile.value = '#' + core.num( vis.yourRank );
+				tile.sub = fmt( t( 'rankAmong', 'Among %1$s brands named in answers.' ), named );
+			} else if ( vis.yourMentionRatePct === 0 ) {
+				tile.value = t( 'notNamed', 'Not named' );
+				tile.sub = vis.brandsNamed
+					? fmt( t( 'othersNamed', '%1$s other brands were named instead.' ), named )
+					: t( 'noBrandsNamed', 'No brand was named in these answers.' );
+			} else if ( isNum( vis.yourMentionRatePct ) ) {
+				tile.sub = t( 'brandUnlisted', 'Your brand was not among the brands listed for this run.' );
+			}
+			return tile;
+		}
+
+		/**
+		 * At 0%, name the brand being matched. Matching is on the declared name,
+		 * so a registered company name can miss every answer that uses a shorter one.
+		 */
+		function renderBrandNames( el, vis ) {
+			if ( ! el ) { return; }
+			var show = !! vis && vis.yourMentionRatePct === 0 && vis.yourBrands && vis.yourBrands.length > 0;
+			el.hidden = ! show;
+			el.textContent = show
+				? fmt(
+					t( 'matchedAgainst', 'Answers are matched against %1$s. If shoppers know your brand by a shorter name, answers that use it are not counted.' ),
+					vis.yourBrands.map( function ( b ) { return '"' + b + '"'; } ).join( ', ' )
+				)
+				: '';
+		}
+
+		function hostKey( value ) {
+			return String( value || '' ).trim().toLowerCase()
+				.replace( /^[a-z]+:\/\//, '' )
+				.replace( /[\/:].*$/, '' )
+				.replace( /^www\./, '' );
+		}
+
+		function renderDomains( domains ) {
+			var own = hostKey( cfg.siteHost || '' );
+			function isOwn( domain ) {
+				var d = hostKey( domain );
+				return !! own && ( d === own || d.slice( -( own.length + 1 ) ) === '.' + own );
+			}
+			var sorted = domains.slice().sort( function ( a, b ) { return ( b.count || 0 ) - ( a.count || 0 ); } );
+			var shown = sorted.slice( 0, 10 );
+			sorted.slice( 10 ).forEach( function ( d ) { if ( isOwn( d.domain ) ) { shown.push( d ); } } );
+			charts.barsH( byId( 'agencoen-aeo-domains' ), shown.map( function ( d ) {
+				return { label: d.domain || '', value: d.count || 0, color: isOwn( d.domain ) ? COLOR_YOURS : COLOR_OTHERS };
+			} ), {} );
+
+			var note = byId( 'agencoen-aeo-own-site' );
+			if ( ! note ) { return; }
+			if ( ! own || ! domains.length ) {
+				note.hidden = true;
+				return;
+			}
+			var cited = sorted.reduce( function ( sum, d ) { return sum + ( isOwn( d.domain ) ? ( d.count || 0 ) : 0 ); }, 0 );
+			note.hidden = false;
+			if ( cited > 0 ) {
+				note.textContent = fmt( t( 'ownSiteCited', 'Your site is highlighted: cited %1$s times.' ), core.num( cited ) );
+			} else if ( domains.length < DOMAIN_CAP ) {
+				note.textContent = t( 'ownSiteNotCited', 'Your site was not cited in the latest run.' );
+			} else {
+				note.textContent = fmt( t( 'ownSiteNotTop', 'Your site was not among the %1$s most-cited domains.' ), core.num( DOMAIN_CAP ) );
+			}
+		}
+
+		/**
+		 * Brands by % of AI answers naming them (entity `total` is a percentage of
+		 * responses, not a count). Top `cap`, then your brand pinned even at 0% or
+		 * below the cap. A declared brand the snapshot did not list gets a bar only
+		 * when its rate is known; otherwise `unlisted` is set so the screen says so.
+		 */
+		function brandRows( list, vis, cap ) {
+			var keys = {};
+			( ( vis && vis.yourBrands ) || [] ).forEach( function ( b ) { keys[ String( b ).trim().toLowerCase() ] = true; } );
+			function yours( e ) { return !! e.isYours || !! keys[ String( e.entity || '' ).trim().toLowerCase() ]; }
+			var sorted = ( list || [] ).slice().sort( function ( a, b ) { return ( b.total || 0 ) - ( a.total || 0 ); } );
+			var shown = cap ? sorted.slice( 0, cap ) : sorted;
+			sorted.slice( shown.length ).forEach( function ( e ) { if ( yours( e ) ) { shown.push( e ); } } );
+			var rows = shown.map( function ( e ) {
+				return { label: e.entity || '', value: e.total || 0, color: yours( e ) ? COLOR_YOURS : COLOR_OTHERS };
 			} );
-			rows.sort( function ( a, b ) { return b.value - a.value; } );
-			return cap ? rows.slice( 0, cap ) : rows;
+			var listed = sorted.some( yours );
+			var unlisted = false;
+			if ( ! listed && vis && vis.yourBrands && vis.yourBrands.length ) {
+				if ( isNum( vis.yourMentionRatePct ) ) {
+					rows.push( { label: vis.yourBrands.join( ', ' ), value: vis.yourMentionRatePct, color: COLOR_YOURS } );
+				} else {
+					unlisted = true;
+				}
+			}
+			return { rows: rows, unlisted: unlisted };
 		}
 
 		var gotoRuns = byId( 'agencoen-aeo-goto-runs' );
@@ -430,17 +557,30 @@
 				return;
 			}
 
-			charts.barsH( chartEl, entityBars( list, 12 ), {} );
+			var vis = overviewData.visibility || null;
+			var brands = brandRows( list, vis, 12 );
+			charts.barsH( chartEl, brands.rows, {
+				valueFmt: function ( v ) { return core.pct( v ); }
+			} );
+
+			var note = byId( 'agencoen-aeo-competitors-note' );
+			if ( note ) {
+				renderBrandNames( note, vis );
+				if ( note.hidden && brands.unlisted ) {
+					note.hidden = false;
+					note.textContent = t( 'brandUnlisted', 'Your brand was not among the brands listed for this run.' );
+				}
+			}
 
 			var html = '<table class="ace-table"><thead><tr>' +
 				'<th>' + core.esc( t( 'brandCol', 'Brand' ) ) + '</th>' +
-				'<th>' + core.esc( t( 'mentionsCol', 'Answer mentions' ) ) + '</th>' +
+				'<th>' + core.esc( t( 'shareOfAnswersCol', 'Share of answers' ) ) + '</th>' +
 				'<th></th>' +
 				'</tr></thead><tbody>';
-			list.forEach( function ( e ) {
+			list.slice().sort( function ( a, b ) { return ( b.total || 0 ) - ( a.total || 0 ); } ).forEach( function ( e ) {
 				html += '<tr>' +
 					'<td>' + core.esc( e.entity || '' ) + '</td>' +
-					'<td>' + core.num( e.total || 0 ) + '</td>' +
+					'<td>' + core.esc( fmtPct( isNum( e.total ) ? e.total : null ) ) + '</td>' +
 					'<td>' + ( e.isYours ? core.chip( 'info', t( 'yourBrand', 'Your brand' ) ) : '' ) + '</td>' +
 					'</tr>';
 			} );

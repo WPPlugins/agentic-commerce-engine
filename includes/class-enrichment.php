@@ -113,7 +113,7 @@ class Enrichment {
 	 * the poll whose swap lands tells Review_Sync and auto-applies; the loser has
 	 * at most rewritten the same job's payload over itself.
 	 *
-	 * @param array  $products Array of { id, status, enrichedData, score, enrichedAt }.
+	 * @param array  $products Array of { id, status, enrichedData, contentTypes, enrichedAt }.
 	 * @param string $job_id   The job these results belong to. Optional only so
 	 *                         an older caller keeps working; without it the
 	 *                         product must still be queued, but its job is not
@@ -147,7 +147,10 @@ class Enrichment {
 
 			update_post_meta( $id, Meta::PENDING, $fields );
 			update_post_meta( $id, Meta::CONTENT, $content );
-			update_post_meta( $id, Meta::SCORE, isset( $product['score'] ) ? $product['score'] : '' );
+			// Scores cached for the previous proposal describe content that is
+			// being replaced, so they must not be shown against this one. The
+			// next read fetches whatever Rezolve Ai has measured for the new copy.
+			Quality::forget( $id );
 			update_post_meta( $id, Meta::ENRICHED_AT, isset( $product['enrichedAt'] ) ? (string) $product['enrichedAt'] : gmdate( 'c' ) );
 			// Status LAST, so a request that dies part way leaves the product
 			// queued and the next poll ingests it, rather than an enriched

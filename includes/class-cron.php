@@ -48,7 +48,8 @@ class Cron {
 		add_action( self::BOT_PRUNE, array( $this, 'bot_maintenance' ) );
 		add_action( self::BOT_REPORT, array( $this, 'bot_report' ) );
 		add_action( self::CONTENT_POLL, array( $this->plugin->articles(), 'poll_job' ), 10, 1 );
-		add_action( self::REVIEW_SYNC, array( $this->plugin->review_sync(), 'drain' ) );
+		// `run` reports decisions and then refreshes cached quality scores (4.17.0).
+		add_action( self::REVIEW_SYNC, array( $this->plugin->review_sync(), 'run' ) );
 		add_action( self::REVIEW_BACKFILL, array( $this->plugin->review_sync(), 'backfill' ) );
 
 		if ( $this->plugin->has_woo() ) {
@@ -203,8 +204,9 @@ class Cron {
 		// And the opposite direction: what this site's merchant decided.
 		// Hourly for the same reason -- a day of disagreement between this
 		// Review screen and the one in Rezolve Ai is indistinguishable from the
-		// split this exists to close.
-		$this->plugin->review_sync()->drain();
+		// split this exists to close. The same tick refreshes cached quality
+		// scores, so the Products screen and dashboard do not go stale.
+		$this->plugin->review_sync()->run();
 	}
 
 	/**

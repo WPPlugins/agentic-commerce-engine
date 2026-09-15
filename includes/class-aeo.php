@@ -95,7 +95,13 @@ class Aeo {
 	 * @param bool $allow_remote When false (render paths), only an already
 	 *                           cached overview is used; a cold cache returns
 	 *                           null without any remote HTTP.
-	 * @return array{shareOfAnswersPct:float|null,brandMentionRatePct:float|null,trend:array}|null
+	 * `yourMentionRatePct` is the share of AI answers naming the merchant's brand,
+	 * from the overview's `visibility`. The snapshot's own kpis are not used:
+	 * `brandMentionRatePct` counts answers naming ANY brand and
+	 * `shareOfAnswersPct` is not a share. An older Rezolve Ai without
+	 * `visibility` yields null, which the tile shows as n/a.
+	 *
+	 * @return array{yourMentionRatePct:float|null,trend:array}|null
 	 */
 	public function overview_preview( $allow_remote = true ) {
 		$settings = $this->plugin->settings();
@@ -112,11 +118,10 @@ class Aeo {
 			return null;
 		}
 
-		$kpis = isset( $overview['kpis'] ) && is_array( $overview['kpis'] ) ? $overview['kpis'] : array();
+		$visibility = isset( $overview['visibility'] ) && is_array( $overview['visibility'] ) ? $overview['visibility'] : array();
 		return array(
-			'shareOfAnswersPct'   => isset( $kpis['shareOfAnswersPct'] ) && is_numeric( $kpis['shareOfAnswersPct'] ) ? (float) $kpis['shareOfAnswersPct'] : null,
-			'brandMentionRatePct' => isset( $kpis['brandMentionRatePct'] ) && is_numeric( $kpis['brandMentionRatePct'] ) ? (float) $kpis['brandMentionRatePct'] : null,
-			'trend'               => isset( $overview['trend'] ) && is_array( $overview['trend'] ) ? $overview['trend'] : array(),
+			'yourMentionRatePct' => isset( $visibility['yourMentionRatePct'] ) && is_numeric( $visibility['yourMentionRatePct'] ) ? (float) $visibility['yourMentionRatePct'] : null,
+			'trend'              => isset( $overview['trend'] ) && is_array( $overview['trend'] ) ? $overview['trend'] : array(),
 		);
 	}
 
@@ -278,9 +283,11 @@ class Aeo {
 	/* --------------------------------------------------------------------- */
 
 	/**
-	 * Overview trend rows -> SOV line points.
+	 * Overview trend rows -> "your brand in AI answers" line points. A run whose
+	 * rate was not measured (null, or an older payload without the field) is
+	 * skipped, never plotted as 0.
 	 *
-	 * @param array $trend [{ runId, date, shareOfAnswersPct, brandMentionRatePct }].
+	 * @param array $trend [{ runId, date, yourMentionRatePct, anyBrandMentionRatePct, engines }].
 	 * @return array<int,array{x:string,y:float}>
 	 */
 	public static function normalize_trend( array $trend ) {
@@ -293,12 +300,12 @@ class Aeo {
 			if ( false === $timestamp ) {
 				continue;
 			}
-			if ( ! isset( $row['shareOfAnswersPct'] ) || ! is_numeric( $row['shareOfAnswersPct'] ) ) {
+			if ( ! isset( $row['yourMentionRatePct'] ) || ! is_numeric( $row['yourMentionRatePct'] ) ) {
 				continue;
 			}
 			$points[] = array(
 				'x' => gmdate( 'M j', $timestamp ),
-				'y' => (float) $row['shareOfAnswersPct'],
+				'y' => (float) $row['yourMentionRatePct'],
 			);
 		}
 		return $points;
@@ -306,9 +313,12 @@ class Aeo {
 
 	/**
 	 * Snapshot entities -> horizontal bar rows (top 10, own brand highlighted).
+	 * `total` is the percentage of AI answers naming the entity (0 to 100, one
+	 * decimal), not a count, so it stays a float: casting to int turned 7.14%
+	 * into 7 and every brand under 1% into 0.
 	 *
 	 * @param array $entities [{ entity, total, isYours }].
-	 * @return array<int,array{label:string,value:int,color:string}>
+	 * @return array<int,array{label:string,value:float,color:string}>
 	 */
 	public static function entities_to_bars( array $entities ) {
 		$rows = array();
@@ -318,7 +328,7 @@ class Aeo {
 			}
 			$rows[] = array(
 				'label' => (string) $entity['entity'],
-				'value' => isset( $entity['total'] ) && is_numeric( $entity['total'] ) ? (int) $entity['total'] : 0,
+				'value' => isset( $entity['total'] ) && is_numeric( $entity['total'] ) ? (float) $entity['total'] : 0.0,
 				'color' => ! empty( $entity['isYours'] ) ? self::COLOR_YOURS : self::COLOR_OTHERS,
 			);
 		}

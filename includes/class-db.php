@@ -166,6 +166,16 @@ class Db {
 		}
 		self::install();
 
+		// 4.17.0: delete the old "score". Every value under that key was the
+		// literal 90 the poller wrote for every enriched product, so there is
+		// nothing in it worth migrating, and leaving it would keep a number that
+		// measured nothing sitting next to the real scores. The cached chart
+		// built from it goes too. A fresh install matches nothing, harmlessly.
+		if ( version_compare( $installed, '4.17.0', '<' ) ) {
+			delete_post_meta_by_key( Meta::LEGACY_SCORE );
+			delete_transient( 'agencoen_score_dist' );
+		}
+
 		// Self-heal the daily crawler maintenance event on upgrades.
 		if ( ! wp_next_scheduled( 'agencoen_bot_prune' ) ) {
 			wp_schedule_event( time() + DAY_IN_SECONDS, 'daily', 'agencoen_bot_prune' );

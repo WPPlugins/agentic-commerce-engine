@@ -17,7 +17,6 @@ final class Meta {
 	const STATUS      = '_agencoen_status';
 	const JOB_ID      = '_agencoen_job_id';
 	const PENDING     = '_agencoen_pending';
-	const SCORE       = '_agencoen_score';
 	const ENRICHED_AT = '_agencoen_enriched_at';
 	const BACKUP      = '_agencoen_backup';
 	const APPLIED_AT  = '_agencoen_applied_at';
@@ -64,6 +63,32 @@ final class Meta {
 	const REVIEW_IDS    = '_agencoen_review_ids';
 	/** Consecutive failed report attempts, for backoff and for the admin notice. */
 	const SYNC_ATTEMPTS = '_agencoen_review_attempts';
+
+	/**
+	 * Measured quality scores (plugin 4.17.0), cached from Rezolve Ai.
+	 *
+	 * QUALITY is a JSON string: `{ fetched_at, entries }`, one entry per field
+	 * the plugin asked about, exactly as `/api/v1/plugin/quality` described it
+	 * (normalised by {@see Quality::normalize_entry()}). It is a cache of a
+	 * platform read, never a number this plugin worked out.
+	 *
+	 * QUALITY_OVERALL and QUALITY_AT are derived from it and written only
+	 * alongside it, because a JSON string cannot be sorted or bucketed in SQL:
+	 * the Products screen sorts by the first, the dashboard buckets it, and the
+	 * background refresh takes the oldest by the second. QUALITY_OVERALL is
+	 * ABSENT, not 0, for a product with nothing measured, so "Not scored" can
+	 * never be read as a score.
+	 */
+	const QUALITY         = '_agencoen_quality';
+	const QUALITY_OVERALL = '_agencoen_quality_overall';
+	const QUALITY_AT      = '_agencoen_quality_at';
+
+	/**
+	 * The pre-4.17.0 "score". It was hardcoded to 90 for every enriched product
+	 * and measured nothing. Nothing writes or reads it any more; the key is kept
+	 * only so the 4.17.0 upgrade can delete what it left behind.
+	 */
+	const LEGACY_SCORE = '_agencoen_score';
 
 	const STATUS_QUEUED    = 'queued';
 	const STATUS_ENRICHED  = 'enriched';

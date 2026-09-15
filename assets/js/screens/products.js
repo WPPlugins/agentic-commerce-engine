@@ -249,6 +249,17 @@
 			} );
 		}
 
+		/**
+		 * The measured product-level quality score, or "Not scored". The server
+		 * sends null when nothing is measured; before 4.17.0 it sent a hardcoded
+		 * 90 for every enriched product, so a number here is now always real.
+		 */
+		function scoreCellHtml( score ) {
+			return 'number' === typeof score && isFinite( score )
+				? core.esc( score )
+				: '<span class="ace-muted">' + core.esc( t( 'notScored', 'Not scored' ) ) + '</span>';
+		}
+
 		function rowHtml( row ) {
 			return '<tr data-id="' + row.id + '" data-status="' + core.esc( row.status ) + '">' +
 				'<td class="ace-col-check"><input type="checkbox" class="ace-row-check" data-id="' + row.id + '"></td>' +
@@ -256,7 +267,7 @@
 				'<td class="ace-prod-name">' + core.esc( row.name ) + '</td>' +
 				'<td>' + core.esc( row.sku || '' ) + '</td>' +
 				'<td class="ace-status-cell">' + statusChip( row.status ) + '</td>' +
-				'<td class="ace-col-score">' + ( row.score ? core.esc( row.score ) : '' ) + '</td></tr>';
+				'<td class="ace-col-score">' + scoreCellHtml( row.score ) + '</td></tr>';
 		}
 
 		function render( data ) {
@@ -319,11 +330,9 @@
 					if ( cell ) {
 						cell.innerHTML = statusChip( p.status );
 					}
-					if ( p.score ) {
-						var scoreCell = $( '.ace-col-score', tr );
-						if ( scoreCell ) {
-							scoreCell.textContent = p.score;
-						}
+					var scoreCell = $( '.ace-col-score', tr );
+					if ( scoreCell ) {
+						scoreCell.innerHTML = scoreCellHtml( p.score );
 					}
 				} );
 				if ( d.counts ) {

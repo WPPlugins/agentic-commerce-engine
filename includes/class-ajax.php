@@ -36,6 +36,8 @@ class Ajax extends Ajax_Base {
 			'products',
 			'review_list',
 			'review_diff',
+			'quality_get',
+			'quality_rescore',
 			'enrich_batch',
 			'approve_batch',
 			'export',
@@ -238,7 +240,7 @@ class Ajax extends Ajax_Base {
 			$out[]  = array(
 				'id'     => $id,
 				'status' => '' !== $status ? $status : 'none',
-				'score'  => get_post_meta( $id, Meta::SCORE, true ),
+				'score'  => Quality::cached_overall( $id ),
 			);
 		}
 
@@ -509,7 +511,8 @@ class Ajax extends Ajax_Base {
 				'sku'    => $product->get_sku(),
 				'image'  => $img_id ? wp_get_attachment_image_url( $img_id, 'thumbnail' ) : wc_placeholder_img_src( 'thumbnail' ),
 				'status' => '' !== $status ? $status : 'none',
-				'score'  => get_post_meta( $id, Meta::SCORE, true ),
+				// Measured product-level quality, or null for "Not scored".
+				'score'  => Quality::cached_overall( $id ),
 			);
 		}
 
@@ -568,7 +571,13 @@ class Ajax extends Ajax_Base {
 			$items[] = array(
 				'id'       => $id,
 				'name'     => $product->get_name(),
-				'score'    => get_post_meta( $id, Meta::SCORE, true ),
+				// From the cache, so the chip can paint at once. The screen then
+				// asks `quality_get` for fresh numbers. `known` separates "never
+				// read" (no chip yet) from "read, and nothing is measured".
+				'quality'  => array(
+					'known'   => '' !== get_post_meta( $id, Meta::QUALITY_AT, true ),
+					'overall' => Quality::cached_overall( $id ),
+				),
 				'fields'   => $fields,
 				'editLink' => get_edit_post_link( $id, 'raw' ),
 			);
@@ -598,6 +607,83 @@ class Ajax extends Ajax_Base {
 				'diff'    => $this->plugin->review()->diff_for( $id ),
 				'content' => is_array( $content ) ? $content : array(),
 				'extras'  => $this->plugin->review()->extras_for( $id ),
+			)
+		);
+	}
+
+	/**
+	 * Measured quality scores for the products on the Review screen.
+	 *
+	 * Reads fresh from Rezolve Ai and caches what came back, so the Products
+	 * screen, dashboard and CSV catch up whenever Review is opened. A product
+	 * whose read failed keeps its cached record and carries `error`, so the
+	 * screen can say the numbers may be old rather than showing a failed read
+	 * as "Not scored". Not connected, it serves the cache and says so.
+	 */
+	public function quality_get() {
+		check_ajax_referer( self::NONCE_ACTION, 'nonce' );
+		$this->require_manage();
+
+		$ids = isset( $_POST['ids'] ) ? array_map( 'absint', (array) wp_unslash( $_POST['ids'] ) ) : array();
+		$ids = array_slice( array_values( array_unique( array_filter( $ids ) ) ), 0, Quality::MAX_PRODUCTS );
+		if ( empty( $ids ) ) {
+			wp_send_json_error( array( 'message' => __( 'No products selected.', 'agentic-commerce-engine' ) ) );
+		}
+
+		$connected = $this->plugin->settings()->is_connected();
+		$fetched   = $connected
+			? $this->plugin->quality()->fetch( $ids )
+			: array(
+				'records' => array(),
+				'errors'  => array(),
+			);
+
+		$products = array();
+		foreach ( $ids as $id ) {
+			$record = isset( $fetched['records'][ $id ] ) ? $fetched['records'][ $id ] : Quality::read_record( $id );
+			$view   = Quality::view( $record );
+
+			$view['id'] = $id;
+			if ( isset( $fetched['errors'][ $id ] ) ) {
+				$view['error'] = $fetched['errors'][ $id ];
+			}
+			if ( ! $connected ) {
+				$view['offline'] = true;
+			}
+			$products[] = $view;
+		}
+
+		wp_send_json_success( array( 'products' => $products ) );
+	}
+
+	/**
+	 * Ask Rezolve Ai to score some of one product's content again.
+	 *
+	 * Answers with what was queued, not with new numbers: scoring takes 10 to
+	 * 20 seconds, and the screen polls `quality_get` until the score moves.
+	 */
+	public function quality_rescore() {
+		check_ajax_referer( self::NONCE_ACTION, 'nonce' );
+		$this->require_manage();
+		$this->require_connected();
+
+		$id     = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : 0;
+		$fields = isset( $_POST['fields'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['fields'] ) ) : array();
+		if ( ! $id ) {
+			wp_send_json_error( array( 'message' => __( 'No products selected.', 'agentic-commerce-engine' ) ) );
+		}
+
+		$result = $this->plugin->quality()->rescore( $id, $fields );
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( $this->error_payload( $result ) );
+		}
+
+		$view       = Quality::view( $result['record'] );
+		$view['id'] = $id;
+		wp_send_json_success(
+			array(
+				'product' => $view,
+				'queued'  => (int) $result['queued'],
 			)
 		);
 	}
@@ -741,6 +827,8 @@ class Ajax extends Ajax_Base {
 					}
 					$p = get_post_meta( $id, Meta::PENDING, true );
 					$p = is_array( $p ) ? $p : array();
+					// Blank, not 0, when nothing is measured.
+					$overall = Quality::cached_overall( $id );
 					fputcsv(
 						$out,
 						array(
@@ -748,7 +836,7 @@ class Ajax extends Ajax_Base {
 							$product->get_sku(),
 							$product->get_name(),
 							$status,
-							get_post_meta( $id, Meta::SCORE, true ),
+							null === $overall ? '' : $overall,
 							isset( $p['title'] ) ? $p['title'] : '',
 							isset( $p['short_description'] ) ? $p['short_description'] : '',
 							isset( $p['description'] ) ? $p['description'] : '',

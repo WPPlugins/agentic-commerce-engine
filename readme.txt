@@ -4,7 +4,7 @@ Tags: ai, seo, woocommerce, ai search, content
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 4.16.1
+Stable tag: 4.17.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -35,7 +35,7 @@ Rezolve Ai connects your WordPress site to the Rezolve Ai platform and puts the 
 
 * **Sync** your products to Rezolve Ai in batches, safely, even on catalogs of thousands of products.
 * **Enrich** products with AI across every content type: titles, descriptions, SEO meta, Product schema, real-life usage scenarios, internal links, highlights, product Q&A, product attributes, image alt text, and channel feeds.
-* **Review** every suggestion with a clear before/after diff, approve per product or in bulk, or turn on auto-apply. Revert any product with one click.
+* **Review** every suggestion with a clear before/after diff and the quality scores Rezolve Ai measured for it (content quality, SEO, AI readability and brand voice), approve per product or in bulk, or turn on auto-apply. Revert any product with one click.
 * **Display** the new on-page content with blocks, shortcodes ([agencoen_irl], [agencoen_internal_links], [agencoen_highlights], [agencoen_product_qa]), or automatic placement on the product page.
 * **Serve** Google, Microsoft, and Agentic Commerce product feeds straight from your store as feed URLs.
 
@@ -137,6 +137,17 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 8. The Settings screen with publishing, automation, and crawler tracking options.
 
 == Changelog ==
+
+= 4.17.0 =
+* Changed: quality scores are now real. Earlier versions showed "Score 90" for every enriched product, a fixed number that nothing had measured. The Review screen, the Score column and "Highest score" sort on Products, the dashboard chart and the CSV export now show the scores Rezolve Ai measures for your content, and say "Not scored" where nothing has been measured yet.
+* Added: open a product on the Review screen to see Content Quality, SEO Score, AI Readability and Brand Voice for each piece of content, with the reasoning behind them, whether a score is out of date, and a Re-score button.
+* Added: the dashboard's score chart counts products that are not scored yet, rather than leaving them out.
+* Removed: the old fixed score is deleted from your products when you update, so it cannot be mistaken for a measurement.
+* Note: scores are read from Rezolve Ai about once an hour in the background, a batch of products at a time, and whenever you open the Review screen.
+* Fixed: AI Search showed a "Share of brand mentions" figure that counted every AI answer naming any brand, not just yours, so a brand no answer had mentioned could show 57%. The AI Search Overview and the dashboard now show "Your brand in AI answers", measured on your brand alone. How often answers name any brand is shown separately, as context.
+* Fixed: the Competitors table showed each brand's share of answers as a count ("7.14 answer mentions"). It now shows a percentage, and your brand always appears on the brand charts, even at 0%.
+* Changed: the AI Search trend compares your brand with any brand on a 0 to 100% scale and notes when runs asked different AI engines. "Most cited domains" highlights your own site. The "Brand presence" donut is removed.
+* Added: when no answer names your brand, the Overview shows the exact brand name answers are matched against, since a registered company name can miss answers that use a shorter one.
 
 = 4.16.1 =
 * Fixed: a product you approved straight after enrichment could reappear in Review a minute later, marked ready to review again, because the same results were collected twice. Content you applied stayed live; only the review status was reset. With auto-apply on, the second collection could apply the same content again. Each enrichment is now collected exactly once, and a product you have already approved, dismissed or sent for enrichment again is left alone.
@@ -297,6 +308,9 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 * Product enrichment now runs on the platform's durable jobs API with webhook-accelerated polling.
 
 == Upgrade Notice ==
+
+= 4.17.0 =
+Replaces the fixed "Score 90" shown on every product with the quality scores Rezolve Ai actually measures, and shows the scores for each piece of content, with re-scoring, on the Review screen. Also corrects AI Search, which counted answers naming any brand as mentions of yours.
 
 = 4.16.1 =
 Fixes approved products reappearing in Review shortly after enrichment, and a case where auto-apply could apply the same content twice. Recommended for everyone on 4.16.0.

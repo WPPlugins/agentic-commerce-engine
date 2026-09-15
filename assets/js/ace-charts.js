@@ -435,6 +435,12 @@
 			hi = 1;
 		}
 		lo = Math.min( 0, lo );
+		// opts.yMax pins the top of a fixed scale (percentages), so an all-zero
+		// series reads as 0 of 100 instead of filling a 0 to 1 axis. A floor, not
+		// a clamp: data above it still fits.
+		if ( typeof opts.yMax === 'number' && isFinite( opts.yMax ) ) {
+			hi = Math.max( hi, opts.yMax );
+		}
 		if ( hi === lo ) {
 			hi = lo + 1;
 		}

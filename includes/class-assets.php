@@ -150,6 +150,11 @@ class Assets {
 			'i18n'          => $this->strings(),
 		);
 
+		if ( 'aisearch' === $screen ) {
+			// Lets "Most cited domains" mark this site's own domain.
+			$config['siteHost'] = (string) wp_parse_url( home_url(), PHP_URL_HOST );
+		}
+
 		if ( 'settings' === $screen ) {
 			$config['settings'] = array(
 				'contentStatus' => $settings->get_content_status(),
@@ -272,8 +277,45 @@ class Assets {
 			'aiSuggestion'      => __( 'AI suggestion', 'agentic-commerce-engine' ),
 			'noChange'          => __( 'no change', 'agentic-commerce-engine' ),
 			'emptyValue'        => __( '(empty)', 'agentic-commerce-engine' ),
-			/* translators: %s: AI quality score. */
+			/* translators: %s: measured quality score for a product, 0 to 100. */
 			'scoreLabel'        => __( 'Score %s', 'agentic-commerce-engine' ),
+			'notScored'         => __( 'Not scored', 'agentic-commerce-engine' ),
+
+			/*
+			 * Quality scores (4.17.0). The state sentences are the web review
+			 * queue's, word for word, so a merchant reads the same thing about
+			 * the same score wherever they look.
+			 */
+			'qualityTitle'       => __( 'Quality scores', 'agentic-commerce-engine' ),
+			'qualityContent'     => __( 'Content Quality', 'agentic-commerce-engine' ),
+			'qualitySeo'         => __( 'SEO Score', 'agentic-commerce-engine' ),
+			'qualityAi'          => __( 'AI Readability', 'agentic-commerce-engine' ),
+			'qualityBrand'       => __( 'Brand Voice', 'agentic-commerce-engine' ),
+			'qualityExcellent'   => __( 'Excellent', 'agentic-commerce-engine' ),
+			'qualityVeryGood'    => __( 'Very Good', 'agentic-commerce-engine' ),
+			'qualityGood'        => __( 'Good', 'agentic-commerce-engine' ),
+			'qualityNeedsWork'   => __( 'Needs Improvement', 'agentic-commerce-engine' ),
+			'qualityNoVoice'     => __( 'No brand voice set', 'agentic-commerce-engine' ),
+			'qualityUnscored'    => __( 'Not scored yet. Scores usually appear within a few minutes of the content being saved.', 'agentic-commerce-engine' ),
+			'qualityStale'       => __( 'This content was edited after it was scored, so these scores may be out of date. A new score is on its way.', 'agentic-commerce-engine' ),
+			'qualityOutdated'    => __( 'These scores were measured under an earlier scoring rubric. An updated score is on its way.', 'agentic-commerce-engine' ),
+			/* translators: 1: date the content was scored, 2: overall score, 0 to 100. */
+			'qualityScored'      => __( 'Scored %1$s · Overall %2$s', 'agentic-commerce-engine' ),
+			/* translators: %s: date the content was scored. */
+			'qualityScoredOn'    => __( 'Scored %s', 'agentic-commerce-engine' ),
+			'qualityScoreNow'    => __( 'Score now', 'agentic-commerce-engine' ),
+			'qualityRescoreNow'  => __( 'Re-score now', 'agentic-commerce-engine' ),
+			'qualityRescore'     => __( 'Re-score', 'agentic-commerce-engine' ),
+			'qualityScoring'     => __( 'Scoring…', 'agentic-commerce-engine' ),
+			'qualityWhy'         => __( 'Why these scores', 'agentic-commerce-engine' ),
+			'qualityOtherVersion' => __( 'These scores describe a different version of this content.', 'agentic-commerce-engine' ),
+			'qualityNotReceived' => __( 'Not scored yet. Rezolve Ai has not received this content for review yet, so there is nothing to score. It is sent automatically, usually within the hour.', 'agentic-commerce-engine' ),
+			'qualityQueued'      => __( 'A new score is being measured. This usually takes under a minute.', 'agentic-commerce-engine' ),
+			'qualityTimedOut'    => __( 'The new score is taking longer than usual. It will appear here once it is ready.', 'agentic-commerce-engine' ),
+			'qualityUnavailable' => __( 'Quality scores could not be loaded just now. Try again in a moment.', 'agentic-commerce-engine' ),
+			'qualityCached'      => __( 'These are the last scores read from Rezolve Ai. They could not be refreshed just now.', 'agentic-commerce-engine' ),
+			'qualityOffline'     => __( 'Connect this site to Rezolve Ai to see up to date quality scores.', 'agentic-commerce-engine' ),
+			'qualityNothing'     => __( 'There is no content on this product to score.', 'agentic-commerce-engine' ),
 			/* translators: %s: number of scenarios. */
 			'irlTitle'          => __( 'IRL scenarios (%s)', 'agentic-commerce-engine' ),
 			'internalLinks'     => __( 'Internal links', 'agentic-commerce-engine' ),
@@ -307,8 +349,10 @@ class Assets {
 			'draftsWaiting'     => __( '%s drafts waiting', 'agentic-commerce-engine' ),
 			'botHits'           => __( 'AI bot hits, 7 days', 'agentic-commerce-engine' ),
 			'vsPrior'           => __( 'vs the prior 7 days', 'agentic-commerce-engine' ),
-			'shareOfMentions'   => __( 'Share of Brand Mentions', 'agentic-commerce-engine' ),
-			'sovSub'            => __( 'of AI answers mention your brand', 'agentic-commerce-engine' ),
+			'yourBrandInAnswers' => __( 'Your brand in AI answers', 'agentic-commerce-engine' ),
+			'yourBrandSub'      => __( 'of AI answers name your brand', 'agentic-commerce-engine' ),
+			'notAvailable'      => __( 'n/a', 'agentic-commerce-engine' ),
+			'notMeasuredRun'    => __( 'Could not be measured for this run.', 'agentic-commerce-engine' ),
 			'notMeasured'       => __( 'Not measured yet', 'agentic-commerce-engine' ),
 			'sovSetup'          => __( 'Run AI search research to measure this.', 'agentic-commerce-engine' ),
 			'optimized'         => __( 'optimized', 'agentic-commerce-engine' ),
@@ -373,20 +417,38 @@ class Assets {
 			'saved'                 => __( 'Saved.', 'agentic-commerce-engine' ),
 			'botsReported'          => __( 'Crawler summary sent to Rezolve Ai.', 'agentic-commerce-engine' ),
 			'vsPrevRun'             => __( 'vs previous run', 'agentic-commerce-engine' ),
-			'shareOfAnswers'        => __( 'Share of answers', 'agentic-commerce-engine' ),
-			'promptsTracked'        => __( 'Prompts tracked', 'agentic-commerce-engine' ),
+			'anyBrandInAnswers'     => __( 'Answers naming any brand', 'agentic-commerce-engine' ),
+			'anyBrandSub'           => __( 'How often answers recommend a brand at all.', 'agentic-commerce-engine' ),
+			'anyBrand'              => __( 'Any brand', 'agentic-commerce-engine' ),
+			/* translators: 1: answers naming your brand, 2: answers analysed. */
+			'namedInOf'             => __( 'Named in %1$s of %2$s answers.', 'agentic-commerce-engine' ),
+			'yourRank'              => __( 'Your rank', 'agentic-commerce-engine' ),
+			/* translators: %1$s: number of brands named in AI answers. */
+			'rankAmong'             => __( 'Among %1$s brands named in answers.', 'agentic-commerce-engine' ),
+			'notNamed'              => __( 'Not named', 'agentic-commerce-engine' ),
+			/* translators: %1$s: number of other brands named in AI answers. */
+			'othersNamed'           => __( '%1$s other brands were named instead.', 'agentic-commerce-engine' ),
+			'noBrandsNamed'         => __( 'No brand was named in these answers.', 'agentic-commerce-engine' ),
+			'brandUnlisted'         => __( 'Your brand was not among the brands listed for this run.', 'agentic-commerce-engine' ),
+			/* translators: %1$s: the brand names being matched, each in quotes. */
+			'matchedAgainst'        => __( 'Answers are matched against %1$s. If shoppers know your brand by a shorter name, answers that use it are not counted.', 'agentic-commerce-engine' ),
+			'trendOneRun'           => __( 'The trend line appears after your second completed run.', 'agentic-commerce-engine' ),
+			'trendUnmeasured'       => __( 'Your brand could not be measured in enough runs to draw a line.', 'agentic-commerce-engine' ),
+			'enginesVaried'         => __( 'Some runs asked different AI engines, so their points are not strictly comparable.', 'agentic-commerce-engine' ),
+			/* translators: %1$s: number of citations of this site. */
+			'ownSiteCited'          => __( 'Your site is highlighted: cited %1$s times.', 'agentic-commerce-engine' ),
+			'ownSiteNotCited'       => __( 'Your site was not cited in the latest run.', 'agentic-commerce-engine' ),
+			/* translators: %1$s: how many of the most-cited domains are kept. */
+			'ownSiteNotTop'         => __( 'Your site was not among the %1$s most-cited domains.', 'agentic-commerce-engine' ),
 			'aiResponses'           => __( 'AI responses', 'agentic-commerce-engine' ),
 			'lastRun'               => __( 'Latest run', 'agentic-commerce-engine' ),
-			'mentionRate'           => __( 'Brand mention rate', 'agentic-commerce-engine' ),
-			'answersWithBrand'      => __( 'Mention your brand', 'agentic-commerce-engine' ),
-			'answersWithoutBrand'   => __( 'No brand mention', 'agentic-commerce-engine' ),
 			'promptsNoMatch'        => __( 'No prompts match your filter.', 'agentic-commerce-engine' ),
 			'promptsNone'           => __( 'No prompts saved yet. Add prompts from the Runs tab.', 'agentic-commerce-engine' ),
 			'promptCol'             => __( 'Prompt', 'agentic-commerce-engine' ),
 			'tagsCol'               => __( 'Tags', 'agentic-commerce-engine' ),
 			'competitorsNone'       => __( 'No entity data yet. Launch a research run from the Runs tab first.', 'agentic-commerce-engine' ),
 			'brandCol'              => __( 'Brand', 'agentic-commerce-engine' ),
-			'mentionsCol'           => __( 'Answer mentions', 'agentic-commerce-engine' ),
+			'shareOfAnswersCol'     => __( 'Share of answers', 'agentic-commerce-engine' ),
 			'yourBrand'             => __( 'Your brand', 'agentic-commerce-engine' ),
 			'promptsOnFlow'         => __( 'prompts saved on your research flow.', 'agentic-commerce-engine' ),
 			'flowDefault'           => __( 'Flow default', 'agentic-commerce-engine' ),
