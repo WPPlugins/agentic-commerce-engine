@@ -47,6 +47,12 @@ class Apply_Queue {
 	/** Entries pulled per run. The queue is a working list, not an export. */
 	const BATCH = 100;
 
+	/**
+	 * The outcome of an entry held back, neither applied nor failed (4.18.0).
+	 * No failure reason is ever this word, so it cannot be mistaken for one.
+	 */
+	const DEFERRED = 'deferred';
+
 	/** @var Plugin */
 	private $plugin;
 
@@ -65,14 +71,18 @@ class Apply_Queue {
 	 * stays queued, because the queue selects on `pushed_at IS NULL` and only a
 	 * successful ack clears it.
 	 *
-	 * @return array{applied:int,failed:int,skipped:int}
+	 * A DEFERRED entry is left out of the ack altogether, so it stays queued and
+	 * comes back on a later pull. See {@see deferred_by_edit()}.
+	 *
+	 * @return array{applied:int,failed:int,skipped:int,deferred:int}
 	 */
 	public function drain() {
 		$settings = $this->plugin->settings();
 		$empty    = array(
-			'applied' => 0,
-			'failed'  => 0,
-			'skipped' => 0,
+			'applied'  => 0,
+			'failed'   => 0,
+			'skipped'  => 0,
+			'deferred' => 0,
 		);
 
 		if ( ! $settings->is_connected() || ! $this->plugin->has_woo() ) {
@@ -102,6 +112,13 @@ class Apply_Queue {
 			}
 
 			$outcome = $this->apply_entry( $item );
+			if ( self::DEFERRED === $outcome ) {
+				// Not in the ack: an entry reported neither applied nor failed
+				// keeps its place in the queue and is delivered again, by then
+				// carrying the value the merchant typed here.
+				$counts['deferred']++;
+				continue;
+			}
 			if ( true === $outcome ) {
 				$results[] = array(
 					'id'     => $id,
@@ -150,7 +167,7 @@ class Apply_Queue {
 	 * Apply one entry.
 	 *
 	 * @param array $item Queue entry.
-	 * @return true|string True, or a reason.
+	 * @return true|string True, self::DEFERRED, or a reason.
 	 */
 	private function apply_entry( array $item ) {
 		$product_ref = isset( $item['productId'] ) ? (string) $item['productId'] : '';
@@ -183,6 +200,10 @@ class Apply_Queue {
 
 		if ( ! is_string( $value ) || '' === $value ) {
 			return 'empty value for ' . $field;
+		}
+
+		if ( self::deferred_by_edit( $post_id, $field ) ) {
+			return self::DEFERRED;
 		}
 
 		switch ( $field ) {
@@ -244,11 +265,23 @@ class Apply_Queue {
 				if ( ! $product ) {
 					return 'product not loadable';
 				}
-				if ( ! Native_Fields::write_attributes( $product, $attributes ) ) {
-					return 'product already carries every attribute in the payload';
+				// 4.18.0: an attribute this plugin added may be REPLACED, so an
+				// edit approved in Rezolve Ai lands on a product that already
+				// carries the first version. Attributes the merchant added
+				// themselves are still never touched. Nothing is removed here:
+				// this one field serves two content types, so a payload that
+				// does not mention a key is not asking for it to go.
+				$written = Native_Fields::write_owned_attributes( $product, $attributes );
+				if ( ! empty( $written['added'] ) || ! empty( $written['replaced'] ) ) {
+					$product->save();
+					return true;
 				}
-				$product->save();
-				return true;
+				// Every attribute already reads exactly what was approved, and
+				// this plugin put it there: the product says what was approved.
+				if ( ! empty( $written['unchanged'] ) ) {
+					return true;
+				}
+				return 'product already carries every attribute in the payload';
 
 			/*
 			 * The three additive content types (4.15.0).
@@ -353,5 +386,45 @@ class Apply_Queue {
 		// and changes how the product is sold, so Shopify's merchandising
 		// product_type has no destination here at all.
 		return 'unsupported field: ' . $field;
+	}
+
+	/**
+	 * Whether an entry would overwrite an edit Rezolve Ai has not heard of yet.
+	 *
+	 * THE RACE THIS CLOSES (4.18.0). A merchant approves a highlight list in
+	 * the Rezolve Ai web app, then corrects one bullet on this site's Review
+	 * screen before the next pull. Without this, the pull writes the approved
+	 * original straight over the correction, and the merchant's edit is gone
+	 * with nothing to say why.
+	 *
+	 * The edit reaches Rezolve Ai with the next review-decisions report, which
+	 * writes the edited value into the review row. So an entry for an edited
+	 * field is held back until a report made AFTER the edit has succeeded;
+	 * the entry delivered after that carries the merchant's value.
+	 *
+	 * `Meta::REVIEW_SYNCED_AT` is written by {@see Review_Sync::drain()} only
+	 * for a product whose whole state went out in that report (its dirty flag
+	 * did not change while the report was in flight), and it is the time the
+	 * report was BUILT, so an edit that lands mid-flight still counts as unsent.
+	 *
+	 * @param int    $post_id Product post id.
+	 * @param string $field   Wire field.
+	 * @return bool
+	 */
+	public static function deferred_by_edit( $post_id, $field ) {
+		if ( ! isset( Edit_Values::WIRE_FIELDS[ $field ] ) ) {
+			return false;
+		}
+		$edited = get_post_meta( (int) $post_id, Meta::EDITED, true );
+		$type   = Edit_Values::WIRE_FIELDS[ $field ];
+		if ( ! is_array( $edited ) || empty( $edited[ $type ] ) ) {
+			return false;
+		}
+		$edited_at = strtotime( (string) $edited[ $type ] );
+		$synced_at = strtotime( (string) get_post_meta( (int) $post_id, Meta::REVIEW_SYNCED_AT, true ) );
+		if ( false === $edited_at ) {
+			return false;
+		}
+		return false === $synced_at || $edited_at > $synced_at;
 	}
 }

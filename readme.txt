@@ -4,7 +4,7 @@ Tags: ai, seo, woocommerce, ai search, content
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 4.17.0
+Stable tag: 4.18.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -137,6 +137,17 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 8. The Settings screen with publishing, automation, and crawler tracking options.
 
 == Changelog ==
+
+= 4.18.0 =
+* Added: edit suggestions before you approve them. On the Review screen, open a product and choose Edit on its title, description, SEO title, meta description, highlights, questions and answers, specifications or image alt text. Approving then applies your version.
+* Added: edit content that is already live. Applied products on the Review screen can now be opened, and Edit live saves your change straight to the store for that one piece of content, leaving everything else as it is.
+* Added: the description is edited in the WordPress classic editor. Highlights, answers, specifications and alt text are plain text, with character counts and the recommended lengths for titles, meta descriptions and alt text.
+* Added: your edits reach Rezolve Ai too, so the web review queue and your other stores show the text you wrote.
+* Changed: when you edit live questions and answers, the FAQ structured data on the product is updated to match.
+* Changed: editing live specifications updates the ones Rezolve Ai added. Attributes you added to a product yourself are never changed.
+* Fixed: an approval made in Rezolve Ai no longer overwrites an edit you made here before Rezolve Ai had received it. It waits, and then applies with your edit.
+* Fixed: several specification rows with the same name are now added as one attribute with every value, instead of keeping only the first.
+* Note: revert still restores each product as it was before Rezolve Ai changed it, however many times you have edited it since.
 
 = 4.17.0 =
 * Changed: quality scores are now real. Earlier versions showed "Score 90" for every enriched product, a fixed number that nothing had measured. The Review screen, the Score column and "Highest score" sort on Products, the dashboard chart and the CSV export now show the scores Rezolve Ai measures for your content, and say "Not scored" where nothing has been measured yet.
@@ -308,6 +319,9 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 * Product enrichment now runs on the platform's durable jobs API with webhook-accelerated polling.
 
 == Upgrade Notice ==
+
+= 4.18.0 =
+Edit any suggestion on the Review screen before approving it, or edit content that is already live. Your edits are sent to Rezolve Ai, and revert still restores the original product.
 
 = 4.17.0 =
 Replaces the fixed "Score 90" shown on every product with the quality scores Rezolve Ai actually measures, and shows the scores for each piece of content, with re-scoring, on the Review screen. Also corrects AI Search, which counted answers naming any brand as mentions of yours.

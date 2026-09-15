@@ -253,6 +253,54 @@ class Schema {
 	}
 
 	/**
+	 * A schema graph with every FAQPage node's questions rebuilt from `$qa`.
+	 * PURE (4.18.0).
+	 *
+	 * An approved JSON-LD graph can carry its own FAQPage, built from the Q&A
+	 * that was generated. When a merchant edits those questions, the markup
+	 * would otherwise go on describing the text they replaced, which is exactly
+	 * the mismatch between visible content and structured data that search
+	 * engines treat as spam. Only `mainEntity` changes; the node's @id and
+	 * everything else in the graph are kept.
+	 *
+	 * @param mixed $graph Graph: a node, a list of nodes, or `{ @graph }`.
+	 * @param array $qa    Pairs from Pdp_Content::qa().
+	 * @return array{0:mixed,1:bool} The graph, and whether anything changed.
+	 */
+	public static function with_faq_questions( $graph, array $qa ) {
+		$faq       = self::build_faq_graph( $qa, '' );
+		$questions = isset( $faq['mainEntity'] ) ? $faq['mainEntity'] : array();
+		if ( ! is_array( $graph ) || empty( $questions ) ) {
+			return array( $graph, false );
+		}
+
+		$changed = false;
+		$rewrite = function ( array $nodes ) use ( $questions, &$changed ) {
+			foreach ( $nodes as $i => $node ) {
+				if ( ! is_array( $node ) || ! isset( $node['@type'] ) ) {
+					continue;
+				}
+				$types = array_map( 'strtolower', array_map( 'strval', (array) $node['@type'] ) );
+				if ( in_array( 'faqpage', $types, true ) ) {
+					$nodes[ $i ]['mainEntity'] = $questions;
+					$changed                   = true;
+				}
+			}
+			return $nodes;
+		};
+
+		if ( isset( $graph['@graph'] ) && is_array( $graph['@graph'] ) ) {
+			$graph['@graph'] = $rewrite( $graph['@graph'] );
+		} elseif ( array_values( $graph ) === $graph ) {
+			$graph = $rewrite( $graph );
+		} else {
+			$single = $rewrite( array( $graph ) );
+			$graph  = $single[0];
+		}
+		return array( $graph, $changed );
+	}
+
+	/**
 	 * Build the JSON-LD @graph for a specific product (used by output() and tests).
 	 *
 	 * @param \WC_Product $product Product.

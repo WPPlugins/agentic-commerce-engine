@@ -71,17 +71,13 @@ class Apply {
 			$value = $pending[ $key ];
 			switch ( $key ) {
 				case 'title':
-					$product->set_name( sanitize_text_field( $value ) );
+					self::set_core_field( $product, $key, $value );
 					$touched                        = true;
 					$applied_types['product-title'] = true;
 					break;
 				case 'short_description':
-					$product->set_short_description( wp_kses_post( $value ) );
-					$touched                              = true;
-					$applied_types['product-description'] = true;
-					break;
 				case 'description':
-					$product->set_description( wp_kses_post( $value ) );
+					self::set_core_field( $product, $key, $value );
 					$touched                              = true;
 					$applied_types['product-description'] = true;
 					break;
@@ -172,22 +168,20 @@ class Apply {
 				update_post_meta( $product_id, Meta::LINKS, $links );
 				$applied_types['internal-links'] = true;
 			} elseif ( 'highlights' === $type ) {
-				// Never blank what is live: an empty result writes nothing.
-				$highlights = Pdp_Content::highlights( $data );
-				if ( ! empty( $highlights ) ) {
-					update_post_meta( $product_id, Meta::HIGHLIGHTS, $highlights );
+				if ( self::write_highlights( $product_id, $data ) ) {
 					$applied_types['highlights'] = true;
 				}
 			} elseif ( 'product-qa' === $type ) {
-				$qa = Pdp_Content::qa( $data );
-				if ( ! empty( $qa ) ) {
-					update_post_meta( $product_id, Meta::QA, $qa );
+				if ( self::write_qa( $product_id, $data ) ) {
 					$applied_types['product-qa'] = true;
 				}
 			} elseif ( 'product-attributes' === $type ) {
 				// The same add-only writer as the `woocommerce` type: an attribute
-				// the product already has is kept, never replaced.
-				$attributes = Native_Fields::normalize_attributes( $data );
+				// the product already has is kept, never replaced. Rows sharing a
+				// name are merged into one attribute (4.18.0), as the web apply
+				// queue does and as the Review preview shows; before, every row
+				// after the first for a name was dropped without a word.
+				$attributes = Edit_Values::attributes_for_write( Edit_Values::attribute_pairs( $data ) );
 				$product    = empty( $attributes ) ? null : wc_get_product( $product_id );
 				if ( $product && Native_Fields::write_attributes( $product, $attributes ) ) {
 					$product->save();
@@ -195,14 +189,8 @@ class Apply {
 				}
 			} elseif ( 'image-alt' === $type ) {
 				$product = wc_get_product( $product_id );
-				if ( $product ) {
-					$match = Pdp_Content::match_image_alts(
-						Pdp_Content::image_alts( $data ),
-						Native_Fields::image_candidates( $product )
-					);
-					if ( Native_Fields::write_image_alts( $product_id, $match['matches'] ) > 0 ) {
-						$applied_types['image-alt'] = true;
-					}
+				if ( $product && self::write_image_alts( $product, $data ) > 0 ) {
+					$applied_types['image-alt'] = true;
 				}
 			} elseif ( 'woocommerce' === $type ) {
 				// Native WooCommerce fields, not an artifact stored for later
@@ -224,6 +212,219 @@ class Apply {
 				$applied_types[ $type ] = true;
 			}
 		}
+	}
+
+	/**
+	 * Put one merchant edit onto a live product (4.18.0).
+	 *
+	 * THE SAME WRITERS APPROVE USES, ONE TYPE AT A TIME. A merchant correcting
+	 * a highlight on something already live must end up with exactly what an
+	 * approval of that text would have written, so every branch below is the
+	 * code {@see apply()} runs for that type, and nothing else on the product
+	 * is touched.
+	 *
+	 * `Meta::BACKUP` is NEVER written here. It holds what the product was
+	 * before Rezolve Ai first changed it, and a revert after any number of
+	 * edits must still restore that. For the same reason alt text goes through
+	 * Native_Fields, whose ledger keeps each image's EARLIEST previous value.
+	 *
+	 * Attributes are the one type that does not simply re-run the add-only
+	 * writer: see {@see Native_Fields::write_owned_attributes()}. Attributes the
+	 * merchant added themselves are never changed; ones Rezolve Ai added are
+	 * replaced, and ones the merchant deleted from THIS editor are removed.
+	 *
+	 * @param int    $product_id       Product id.
+	 * @param string $field            One of Edit_Values::FIELDS.
+	 * @param mixed  $value            Normalized by Edit_Values::normalize().
+	 * @param array  $previous_content Meta::CONTENT before the edit.
+	 * @return array|\WP_Error Notes for the screen, e.g. { kept: string[] }.
+	 */
+	public function write_edit( $product_id, $field, $value, array $previous_content = array() ) {
+		$product_id = (int) $product_id;
+		$product    = wc_get_product( $product_id );
+		if ( ! $product ) {
+			return new \WP_Error( 'agencoen_no_product', __( 'Product not found.', 'agentic-commerce-engine' ) );
+		}
+
+		$notes = array();
+		$type  = '';
+		switch ( $field ) {
+			case 'title':
+				self::set_core_field( $product, 'title', $value );
+				$product->save();
+				$type = 'product-title';
+				break;
+
+			case 'description':
+				// The short description was derived from the description and
+				// applied with it. It follows the edit only while it is still
+				// exactly what was applied: one the merchant rewrote by hand in
+				// WooCommerce is theirs.
+				$pending = get_post_meta( $product_id, Meta::PENDING, true );
+				$derived = is_array( $pending ) && isset( $pending['short_description'] ) ? (string) $pending['short_description'] : '';
+				if ( '' !== $derived && (string) $product->get_short_description( 'edit' ) === wp_kses_post( $derived ) ) {
+					self::set_core_field( $product, 'short_description', Poller::short_description_for( $value ) );
+				}
+				self::set_core_field( $product, 'description', $value );
+				$product->save();
+				$type = 'product-description';
+				break;
+
+			case 'seo_title':
+			case 'seo_description':
+				$wrote = 'seo_title' === $field
+					? $this->plugin->seo()->write_seo_title( $product_id, $value )
+					: $this->plugin->seo()->write_seo_description( $product_id, $value );
+				if ( ! $wrote ) {
+					return new \WP_Error(
+						'agencoen_seo_write_failed',
+						sprintf(
+							/* translators: %s: reason the SEO write could not be made. */
+							__( 'Nothing was saved: %s.', 'agentic-commerce-engine' ),
+							$this->plugin->seo()->write_failure_reason( 'seo_title' === $field ? 'meta title' : 'meta description' )
+						)
+					);
+				}
+				$type = 'meta-tags';
+				break;
+
+			case 'highlights':
+				if ( ! self::write_highlights( $product_id, $value ) ) {
+					return new \WP_Error( 'agencoen_edit_empty', __( 'Nothing usable was left to save.', 'agentic-commerce-engine' ) );
+				}
+				$type = 'highlights';
+				break;
+
+			case 'product_qa':
+				if ( ! self::write_qa( $product_id, $value ) ) {
+					return new \WP_Error( 'agencoen_edit_empty', __( 'Nothing usable was left to save.', 'agentic-commerce-engine' ) );
+				}
+				// The applied schema may carry its own FAQPage, built from the
+				// questions being replaced. Markup that disagrees with the
+				// visible Q&A is worse than none.
+				$graph = get_post_meta( $product_id, Meta::JSONLD, true );
+				list( $graph, $changed ) = Schema::with_faq_questions( $graph, Pdp_Content::qa( $value ) );
+				if ( $changed ) {
+					update_post_meta( $product_id, Meta::JSONLD, $graph );
+				}
+				$type = 'product-qa';
+				break;
+
+			case 'product_attributes':
+				$attributes = Edit_Values::attributes_for_write( $value );
+				if ( empty( $attributes ) ) {
+					return new \WP_Error( 'agencoen_edit_empty', __( 'Nothing usable was left to save.', 'agentic-commerce-engine' ) );
+				}
+				$new_keys = array();
+				foreach ( $attributes as $attribute ) {
+					$new_keys[] = sanitize_title( $attribute['name'] );
+				}
+				// Removed only if THIS editor showed it and the merchant took it
+				// out. A key another content type added is not this editor's.
+				$shown = array();
+				if ( isset( $previous_content['product-attributes'] ) ) {
+					foreach ( Edit_Values::attribute_pairs( $previous_content['product-attributes'] ) as $pair ) {
+						$shown[] = sanitize_title( $pair['name'] );
+					}
+				}
+				$written = Native_Fields::write_owned_attributes( $product, $attributes, array_diff( array_unique( $shown ), $new_keys ) );
+				if ( ! empty( $written['added'] ) || ! empty( $written['replaced'] ) || ! empty( $written['removed'] ) ) {
+					$product->save();
+				}
+				$notes['kept'] = $written['kept'];
+				$type          = 'product-attributes';
+				break;
+
+			case 'image_alt':
+				$matched = 0;
+				self::write_image_alts( $product, $value, $matched );
+				if ( 0 === $matched ) {
+					return new \WP_Error( 'agencoen_edit_no_image', __( 'None of these images is on this product any more, so nothing was saved.', 'agentic-commerce-engine' ) );
+				}
+				$type = 'image-alt';
+				break;
+
+			default:
+				return new \WP_Error( 'agencoen_edit_type', __( 'This content cannot be edited here.', 'agentic-commerce-engine' ) );
+		}
+
+		$applied_types = get_post_meta( $product_id, Meta::APPLIED_TYPES, true );
+		$applied_types = is_array( $applied_types ) ? $applied_types : array();
+		if ( '' !== $type && ! in_array( $type, $applied_types, true ) ) {
+			$applied_types[] = $type;
+			update_post_meta( $product_id, Meta::APPLIED_TYPES, $applied_types );
+		}
+
+		Feeds::touch();
+		return $notes;
+	}
+
+	/**
+	 * Title, description or short description onto a loaded product, sanitized
+	 * the one way apply() and write_edit() both use. Does not save.
+	 *
+	 * @param \WC_Product $product Product.
+	 * @param string      $key     title|description|short_description.
+	 * @param string      $value   Value.
+	 */
+	private static function set_core_field( $product, $key, $value ) {
+		if ( 'title' === $key ) {
+			$product->set_name( sanitize_text_field( $value ) );
+		} elseif ( 'description' === $key ) {
+			$product->set_description( wp_kses_post( $value ) );
+		} elseif ( 'short_description' === $key ) {
+			$product->set_short_description( wp_kses_post( $value ) );
+		}
+	}
+
+	/**
+	 * Highlights into their live meta. Never blanks what is live: a value that
+	 * cleans down to nothing writes nothing.
+	 *
+	 * @param int   $product_id Product id.
+	 * @param mixed $data       Any shape Pdp_Content reads.
+	 * @return bool Written.
+	 */
+	private static function write_highlights( $product_id, $data ) {
+		$highlights = Pdp_Content::highlights( $data );
+		if ( empty( $highlights ) ) {
+			return false;
+		}
+		update_post_meta( $product_id, Meta::HIGHLIGHTS, $highlights );
+		return true;
+	}
+
+	/**
+	 * Q&A pairs into their live meta, on the same terms as highlights.
+	 *
+	 * @param int   $product_id Product id.
+	 * @param mixed $data       Any shape Pdp_Content reads.
+	 * @return bool Written.
+	 */
+	private static function write_qa( $product_id, $data ) {
+		$qa = Pdp_Content::qa( $data );
+		if ( empty( $qa ) ) {
+			return false;
+		}
+		update_post_meta( $product_id, Meta::QA, $qa );
+		return true;
+	}
+
+	/**
+	 * Alt text onto the product's own images, matched by URL.
+	 *
+	 * @param \WC_Product $product Product.
+	 * @param mixed       $data    Any shape Pdp_Content reads.
+	 * @param int|null    $matched Set to the number of images matched.
+	 * @return int Images written.
+	 */
+	private static function write_image_alts( $product, $data, &$matched = null ) {
+		$match   = Pdp_Content::match_image_alts(
+			Pdp_Content::image_alts( $data ),
+			Native_Fields::image_candidates( $product )
+		);
+		$matched = count( $match['matches'] );
+		return Native_Fields::write_image_alts( (int) $product->get_id(), $match['matches'] );
 	}
 
 	/**

@@ -210,15 +210,47 @@
 	/* Diff + per-type content rendering                                   */
 	/* ------------------------------------------------------------------ */
 
-	function renderDiffHtml( diff ) {
+	/** Flat fields with an editor. `short_description` is derived, never edited. */
+	var EDIT_FLAT = { title: 1, description: 1, seo_title: 1, seo_description: 1 };
+
+	/**
+	 * One section of an expanded product, the unit an editor swaps in and out.
+	 * `data-type` is the plugin field name the save action takes.
+	 */
+	function sectionHtml( type, inner ) {
+		return '<div class="ace-edit-section" data-type="' + attr( type ) + '">' + inner + '</div>';
+	}
+
+	/** "Edit" on a waiting proposal, "Edit live" on applied content. */
+	function editButtonHtml( type, mode ) {
+		if ( ! mode ) {
+			return '';
+		}
+		var label = 'live' === mode ? t( 'editLive', 'Edit live' ) : t( 'edit', 'Edit' );
+		return '<button type="button" class="ace-btn ace-btn-secondary ace-btn-sm ace-edit-open" data-type="' + attr( type ) + '">' + core.esc( label ) + '</button>';
+	}
+
+	function diffRowHtml( row, mode ) {
+		var clean = ( 'description' === row.key || 'short_description' === row.key );
+		var edit = EDIT_FLAT[ row.key ] ? editButtonHtml( row.key, mode ) : '';
+		var empty = '<em class="ace-muted">' + core.esc( t( 'emptyValue', '(empty)' ) ) + '</em>';
+		if ( 'live' === mode ) {
+			// Applied: what shoppers see now, which is what "Edit live" opens with.
+			var live = row.before || row.after;
+			return '<div class="ace-diff is-live"><div class="ace-diff-label">' + core.esc( row.label ) + edit + '</div>' +
+				'<div class="ace-diff-col ace-diff-live"><div class="ace-diff-cap">' + core.esc( t( 'editLiveCap', 'Live on your store' ) ) + '</div><div class="ace-diff-text">' + ( live ? core.esc( clean ? stripTags( live ) : live ) : empty ) + '</div></div></div>';
+		}
+		var before = row.before ? core.esc( clean ? stripTags( row.before ) : row.before ) : empty;
+		var after = row.after ? core.esc( clean ? stripTags( row.after ) : row.after ) : '';
+		return '<div class="ace-diff ' + ( row.changed ? 'is-changed' : 'is-same' ) + '">' +
+			'<div class="ace-diff-label">' + core.esc( row.label ) + ( row.changed ? '' : ' <span class="ace-diff-tag">' + core.esc( t( 'noChange', 'no change' ) ) + '</span>' ) + edit + '</div>' +
+			'<div class="ace-diff-cols"><div class="ace-diff-col ace-diff-before"><div class="ace-diff-cap">' + core.esc( t( 'current', 'Current' ) ) + '</div><div class="ace-diff-text">' + before + '</div></div>' +
+			'<div class="ace-diff-col ace-diff-after"><div class="ace-diff-cap">' + core.esc( t( 'aiSuggestion', 'AI suggestion' ) ) + '</div><div class="ace-diff-text">' + after + '</div></div></div></div>';
+	}
+
+	function renderDiffHtml( diff, mode ) {
 		return '<div class="ace-diffs">' + diff.map( function ( row ) {
-			var clean = ( 'description' === row.key || 'short_description' === row.key );
-			var before = row.before ? core.esc( clean ? stripTags( row.before ) : row.before ) : '<em class="ace-muted">' + core.esc( t( 'emptyValue', '(empty)' ) ) + '</em>';
-			var after = row.after ? core.esc( clean ? stripTags( row.after ) : row.after ) : '';
-			return '<div class="ace-diff ' + ( row.changed ? 'is-changed' : 'is-same' ) + '">' +
-				'<div class="ace-diff-label">' + core.esc( row.label ) + ( row.changed ? '' : ' <span class="ace-diff-tag">' + core.esc( t( 'noChange', 'no change' ) ) + '</span>' ) + '</div>' +
-				'<div class="ace-diff-cols"><div class="ace-diff-col ace-diff-before"><div class="ace-diff-cap">' + core.esc( t( 'current', 'Current' ) ) + '</div><div class="ace-diff-text">' + before + '</div></div>' +
-				'<div class="ace-diff-col ace-diff-after"><div class="ace-diff-cap">' + core.esc( t( 'aiSuggestion', 'AI suggestion' ) ) + '</div><div class="ace-diff-text">' + after + '</div></div></div></div>';
+			return sectionHtml( row.key, diffRowHtml( row, mode ) );
 		} ).join( '' ) + '</div>';
 	}
 
@@ -265,13 +297,13 @@
 	 * the preview matches what Approve will write (same matching, same
 	 * "already on the product" check). Every value goes through core.esc.
 	 */
-	function renderExtrasHtml( extras ) {
+	function renderExtrasHtml( extras, mode ) {
 		if ( ! extras || 'object' !== typeof extras ) {
 			return '';
 		}
 		var html = '';
-		var block = function ( title, body ) {
-			return '<div class="ace-ct-block"><div class="ace-ct-title">' + core.esc( title ) + '</div>' + body + '</div>';
+		var block = function ( title, body, type ) {
+			return sectionHtml( type, '<div class="ace-ct-block"><div class="ace-ct-head"><div class="ace-ct-title">' + core.esc( title ) + '</div>' + editButtonHtml( type, mode ) + '</div>' + body + '</div>' );
 		};
 		var chip = function ( text, tone ) {
 			return '<span class="ace-ct-chip ace-ct-chip--' + tone + '">' + core.esc( text ) + '</span>';
@@ -280,20 +312,25 @@
 		if ( Array.isArray( extras.highlights ) && extras.highlights.length ) {
 			html += block( t( 'highlightsTitle', 'Highlights' ), '<ul class="ace-ct-links">' + extras.highlights.map( function ( h ) {
 				return '<li>' + core.esc( h ) + '</li>';
-			} ).join( '' ) + '</ul>' );
+			} ).join( '' ) + '</ul>', 'highlights' );
 		}
 
 		if ( Array.isArray( extras.qa ) && extras.qa.length ) {
 			html += block( t( 'qaTitle', 'Product Q&A' ), '<dl class="ace-ct-qa">' + extras.qa.map( function ( pair ) {
 				return '<dt>' + core.esc( pair.question ) + '</dt><dd>' + core.esc( pair.answer ) + '</dd>';
-			} ).join( '' ) + '</dl>' );
+			} ).join( '' ) + '</dl>', 'product_qa' );
 		}
 
 		if ( Array.isArray( extras.attributes ) && extras.attributes.length ) {
 			html += block( t( 'attributesTitle', 'Product attributes' ), '<table class="ace-ct-table"><tbody>' + extras.attributes.map( function ( a ) {
-				var action = 'exists' === a.action ? chip( t( 'attrExists', 'Already on the product, kept' ), 'muted' ) : chip( t( 'attrAdd', 'Will be added' ), 'ok' );
+				var action = chip( t( 'attrAdd', 'Will be added' ), 'ok' );
+				if ( 'exists' === a.action ) {
+					action = chip( t( 'attrExists', 'Already on the product, kept' ), 'muted' );
+				} else if ( 'owned' === a.action ) {
+					action = chip( t( 'attrOwned', 'On your store' ), 'ok' );
+				}
 				return '<tr><th scope="row">' + core.esc( a.name ) + '</th><td>' + core.esc( ( a.values || [] ).join( ', ' ) ) + '</td><td>' + action + '</td></tr>';
-			} ).join( '' ) + '</tbody></table>' );
+			} ).join( '' ) + '</tbody></table>', 'product_attributes' );
 		}
 
 		if ( Array.isArray( extras.imageAlt ) && extras.imageAlt.length ) {
@@ -306,10 +343,295 @@
 				var label = labels[ row.action ] || labels.write;
 				var thumb = row.thumb ? '<img src="' + core.esc( row.thumb ).replace( /"/g, '&quot;' ) + '" alt="" width="48" height="48" loading="lazy">' : '';
 				return '<tr><td>' + thumb + '</td><td>' + ( row.current ? core.esc( row.current ) : '<em class="ace-muted">' + core.esc( t( 'emptyValue', '(empty)' ) ) + '</em>' ) + '</td><td>' + core.esc( row.proposed ) + '</td><td>' + chip( label[ 0 ], label[ 1 ] ) + '</td></tr>';
-			} ).join( '' ) + '</tbody></table>' );
+			} ).join( '' ) + '</tbody></table>', 'image_alt' );
 		}
 
 		return html;
+	}
+
+	/** The whole expanded body for one product's last read. */
+	function bodyHtml( d ) {
+		return '<div class="ace-quality"></div>' +
+			renderDiffHtml( d.diff || [], d.mode ) +
+			sectionHtml( '_content', renderContentHtml( d.content || {} ) ) +
+			renderExtrasHtml( d.extras || {}, d.mode );
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* Editing (4.18.0)                                                    */
+	/*                                                                     */
+	/* Every value typed here is checked again on the server, which       */
+	/* answers with row indexes for anything it refuses, so the counters  */
+	/* below are guidance and never the gate. The description uses the    */
+	/* classic editor, and every TinyMCE instance is removed with          */
+	/* wp.editor.remove() before its DOM goes: a removed node with a live  */
+	/* instance leaks it and breaks the next editor opened on that id.     */
+	/* ------------------------------------------------------------------ */
+
+	var editorSeq = 0;
+
+	function limit( group, key, fallback ) {
+		var l = cfg.editLimits && cfg.editLimits[ group ];
+		return l && 'number' === typeof l[ key ] ? l[ key ] : fallback;
+	}
+
+	/** Characters as a person counts them, matching the server. */
+	function charLen( s ) {
+		s = String( s == null ? '' : s );
+		return Array.from ? Array.from( s ).length : s.length;
+	}
+
+	function hasWpEditor() {
+		return !! ( window.wp && window.wp.editor && 'function' === typeof window.wp.editor.initialize );
+	}
+
+	/** Remove every classic editor instance inside a node, before the node goes. */
+	function removeEditors( container ) {
+		if ( ! container ) {
+			return;
+		}
+		Array.prototype.forEach.call( container.querySelectorAll( 'textarea[data-wpeditor]' ), function ( area ) {
+			if ( window.wp && window.wp.editor && 'function' === typeof window.wp.editor.remove ) {
+				window.wp.editor.remove( area.id );
+			}
+			area.removeAttribute( 'data-wpeditor' );
+		} );
+	}
+
+	function fieldHtml( part, value, max, rec, label, multiline ) {
+		var common = ' class="ace-input ace-edit-input" data-part="' + attr( part ) + '" data-max="' + attr( max ) + '"' +
+			( rec ? ' data-rec="' + attr( rec ) + '"' : '' ) +
+			' aria-label="' + attr( label ) + '" placeholder="' + attr( label ) + '"';
+		var field = multiline
+			? '<textarea rows="3"' + common + '>' + core.esc( value ) + '</textarea>'
+			: '<input type="text"' + common + ' value="' + attr( value ) + '">';
+		return '<div class="ace-edit-field">' + field + '<span class="ace-edit-count" aria-live="polite"></span></div>';
+	}
+
+	function rowToolsHtml( reorder ) {
+		var html = '<div class="ace-edit-tools">';
+		if ( reorder ) {
+			html += '<button type="button" class="ace-btn ace-btn-secondary ace-btn-sm ace-edit-up" aria-label="' + attr( t( 'editMoveUp', 'Move up' ) ) + '" title="' + attr( t( 'editMoveUp', 'Move up' ) ) + '">&uarr;</button>' +
+				'<button type="button" class="ace-btn ace-btn-secondary ace-btn-sm ace-edit-down" aria-label="' + attr( t( 'editMoveDown', 'Move down' ) ) + '" title="' + attr( t( 'editMoveDown', 'Move down' ) ) + '">&darr;</button>';
+		}
+		return html + '<button type="button" class="ace-btn ace-btn-secondary ace-btn-sm ace-edit-remove">' + core.esc( t( 'editRemove', 'Remove' ) ) + '</button></div>';
+	}
+
+	/** One editable row. Rows are sent in DOM order, so a server index is a DOM index. */
+	function rowHtml( type, row ) {
+		row = row || {};
+		var err = '<div class="ace-edit-rowerr" aria-live="polite"></div>';
+		if ( 'highlights' === type ) {
+			return '<li class="ace-edit-row">' + fieldHtml( 'text', row.text || '', limit( 'highlights', 'maxChars', 300 ), 0, t( 'editHighlight', 'Highlight' ) ) + rowToolsHtml( true ) + err + '</li>';
+		}
+		if ( 'product_qa' === type ) {
+			return '<li class="ace-edit-row ace-edit-row-qa"><div class="ace-edit-pair">' +
+				fieldHtml( 'question', row.question || '', limit( 'qa', 'maxQuestionChars', 300 ), 0, t( 'editQuestion', 'Question' ) ) +
+				fieldHtml( 'answer', row.answer || '', limit( 'qa', 'maxAnswerChars', 2000 ), 0, t( 'editAnswer', 'Answer' ), true ) +
+				'</div>' + rowToolsHtml( true ) + err + '</li>';
+		}
+		if ( 'product_attributes' === type ) {
+			return '<li class="ace-edit-row" data-source="' + attr( row.source || '' ) + '"><div class="ace-edit-pair ace-edit-pair-inline">' +
+				fieldHtml( 'name', row.name || '', limit( 'attributes', 'maxNameChars', 200 ), 0, t( 'editSpecName', 'Name' ) ) +
+				fieldHtml( 'value', row.value || '', limit( 'attributes', 'maxValueChars', 200 ), 0, t( 'editSpecValue', 'Value' ) ) +
+				'</div>' + rowToolsHtml( false ) + err + '</li>';
+		}
+		// image_alt: bound to a picture, so no add, remove or reorder.
+		var thumb = row.thumb ? '<img src="' + attr( row.thumb ) + '" alt="" width="48" height="48" loading="lazy">' : '<span class="ace-edit-nothumb"></span>';
+		var note = '';
+		if ( 'unmatched' === row.action ) {
+			note = '<p class="ace-edit-note">' + core.esc( t( 'editAltGone', 'This image is no longer on the product, so its alt text is not written.' ) ) + '</p>';
+		} else if ( row.current ) {
+			note = '<p class="ace-edit-note ace-muted">' + core.esc( t( 'currentAlt', 'Current alt text' ) ) + ': ' + core.esc( row.current ) + '</p>';
+		}
+		return '<li class="ace-edit-row ace-edit-row-alt" data-url="' + attr( row.imageUrl || '' ) + '">' + thumb + '<div class="ace-edit-pair">' +
+			fieldHtml( 'alt', row.proposed || '', limit( 'alt', 'maxChars', 512 ), limit( 'alt', 'recommendedChars', 125 ), t( 'editAltFor', 'Alt text for this image' ) ) +
+			note + '</div>' + err + '</li>';
+	}
+
+	var ROW_LIMITS = {
+		highlights: [ 'highlights', 'maxItems', 10 ],
+		product_qa: [ 'qa', 'maxPairs', 20 ],
+		product_attributes: [ 'attributes', 'maxRows', 20 ],
+	};
+
+	function diffRowFor( d, key ) {
+		var rows = d.diff || [];
+		for ( var i = 0; i < rows.length; i++ ) {
+			if ( rows[ i ].key === key ) {
+				return rows[ i ];
+			}
+		}
+		return null;
+	}
+
+	/** The inline editor for one section, shaped like what the storefront shows. */
+	function editorHtml( type, d, domId ) {
+		var live = 'live' === d.mode;
+		var extras = d.extras || {};
+		var label = '';
+		var body = '';
+		var rows = [];
+		var addLabel = '';
+
+		if ( EDIT_FLAT[ type ] ) {
+			var diffRow = diffRowFor( d, type ) || {};
+			var value = live ? ( diffRow.before || diffRow.after || '' ) : ( diffRow.after || '' );
+			label = diffRow.label || '';
+			if ( 'description' === type ) {
+				body = '<textarea id="' + attr( domId ) + '" class="ace-edit-wpeditor" rows="14">' + core.esc( value ) + '</textarea>';
+			} else if ( 'title' === type ) {
+				body = fieldHtml( 'value', value, limit( 'title', 'maxChars', 255 ), limit( 'title', 'recommendedChars', 70 ), label );
+			} else if ( 'seo_title' === type ) {
+				body = fieldHtml( 'value', value, limit( 'seoTitle', 'maxChars', 255 ), limit( 'seoTitle', 'recommendedChars', 60 ), label );
+			} else {
+				body = fieldHtml( 'value', value, limit( 'seoDescription', 'maxChars', 1000 ), limit( 'seoDescription', 'recommendedChars', 160 ), label, true );
+			}
+		} else {
+			if ( 'highlights' === type ) {
+				label = t( 'highlightsTitle', 'Highlights' );
+				addLabel = t( 'editAddHighlight', 'Add a highlight' );
+				rows = ( extras.highlights || [] ).map( function ( text ) {
+					return { text: text };
+				} );
+			} else if ( 'product_qa' === type ) {
+				label = t( 'qaTitle', 'Product Q&A' );
+				addLabel = t( 'editAddQuestion', 'Add a question' );
+				rows = extras.qa || [];
+			} else if ( 'product_attributes' === type ) {
+				label = t( 'attributesTitle', 'Product attributes' );
+				addLabel = t( 'editAddSpec', 'Add a specification' );
+				rows = extras.attributePairs || [];
+			} else {
+				label = t( 'imageAltTitle', 'Image alt text' );
+				rows = extras.imageAlt || [];
+				body = '<p class="ace-edit-note ace-muted">' + core.esc( t( 'editAltHint', 'Leave an image blank to keep its current alt text.' ) ) + '</p>';
+			}
+			body += '<ol class="ace-edit-rows">' + rows.map( function ( row ) {
+				return rowHtml( type, row );
+			} ).join( '' ) + '</ol>';
+			if ( addLabel ) {
+				body += '<button type="button" class="ace-btn ace-btn-secondary ace-btn-sm ace-edit-add">' + core.esc( addLabel ) + '</button>';
+			}
+		}
+
+		return '<div class="ace-editor" data-type="' + attr( type ) + '">' +
+			'<div class="ace-ct-head"><div class="ace-ct-title">' + core.esc( label ) + '</div></div>' +
+			( live ? '<p class="ace-edit-livenote">' + core.esc( t( 'editLiveNote', 'This is live on your store. Saving republishes it.' ) ) + '</p>' : '' ) +
+			'<div class="ace-edit-errors" role="alert" hidden></div>' +
+			body +
+			'<div class="ace-edit-actions">' +
+			'<button type="button" class="ace-btn ace-btn-secondary ace-btn-sm ace-edit-cancel">' + core.esc( t( 'cancel', 'Cancel' ) ) + '</button>' +
+			'<button type="button" class="ace-btn ace-btn-primary ace-btn-sm ace-edit-save">' + core.esc( live ? t( 'editSaveLive', 'Save and republish' ) : t( 'editSave', 'Save' ) ) + '</button>' +
+			'</div></div>';
+	}
+
+	function updateCounter( input ) {
+		var box = input.parentNode ? input.parentNode.querySelector( '.ace-edit-count' ) : null;
+		if ( ! box ) {
+			return;
+		}
+		var n = charLen( input.value );
+		var max = parseInt( input.getAttribute( 'data-max' ), 10 ) || 0;
+		var rec = parseInt( input.getAttribute( 'data-rec' ), 10 ) || 0;
+		var over = max > 0 && n > max;
+		box.textContent = ( rec && ! over )
+			? fmt( t( 'editCountRec', '%1$s characters, %2$s recommended' ), core.num( n ), core.num( rec ) )
+			: fmt( t( 'editCount', '%1$s of %2$s characters' ), core.num( n ), core.num( max ) );
+		box.classList.toggle( 'is-over', over );
+		box.classList.toggle( 'is-warn', ! over && rec > 0 && n > rec );
+	}
+
+	function updateAddButton( editor ) {
+		var type = editor.getAttribute( 'data-type' );
+		var add = editor.querySelector( '.ace-edit-add' );
+		var cap = ROW_LIMITS[ type ];
+		if ( add && cap ) {
+			add.disabled = editor.querySelectorAll( '.ace-edit-row' ).length >= limit( cap[ 0 ], cap[ 1 ], cap[ 2 ] );
+		}
+	}
+
+	/** What the save action receives. Lists travel as JSON: core.post sends flat values only. */
+	function readEditorValue( editor, type ) {
+		if ( 'description' === type ) {
+			var area = editor.querySelector( 'textarea.ace-edit-wpeditor' );
+			if ( area && area.getAttribute( 'data-wpeditor' ) && window.wp && window.wp.editor && 'function' === typeof window.wp.editor.getContent ) {
+				var html = window.wp.editor.getContent( area.id ) || '';
+				// With wpautop on, the editor hands back paragraphs as blank
+				// lines. Put the <p> tags back, so the store and Rezolve Ai
+				// receive the same HTML the merchant saw.
+				return 'function' === typeof window.wp.editor.autop ? window.wp.editor.autop( html ) : html;
+			}
+			return area ? area.value : '';
+		}
+		if ( EDIT_FLAT[ type ] ) {
+			var input = editor.querySelector( '.ace-edit-input' );
+			return input ? input.value : '';
+		}
+		var part = function ( row, name ) {
+			var el = row.querySelector( '[data-part="' + name + '"]' );
+			return el ? el.value : '';
+		};
+		var list = Array.prototype.map.call( editor.querySelectorAll( '.ace-edit-row' ), function ( row ) {
+			if ( 'highlights' === type ) {
+				return part( row, 'text' );
+			}
+			if ( 'product_qa' === type ) {
+				return { question: part( row, 'question' ), answer: part( row, 'answer' ) };
+			}
+			if ( 'product_attributes' === type ) {
+				var spec = { name: part( row, 'name' ), value: part( row, 'value' ) };
+				if ( row.getAttribute( 'data-source' ) ) {
+					spec.source = row.getAttribute( 'data-source' );
+				}
+				return spec;
+			}
+			return { imageUrl: row.getAttribute( 'data-url' ) || '', alt: part( row, 'alt' ) };
+		} );
+		return JSON.stringify( list );
+	}
+
+	/** Mark what the server refused: rows by index, the rest above the editor. */
+	function showEditErrors( editor, errors, message ) {
+		Array.prototype.forEach.call( editor.querySelectorAll( '.is-error' ), function ( el ) {
+			el.classList.remove( 'is-error' );
+			el.removeAttribute( 'aria-invalid' );
+		} );
+		Array.prototype.forEach.call( editor.querySelectorAll( '.ace-edit-rowerr' ), function ( el ) {
+			el.textContent = '';
+		} );
+		var rows = editor.querySelectorAll( '.ace-edit-row' );
+		var general = [];
+		( errors || [] ).forEach( function ( error ) {
+			var row = 'number' === typeof error.index ? rows[ error.index ] : null;
+			if ( ! row ) {
+				general.push( error.message );
+				var only = editor.querySelector( '.ace-edit-input' );
+				if ( only && ! rows.length ) {
+					only.classList.add( 'is-error' );
+					only.setAttribute( 'aria-invalid', 'true' );
+				}
+				return;
+			}
+			row.classList.add( 'is-error' );
+			var field = error.part ? row.querySelector( '[data-part="' + attr( error.part ) + '"]' ) : row.querySelector( '.ace-edit-input' );
+			if ( field ) {
+				field.classList.add( 'is-error' );
+				field.setAttribute( 'aria-invalid', 'true' );
+			}
+			var slot = row.querySelector( '.ace-edit-rowerr' );
+			if ( slot ) {
+				slot.textContent = ( slot.textContent ? slot.textContent + ' ' : '' ) + error.message;
+			}
+		} );
+		if ( ! ( errors || [] ).length && message ) {
+			general.push( message );
+		}
+		var box = editor.querySelector( '.ace-edit-errors' );
+		if ( box ) {
+			box.textContent = general.join( ' ' );
+			box.hidden = ! general.length;
+		}
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -383,6 +705,117 @@
 		var quality = {};
 		var waiting = {};
 		var pollTimers = {};
+
+		// Product id => the last review_diff (or save) payload, the one source
+		// every section and editor of that product renders from.
+		var details = {};
+
+		function hasOpenEditor( item ) {
+			return !! item.querySelector( '.ace-edit-section.is-editing' );
+		}
+
+		/** Unsaved edits are the merchant's work: ask before a row action drops them. */
+		function confirmLeavingEdits( item ) {
+			return ! hasOpenEditor( item ) || window.confirm( t( 'editUnsaved', 'This product has edits you have not saved. Continue without them?' ) );
+		}
+
+		/** Take a row off the screen, releasing any classic editor inside it first. */
+		function dropItem( item ) {
+			removeEditors( item );
+			if ( item.parentNode ) {
+				item.parentNode.removeChild( item );
+			}
+		}
+
+		/** Re-render every section of one product that is not being edited. */
+		function refreshSections( item, id ) {
+			var body = $( '.ace-rev-body', item );
+			if ( ! body || ! details[ id ] ) {
+				return;
+			}
+			var fresh = document.createElement( 'div' );
+			fresh.innerHTML = bodyHtml( details[ id ] );
+			Array.prototype.forEach.call( body.querySelectorAll( '.ace-edit-section' ), function ( section ) {
+				if ( section.classList.contains( 'is-editing' ) ) {
+					return;
+				}
+				var next = fresh.querySelector( '.ace-edit-section[data-type="' + attr( section.getAttribute( 'data-type' ) ) + '"]' );
+				if ( next ) {
+					section.parentNode.replaceChild( next, section );
+				}
+			} );
+		}
+
+		function openEditor( section, id ) {
+			var d = details[ id ];
+			if ( ! d || ! d.mode ) {
+				return;
+			}
+			var type = section.getAttribute( 'data-type' );
+			var domId = 'ace-edit-' + String( id ).replace( /[^0-9]/g, '' ) + '-' + ( ++editorSeq );
+			section.classList.add( 'is-editing' );
+			section.innerHTML = editorHtml( type, d, domId );
+			var editor = $( '.ace-editor', section );
+			Array.prototype.forEach.call( section.querySelectorAll( '.ace-edit-input' ), updateCounter );
+			updateAddButton( editor );
+			if ( 'description' === type && hasWpEditor() ) {
+				window.wp.editor.initialize( domId, {
+					tinymce: {
+						wpautop: true,
+						toolbar1: 'formatselect,bold,italic,bullist,numlist,blockquote,link,unlink,undo,redo',
+						toolbar2: '',
+					},
+					quicktags: true,
+					mediaButtons: false,
+				} );
+				var area = document.getElementById( domId );
+				if ( area ) {
+					area.setAttribute( 'data-wpeditor', '1' );
+				}
+			}
+			var first = $( '.ace-edit-input', section );
+			if ( first ) {
+				first.focus();
+			}
+		}
+
+		function closeEditor( item, section, id ) {
+			removeEditors( section );
+			section.classList.remove( 'is-editing' );
+			refreshSections( item, id );
+		}
+
+		function saveEditor( item, section, id, btn ) {
+			var d = details[ id ];
+			var editor = $( '.ace-editor', section );
+			if ( ! d || ! editor ) {
+				return;
+			}
+			var type = section.getAttribute( 'data-type' );
+			core.setBusy( btn, true, t( 'saving', 'Saving…' ) );
+			core.post( 'review_save_edit', {
+				product_id: id,
+				type: type,
+				mode: d.mode,
+				value: readEditorValue( editor, type ),
+			} ).then( function ( res ) {
+				details[ id ] = { mode: res.mode, diff: res.diff || [], extras: res.extras || {}, content: res.content || {} };
+				closeEditor( item, section, id );
+				var message = 'live' === res.mode ? t( 'editSavedLive', 'Saved and republished to your store.' ) : t( 'editSaved', 'Saved. Approving applies your edited version.' );
+				if ( res.kept && res.kept.length ) {
+					message += ' ' + fmt( t( 'editKeptAttrs', 'Kept as they are, because you added them yourself: %s' ), res.kept.join( ', ' ) );
+				}
+				core.toast( message, 'success' );
+			} ).catch( function ( err ) {
+				core.setBusy( btn, false );
+				if ( err && Array.isArray( err.errors ) ) {
+					showEditErrors( editor, err.errors, err.message );
+					core.toast( err.message || t( 'editFix', 'Some of this needs fixing before it can be saved.' ), 'error' );
+					return;
+				}
+				core.errorToast( err );
+			} );
+		}
 
 		function itemsFor( id ) {
 			return Array.prototype.slice.call( root.querySelectorAll( '.ace-rev-item[data-id="' + attr( id ) + '"]' ) );
@@ -524,6 +957,7 @@
 				var html = d.items.map( itemHtml ).join( '' );
 				if ( 1 === pending.page ) {
 					quality = {};
+					removeEditors( list );
 					list.innerHTML = d.items.length ? html : '<div class="ace-empty"><p>' + core.esc( t( 'noPending', 'Nothing to review right now.' ) ) + '</p></div>';
 				} else {
 					list.insertAdjacentHTML( 'beforeend', html );
@@ -546,12 +980,16 @@
 				core.skeleton( appliedList, 'text' );
 			}
 			core.post( 'products', { page: applied.page, status: 'applied' } ).then( function ( d ) {
+				// Expandable since 4.18.0, so what is live can be edited in place.
 				var html = d.rows.map( function ( row ) {
-					return '<div class="ace-rev-item ace-rev-compact" data-id="' + row.id + '"><div class="ace-rev-head">' +
+					return '<div class="ace-rev-item ace-rev-applied" data-id="' + attr( row.id ) + '"><div class="ace-rev-head">' +
+						'<button type="button" class="ace-rev-toggle" aria-label="' + attr( t( 'expand', 'Expand' ) ) + '"><span class="ace-caret">&rsaquo;</span></button>' +
 						'<div class="ace-rev-main"><div class="ace-rev-title">' + core.esc( row.name ) + ' ' + core.chip( 'success', t( 'statusApplied', 'Applied' ) ) + '</div></div>' +
-						'<div class="ace-rev-actions"><button type="button" class="ace-btn ace-btn-secondary ace-btn-sm ace-rev-revert">' + core.esc( t( 'revertToOriginal', 'Revert to original' ) ) + '</button></div></div></div>';
+						'<div class="ace-rev-actions"><button type="button" class="ace-btn ace-btn-secondary ace-btn-sm ace-rev-revert">' + core.esc( t( 'revertToOriginal', 'Revert to original' ) ) + '</button></div></div>' +
+						'<div class="ace-rev-body" hidden></div></div>';
 				} ).join( '' );
 				if ( 1 === applied.page ) {
+					removeEditors( appliedList );
 					appliedList.innerHTML = d.rows.length ? html : '<div class="ace-empty"><p>' + core.esc( t( 'noApplied', 'No applied products yet.' ) ) + '</p></div>';
 				} else {
 					appliedList.insertAdjacentHTML( 'beforeend', html );
@@ -629,9 +1067,14 @@
 					if ( ! body.getAttribute( 'data-loaded' ) ) {
 						core.skeleton( body, 'text' );
 						core.post( 'review_diff', { product_id: id } ).then( function ( d ) {
-							body.innerHTML = '<div class="ace-quality"></div>' + renderDiffHtml( d.diff || [] ) + renderContentHtml( d.content || {} ) + renderExtrasHtml( d.extras || {} );
+							details[ id ] = { mode: d.mode || '', diff: d.diff || [], extras: d.extras || {}, content: d.content || {} };
+							body.innerHTML = bodyHtml( details[ id ] );
 							body.setAttribute( 'data-loaded', '1' );
 							renderQuality( id );
+							// Applied rows are not in the pending list's quality read.
+							if ( item.classList.contains( 'ace-rev-applied' ) && ! quality[ String( id ) ] ) {
+								loadQuality( [ String( id ) ] );
+							}
 						} ).catch( core.errorToast );
 					}
 				} else {
@@ -644,11 +1087,66 @@
 			if ( ! btn ) {
 				return;
 			}
+
+			/* Editors */
+			var section = btn.closest( '.ace-edit-section' );
+			var row = btn.closest( '.ace-edit-row' );
+			if ( btn.classList.contains( 'ace-edit-open' ) && section ) {
+				openEditor( section, id );
+				return;
+			}
+			if ( btn.classList.contains( 'ace-edit-cancel' ) && section ) {
+				closeEditor( item, section, id );
+				return;
+			}
+			if ( btn.classList.contains( 'ace-edit-save' ) && section ) {
+				saveEditor( item, section, id, btn );
+				return;
+			}
+			if ( btn.classList.contains( 'ace-edit-add' ) && section ) {
+				var editor = $( '.ace-editor', section );
+				var rows = $( '.ace-edit-rows', section );
+				if ( editor && rows ) {
+					rows.insertAdjacentHTML( 'beforeend', rowHtml( editor.getAttribute( 'data-type' ), {} ) );
+					var added = rows.lastElementChild;
+					Array.prototype.forEach.call( added.querySelectorAll( '.ace-edit-input' ), updateCounter );
+					updateAddButton( editor );
+					var input = $( '.ace-edit-input', added );
+					if ( input ) {
+						input.focus();
+					}
+				}
+				return;
+			}
+			if ( row && btn.classList.contains( 'ace-edit-remove' ) ) {
+				var owner = btn.closest( '.ace-editor' );
+				row.parentNode.removeChild( row );
+				if ( owner ) {
+					updateAddButton( owner );
+				}
+				return;
+			}
+			if ( row && btn.classList.contains( 'ace-edit-up' ) ) {
+				if ( row.previousElementSibling ) {
+					row.parentNode.insertBefore( row, row.previousElementSibling );
+				}
+				return;
+			}
+			if ( row && btn.classList.contains( 'ace-edit-down' ) ) {
+				if ( row.nextElementSibling ) {
+					row.parentNode.insertBefore( row.nextElementSibling, row );
+				}
+				return;
+			}
+
 			if ( btn.classList.contains( 'ace-rev-approve' ) ) {
+				if ( ! confirmLeavingEdits( item ) ) {
+					return;
+				}
 				core.setBusy( btn, true, t( 'applying', 'Applying…' ) );
 				core.post( 'approve', { product_id: id } ).then( function () {
 					core.toast( t( 'applied', 'Applied to your product.' ), 'success' );
-					item.parentNode.removeChild( item );
+					dropItem( item );
 					bumpCount( '#ace-count-pending', -1 );
 					bumpCount( '#ace-count-applied', 1 );
 				} ).catch( function ( err ) {
@@ -656,10 +1154,13 @@
 					core.errorToast( err );
 				} );
 			} else if ( btn.classList.contains( 'ace-rev-dismiss' ) ) {
+				if ( ! confirmLeavingEdits( item ) ) {
+					return;
+				}
 				core.setBusy( btn, true );
 				core.post( 'dismiss', { product_id: id } ).then( function () {
 					core.toast( t( 'dismissed', 'Dismissed.' ), 'info' );
-					item.parentNode.removeChild( item );
+					dropItem( item );
 					// Dismissed leaves the queue without becoming applied.
 					bumpCount( '#ace-count-pending', -1 );
 				} ).catch( function ( err ) {
@@ -688,16 +1189,26 @@
 					core.errorToast( err );
 				} );
 			} else if ( btn.classList.contains( 'ace-rev-revert' ) ) {
+				if ( ! confirmLeavingEdits( item ) ) {
+					return;
+				}
 				core.setBusy( btn, true );
 				core.post( 'revert', { product_id: id } ).then( function () {
 					core.toast( t( 'reverted', 'Reverted to the original.' ), 'success' );
-					item.parentNode.removeChild( item );
+					dropItem( item );
 					// Reverting is the only row action on the applied list.
 					bumpCount( '#ace-count-applied', -1 );
 				} ).catch( function ( err ) {
 					core.setBusy( btn, false );
 					core.errorToast( err );
 				} );
+			}
+		} );
+
+		// Character counters on every editor field.
+		root.addEventListener( 'input', function ( e ) {
+			if ( e.target && e.target.classList && e.target.classList.contains( 'ace-edit-input' ) ) {
+				updateCounter( e.target );
 			}
 		} );
 

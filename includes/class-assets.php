@@ -94,6 +94,15 @@ class Assets {
 			true
 		);
 
+		// The classic editor (TinyMCE and Quicktags) for editing a product
+		// description in place on Review (4.18.0). wp_enqueue_editor() loads
+		// what `wp.editor.initialize()` needs; the `wp-editor` script handle is
+		// the block editor's and is deliberately not used. Review only, so no
+		// other screen pays for an editor it never opens.
+		if ( 'review' === $screen && function_exists( 'wp_enqueue_editor' ) ) {
+			wp_enqueue_editor();
+		}
+
 		wp_localize_script( 'agencoen-core', 'agencoenConfig', $this->config( $screen ) );
 
 		// The dashboard renders its stat row + charts from this initial
@@ -149,6 +158,11 @@ class Assets {
 			'pollInterval'  => 5000,
 			'i18n'          => $this->strings(),
 		);
+
+		if ( 'review' === $screen ) {
+			// For the editors' counters only. The server checks every limit again.
+			$config['editLimits'] = Edit_Values::limits();
+		}
 
 		if ( 'aisearch' === $screen ) {
 			// Lets "Most cited domains" mark this site's own domain.
@@ -333,6 +347,38 @@ class Assets {
 			'proposedAlt'       => __( 'Proposed alt text', 'agentic-commerce-engine' ),
 			/* translators: %s: feed channel key. */
 			'feedTitle'         => __( '%s feed', 'agentic-commerce-engine' ),
+
+			/* Editing on Review (4.18.0) */
+			'editLive'          => __( 'Edit live', 'agentic-commerce-engine' ),
+			'editSave'          => __( 'Save', 'agentic-commerce-engine' ),
+			'editSaveLive'      => __( 'Save and republish', 'agentic-commerce-engine' ),
+			'editLiveNote'      => __( 'This is live on your store. Saving republishes it.', 'agentic-commerce-engine' ),
+			'editLiveCap'       => __( 'Live on your store', 'agentic-commerce-engine' ),
+			'editSaved'         => __( 'Saved. Approving applies your edited version.', 'agentic-commerce-engine' ),
+			'editSavedLive'     => __( 'Saved and republished to your store.', 'agentic-commerce-engine' ),
+			'editFix'           => __( 'Some of this needs fixing before it can be saved.', 'agentic-commerce-engine' ),
+			'editUnsaved'       => __( 'This product has edits you have not saved. Continue without them?', 'agentic-commerce-engine' ),
+			'editAddHighlight'  => __( 'Add a highlight', 'agentic-commerce-engine' ),
+			'editAddQuestion'   => __( 'Add a question', 'agentic-commerce-engine' ),
+			'editAddSpec'       => __( 'Add a specification', 'agentic-commerce-engine' ),
+			'editRemove'        => __( 'Remove', 'agentic-commerce-engine' ),
+			'editMoveUp'        => __( 'Move up', 'agentic-commerce-engine' ),
+			'editMoveDown'      => __( 'Move down', 'agentic-commerce-engine' ),
+			'editHighlight'     => __( 'Highlight', 'agentic-commerce-engine' ),
+			'editQuestion'      => __( 'Question', 'agentic-commerce-engine' ),
+			'editAnswer'        => __( 'Answer', 'agentic-commerce-engine' ),
+			'editSpecName'      => __( 'Name', 'agentic-commerce-engine' ),
+			'editSpecValue'     => __( 'Value', 'agentic-commerce-engine' ),
+			'editAltFor'        => __( 'Alt text for this image', 'agentic-commerce-engine' ),
+			'editAltHint'       => __( 'Leave an image blank to keep its current alt text.', 'agentic-commerce-engine' ),
+			'editAltGone'       => __( 'This image is no longer on the product, so its alt text is not written.', 'agentic-commerce-engine' ),
+			/* translators: 1: number of characters typed, 2: maximum number of characters. */
+			'editCount'         => __( '%1$s of %2$s characters', 'agentic-commerce-engine' ),
+			/* translators: 1: number of characters typed, 2: recommended number of characters. */
+			'editCountRec'      => __( '%1$s characters, %2$s recommended', 'agentic-commerce-engine' ),
+			/* translators: %s: comma separated attribute names. */
+			'editKeptAttrs'     => __( 'Kept as they are, because you added them yourself: %s', 'agentic-commerce-engine' ),
+			'attrOwned'         => __( 'On your store', 'agentic-commerce-engine' ),
 
 			/* Dashboard */
 			'credits'           => __( 'Credits', 'agentic-commerce-engine' ),

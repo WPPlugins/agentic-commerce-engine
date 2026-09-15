@@ -52,6 +52,9 @@ class Review_Sync {
 	 */
 	const MAX_ATTEMPTS = 8;
 
+	/** Statuses the review-decisions endpoint accepts an edited `value` with. */
+	const VALUE_STATUSES = array( 'pending', 'approved', 'applied' );
+
 	/** @var Plugin */
 	private $plugin;
 
@@ -71,8 +74,12 @@ class Review_Sync {
 	 * first and hands them over; every other caller can leave it empty and let
 	 * the drain derive them.
 	 *
+	 * `seq` is unique per call. `drain()` compares the whole flag before and
+	 * after its report, and a merchant edit landing while the report is in
+	 * flight must read as a change even within the same second.
+	 *
 	 * @param int      $product_id Product id.
-	 * @param string   $reason     One of enrich|approve|dismiss|revert|backfill.
+	 * @param string   $reason     One of enrich|approve|dismiss|revert|backfill|edit.
 	 * @param string[] $fields     Field names, when the caller is about to
 	 *                             destroy the meta they would be read from.
 	 */
@@ -84,6 +91,7 @@ class Review_Sync {
 		$flag = array(
 			'reason' => (string) $reason,
 			'at'     => gmdate( 'c' ),
+			'seq'    => uniqid( '', true ),
 		);
 		if ( ! empty( $fields ) ) {
 			$flag['fields'] = array_values( array_unique( array_map( 'strval', $fields ) ) );
@@ -145,10 +153,18 @@ class Review_Sync {
 	 * report it as an unknown field, and `description` already carries the
 	 * decision for that row.
 	 *
+	 * EDITS (4.18.0). A field the merchant edited on the Review screen carries
+	 * `value`: the edited content, in the same field vocabulary, so Rezolve Ai
+	 * writes it into the review row in the same update. Only edited fields do,
+	 * so a report never re-sends generated copy as if the merchant had typed it,
+	 * and only for statuses the endpoint accepts a value with. Its `decidedAt`
+	 * is the later of the edit and the decision, so an edit to live content
+	 * reads as `applied` at the moment it was republished.
+	 *
 	 * @param int      $product_id Product id.
 	 * @param string   $reason     Dirty reason.
 	 * @param string[] $known      Fields captured before the meta was destroyed.
-	 * @return array List of { productId, field, status, decidedAt }.
+	 * @return array List of { productId, field, status, decidedAt, value? }.
 	 */
 	public function build_decisions( $product_id, $reason, array $known = array() ) {
 		$product_id = (int) $product_id;
@@ -184,6 +200,13 @@ class Review_Sync {
 			$decided_at = (string) get_post_meta( $product_id, Meta::ENRICHED_AT, true );
 		}
 
+		$edited  = get_post_meta( $product_id, Meta::EDITED, true );
+		$edited  = ( is_array( $edited ) && in_array( $remote, self::VALUE_STATUSES, true ) ) ? $edited : array();
+		$pending = get_post_meta( $product_id, Meta::PENDING, true );
+		$pending = is_array( $pending ) ? $pending : array();
+		$content = get_post_meta( $product_id, Meta::CONTENT, true );
+		$content = is_array( $content ) ? $content : array();
+
 		$decisions = array();
 		foreach ( $fields as $field ) {
 			$decision = array(
@@ -191,8 +214,18 @@ class Review_Sync {
 				'field'     => $field,
 				'status'    => $remote,
 			);
-			if ( '' !== $decided_at ) {
-				$decision['decidedAt'] = $decided_at;
+			$at = $decided_at;
+			if ( ! empty( $edited[ $field ] ) ) {
+				$value = Edit_Values::stored_value( $field, $pending, $content );
+				if ( null !== $value ) {
+					$decision['value'] = $value;
+					if ( '' === $at || strtotime( (string) $edited[ $field ] ) > strtotime( $at ) ) {
+						$at = (string) $edited[ $field ];
+					}
+				}
+			}
+			if ( '' !== $at ) {
+				$decision['decidedAt'] = $at;
 			}
 			$decisions[] = $decision;
 		}
@@ -381,9 +414,11 @@ class Review_Sync {
 
 		$decisions   = array();
 		$by_product  = array();
+		$flags       = array();
 		$counts      = $empty;
 		foreach ( $ids as $id ) {
 			$flag   = get_post_meta( $id, Meta::SYNC_DIRTY, true );
+			$flags[ $id ] = $flag;
 			$reason = ( is_array( $flag ) && isset( $flag['reason'] ) ) ? (string) $flag['reason'] : '';
 			$known  = ( is_array( $flag ) && isset( $flag['fields'] ) && is_array( $flag['fields'] ) ) ? $flag['fields'] : array();
 			$built  = $this->build_decisions( $id, $reason, $known );
@@ -404,6 +439,10 @@ class Review_Sync {
 		if ( empty( $decisions ) ) {
 			return $counts;
 		}
+
+		// AFTER every flag and every value was read, so anything written before
+		// this moment is in the report. See Apply_Queue::deferred_by_edit().
+		$built_at = gmdate( 'c' );
 
 		$response = $this->plugin->api()->review_decisions(
 			$this->plugin->settings()->get_store_id(),
@@ -430,8 +469,16 @@ class Review_Sync {
 		}
 
 		foreach ( array_keys( $by_product ) as $id ) {
-			delete_post_meta( $id, Meta::SYNC_DIRTY );
 			delete_post_meta( $id, Meta::SYNC_ATTEMPTS );
+			// A flag that changed while the report was in flight is a NEW thing
+			// to say (a merchant edit, usually), which this report did not
+			// carry. Keep it for the next tick, and do not claim this product's
+			// state as sent, so the apply queue keeps holding back its approvals.
+			if ( wp_json_encode( get_post_meta( $id, Meta::SYNC_DIRTY, true ) ) !== wp_json_encode( $flags[ $id ] ) ) {
+				continue;
+			}
+			delete_post_meta( $id, Meta::SYNC_DIRTY );
+			update_post_meta( $id, Meta::REVIEW_SYNCED_AT, $built_at );
 		}
 		$counts['reported'] = count( $by_product );
 

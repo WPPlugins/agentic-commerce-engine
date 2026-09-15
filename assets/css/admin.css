@@ -1224,3 +1224,36 @@
 @media (max-width: 782px) {
 	.ace-q-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* Editing on Review (4.18.0) */
+.ace-rev-applied .ace-rev-body .ace-diffs { margin-top: 14px; }
+.ace-diff-label .ace-edit-open { margin-left: auto; }
+.ace-ct-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.ace-ct-head .ace-ct-title { margin-bottom: 0; }
+.ace-diff-live { background: var(--ace-surface-2); }
+.ace-edit-section.is-editing > .ace-editor { border: 1px solid var(--ace-primary); border-radius: var(--ace-radius-lg); padding: 14px; margin-top: 14px; background: var(--ace-surface); }
+.ace-diffs .ace-edit-section.is-editing > .ace-editor { margin-top: 0; }
+.ace-edit-livenote { margin: 0 0 10px; padding: 8px 10px; font-size: 13px; background: var(--ace-warning-bg); color: var(--ace-warning-text); border-radius: var(--ace-radius-md); }
+.ace-edit-errors { margin: 0 0 10px; padding: 8px 10px; font-size: 13px; background: var(--ace-error-bg); color: var(--ace-error-text); border-radius: var(--ace-radius-md); }
+.ace-edit-rows { list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.ace-edit-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; padding: 8px; border: 1px solid var(--ace-border-light); border-radius: var(--ace-radius-md); }
+.ace-edit-row.is-error { border-color: #fecaca; background: var(--ace-error-bg); }
+.ace-edit-row > .ace-edit-field,
+.ace-edit-pair { flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.ace-edit-pair-inline { flex-direction: row; flex-wrap: wrap; }
+.ace-edit-pair-inline .ace-edit-field { flex: 1 1 180px; }
+.ace-edit-field { display: flex; flex-direction: column; gap: 2px; }
+.ace-edit-field .ace-input { width: 100%; max-width: none; }
+.ace-edit-field textarea.ace-input { min-height: 64px; resize: vertical; }
+.ace-input.is-error { border-color: var(--ace-error-text); }
+.ace-edit-count { font-size: 11px; color: var(--ace-subdued); }
+.ace-edit-count.is-warn { color: var(--ace-warning-text); }
+.ace-edit-count.is-over { color: var(--ace-error-text); font-weight: 600; }
+.ace-edit-tools { display: flex; gap: 4px; flex: 0 0 auto; }
+.ace-edit-rowerr { flex-basis: 100%; font-size: 12px; color: var(--ace-error-text); }
+.ace-edit-rowerr:empty { display: none; }
+.ace-edit-row-alt img,
+.ace-edit-nothumb { display: block; width: 48px; height: 48px; object-fit: cover; border-radius: 4px; background: var(--ace-surface-3); flex: 0 0 48px; }
+.ace-edit-note { margin: 0; font-size: 12px; }
+.ace-edit-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+.ace-editor .wp-editor-wrap { margin-bottom: 4px; }

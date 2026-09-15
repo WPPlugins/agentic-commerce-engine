@@ -151,6 +151,9 @@ class Enrichment {
 			// being replaced, so they must not be shown against this one. The
 			// next read fetches whatever Rezolve Ai has measured for the new copy.
 			Quality::forget( $id );
+			// Edits were made to the proposal this one replaces. Carrying the
+			// ledger over would report generated copy as the merchant's own.
+			delete_post_meta( $id, Meta::EDITED );
 			update_post_meta( $id, Meta::ENRICHED_AT, isset( $product['enrichedAt'] ) ? (string) $product['enrichedAt'] : gmdate( 'c' ) );
 			// Status LAST, so a request that dies part way leaves the product
 			// queued and the next poll ingests it, rather than an enriched

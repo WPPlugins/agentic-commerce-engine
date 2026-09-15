@@ -212,6 +212,20 @@ class Poller {
 	}
 
 	/**
+	 * The short description derived from a description.
+	 *
+	 * Public since 4.18.0 so an edited description on the Review screen derives
+	 * its short description exactly the way an ingested one does.
+	 *
+	 * @param string $description Description HTML.
+	 * @return string
+	 */
+	public static function short_description_for( $description ) {
+		$text = trim( preg_replace( '/\s+/', ' ', wp_strip_all_tags( (string) $description ) ) );
+		return self::shorten( $text, 160 );
+	}
+
+	/**
 	 * Derive the flat review-diff fields from per-content-type results.
 	 *
 	 * `product-description` feeds description and a short description;
@@ -244,9 +258,8 @@ class Poller {
 			? $per_type['product-description']
 			: array();
 		if ( isset( $pd['description'] ) && is_string( $pd['description'] ) && '' !== $pd['description'] ) {
-			$flat['description'] = $pd['description'];
-			$text                = trim( preg_replace( '/\s+/', ' ', wp_strip_all_tags( $pd['description'] ) ) );
-			$flat['short_description'] = self::shorten( $text, 160 );
+			$flat['description']       = $pd['description'];
+			$flat['short_description'] = self::short_description_for( $pd['description'] );
 		}
 
 		$meta = array();

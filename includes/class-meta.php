@@ -65,6 +65,22 @@ final class Meta {
 	const SYNC_ATTEMPTS = '_agencoen_review_attempts';
 
 	/**
+	 * Merchant edits on the Review screen (plugin 4.18.0).
+	 *
+	 * EDITED is `field => ISO 8601 time of the last edit`, in plugin-field
+	 * vocabulary (see {@see Edit_Values::FIELDS}). It decides which decisions
+	 * carry a `value` in the report to Rezolve Ai, and lets {@see Apply_Queue}
+	 * hold back an approval that would overwrite an edit not yet reported.
+	 * Cleared when a new proposal is ingested, because an edit describes the
+	 * proposal it was made to.
+	 *
+	 * REVIEW_SYNCED_AT is when the last report that carried everything this
+	 * product had to say was built. Written only on a successful report.
+	 */
+	const EDITED           = '_agencoen_edited';
+	const REVIEW_SYNCED_AT = '_agencoen_review_synced_at';
+
+	/**
 	 * Measured quality scores (plugin 4.17.0), cached from Rezolve Ai.
 	 *
 	 * QUALITY is a JSON string: `{ fetched_at, entries }`, one entry per field

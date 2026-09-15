@@ -303,6 +303,170 @@ class Native_Fields {
 	}
 
 	/**
+	 * Write attributes, REPLACING the ones this plugin added itself (4.18.0).
+	 *
+	 * WHY A SECOND WRITER. {@see write_attributes()} never overwrites a key,
+	 * which is right for a first approval and wrong for an edit: a merchant who
+	 * corrects "Material: Steal" to "Steel" on something that is already live
+	 * would see nothing change. So an edit, and an approval from Rezolve Ai that
+	 * carries one, may replace a key, but ONLY a key the ledger says Rezolve Ai
+	 * created. Everything else keeps the add-only rule:
+	 *
+	 *   - a key not on the product is added and recorded, as before;
+	 *   - a key the ledger owns is replaced, keeping its position;
+	 *   - a key the merchant owns (not in the ledger) is left exactly as it is;
+	 *   - a ledger key the merchant has since made a variation axis is theirs
+	 *     now too, because replacing its options would break every variation.
+	 *
+	 * `$remove_keys` takes away owned keys the caller knows were deleted from
+	 * the edit. The web apply path passes none: one queue field serves two
+	 * content types, so a payload's silence about a key is not a deletion.
+	 *
+	 * `Meta::BACKUP` is not involved, and a revert still removes every key in
+	 * the ledger, so the product goes back to what the merchant had before.
+	 * Does NOT save; the caller saves once.
+	 *
+	 * @param \WC_Product $product     Product.
+	 * @param array       $attributes  Already normalized.
+	 * @param string[]    $remove_keys Owned keys to remove when absent from $attributes.
+	 * @return array{added:string[],replaced:string[],unchanged:string[],kept:string[],removed:string[]}
+	 */
+	public static function write_owned_attributes( $product, array $attributes, array $remove_keys = array() ) {
+		$result = array(
+			'added'     => array(),
+			'replaced'  => array(),
+			'unchanged' => array(),
+			'kept'      => array(),
+			'removed'   => array(),
+		);
+		if ( ! is_object( $product ) ) {
+			return $result;
+		}
+
+		$product_id = (int) $product->get_id();
+		$owned      = self::owned_attribute_keys( $product_id );
+		$existing   = $product->get_attributes();
+		$existing   = is_array( $existing ) ? $existing : array();
+		$position   = count( $existing );
+		$wanted     = array();
+
+		foreach ( $attributes as $attribute ) {
+			$key = sanitize_title( $attribute['name'] );
+			if ( '' === $key || isset( $wanted[ $key ] ) ) {
+				continue;
+			}
+			$wanted[ $key ] = true;
+
+			if ( ! isset( $existing[ $key ] ) ) {
+				$existing[ $key ]  = self::attribute_object( $attribute, $position );
+				$result['added'][] = $key;
+				++$position;
+				continue;
+			}
+
+			$current = $existing[ $key ];
+			if ( ! in_array( $key, $owned, true ) || self::is_variation_axis( $current ) ) {
+				$result['kept'][] = $key;
+				continue;
+			}
+
+			$same_name    = is_object( $current ) && method_exists( $current, 'get_name' ) && $current->get_name() === $attribute['name'];
+			$same_options = is_object( $current ) && method_exists( $current, 'get_options' ) && array_values( (array) $current->get_options() ) === array_values( $attribute['values'] );
+			if ( $same_name && $same_options ) {
+				$result['unchanged'][] = $key;
+				continue;
+			}
+
+			$at                   = is_object( $current ) && method_exists( $current, 'get_position' ) ? (int) $current->get_position() : $position;
+			$existing[ $key ]     = self::attribute_object( $attribute, $at );
+			$result['replaced'][] = $key;
+		}
+
+		foreach ( $remove_keys as $key ) {
+			$key = (string) $key;
+			if ( isset( $wanted[ $key ] ) || ! isset( $existing[ $key ] ) || ! in_array( $key, $owned, true ) || self::is_variation_axis( $existing[ $key ] ) ) {
+				continue;
+			}
+			unset( $existing[ $key ] );
+			$result['removed'][] = $key;
+		}
+
+		if ( empty( $result['added'] ) && empty( $result['replaced'] ) && empty( $result['removed'] ) ) {
+			return $result;
+		}
+
+		$product->set_attributes( $existing );
+		if ( ! empty( $result['added'] ) ) {
+			self::record( $product_id, 'attributes', $result['added'], array() );
+		}
+		if ( ! empty( $result['removed'] ) ) {
+			self::forget_attribute_keys( $product_id, $result['removed'] );
+		}
+		return $result;
+	}
+
+	/**
+	 * Attribute keys the ledger says this plugin added to a product.
+	 *
+	 * @param int $product_id Product post id.
+	 * @return string[]
+	 */
+	public static function owned_attribute_keys( $product_id ) {
+		$ledger = get_post_meta( (int) $product_id, Meta::NATIVE_WRITES, true );
+		$keys   = is_array( $ledger ) && isset( $ledger['attributes']['keys'] ) && is_array( $ledger['attributes']['keys'] ) ? $ledger['attributes']['keys'] : array();
+		return array_values( array_map( 'strval', $keys ) );
+	}
+
+	/**
+	 * A custom (non-taxonomy) attribute object for a normalized attribute.
+	 *
+	 * @param array $attribute Normalized attribute.
+	 * @param int   $position  Position.
+	 * @return \WC_Product_Attribute
+	 */
+	private static function attribute_object( array $attribute, $position ) {
+		$object = new \WC_Product_Attribute();
+		$object->set_id( 0 ); // 0 = custom (local), not a taxonomy.
+		$object->set_name( $attribute['name'] );
+		$object->set_options( $attribute['values'] );
+		$object->set_position( (int) $position );
+		$object->set_visible( (bool) $attribute['visible'] );
+		$object->set_variation( false );
+		return $object;
+	}
+
+	/**
+	 * @param mixed $attribute Attribute object.
+	 * @return bool
+	 */
+	private static function is_variation_axis( $attribute ) {
+		return is_object( $attribute ) && method_exists( $attribute, 'get_variation' ) && (bool) $attribute->get_variation();
+	}
+
+	/**
+	 * Drop attribute keys from the ledger once they are no longer on the product.
+	 *
+	 * @param int      $product_id Product post id.
+	 * @param string[] $keys       Keys.
+	 * @return void
+	 */
+	private static function forget_attribute_keys( $product_id, array $keys ) {
+		$ledger = get_post_meta( $product_id, Meta::NATIVE_WRITES, true );
+		if ( ! is_array( $ledger ) || ! isset( $ledger['attributes']['keys'] ) || ! is_array( $ledger['attributes']['keys'] ) ) {
+			return;
+		}
+		$ledger['attributes']['keys'] = array_values( array_diff( array_map( 'strval', $ledger['attributes']['keys'] ), array_map( 'strval', $keys ) ) );
+		if ( empty( $ledger['attributes']['keys'] ) ) {
+			unset( $ledger['attributes'] );
+		}
+		if ( empty( $ledger ) ) {
+			delete_post_meta( $product_id, Meta::NATIVE_WRITES );
+			return;
+		}
+		update_post_meta( $product_id, Meta::NATIVE_WRITES, $ledger );
+	}
+
+	/**
 	 * Remove exactly what this class wrote, and nothing else.
 	 *
 	 * Does NOT save the product; the caller saves once, so revert stays a single

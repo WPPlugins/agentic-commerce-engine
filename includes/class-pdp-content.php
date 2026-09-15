@@ -130,8 +130,10 @@ final class Pdp_Content {
 	 *
 	 * @param array $entries    From {@see image_alts()}.
 	 * @param array $candidates attachment_id => string[] of URLs for that attachment.
-	 * @return array{matches:array<int,string>,unmatched:array<int,array{url:string,alt:string}>}
-	 *               `matches` is attachment_id => alt text.
+	 * @return array{matches:array<int,string>,unmatched:array<int,array{url:string,alt:string}>,by_entry:array<int,int>}
+	 *               `matches` is attachment_id => alt text. `by_entry` is entry
+	 *               index => attachment_id for every entry that matched, so the
+	 *               Review screen's editor can keep each image's own URL (4.18.0).
 	 */
 	public static function match_image_alts( array $entries, array $candidates ) {
 		$by_path = array();
@@ -152,7 +154,8 @@ final class Pdp_Content {
 
 		$matches   = array();
 		$unmatched = array();
-		foreach ( $entries as $entry ) {
+		$by_entry  = array();
+		foreach ( $entries as $index => $entry ) {
 			$path = self::normalize_url( $entry['url'] );
 			$id   = 0;
 			if ( isset( $by_path[ $path ] ) ) {
@@ -171,7 +174,8 @@ final class Pdp_Content {
 				$id   = 1 === count( $ids ) ? (int) $ids[0] : 0;
 			}
 			if ( $id > 0 ) {
-				$matches[ $id ] = $entry['alt'];
+				$matches[ $id ]     = $entry['alt'];
+				$by_entry[ $index ] = $id;
 			} else {
 				$unmatched[] = $entry;
 			}
@@ -179,6 +183,7 @@ final class Pdp_Content {
 		return array(
 			'matches'   => $matches,
 			'unmatched' => $unmatched,
+			'by_entry'  => $by_entry,
 		);
 	}
 

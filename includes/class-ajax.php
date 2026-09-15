@@ -36,6 +36,7 @@ class Ajax extends Ajax_Base {
 			'products',
 			'review_list',
 			'review_diff',
+			'review_save_edit',
 			'quality_get',
 			'quality_rescore',
 			'enrich_batch',
@@ -601,14 +602,67 @@ class Ajax extends Ajax_Base {
 		$this->require_manage();
 		$id      = isset( $_POST['product_id'] ) ? (int) $_POST['product_id'] : 0;
 		$content = get_post_meta( $id, Meta::CONTENT, true );
+		// Decided here, from the product's state, never by the screen: an
+		// applied product is edited live and a waiting one as a draft.
+		$mode = Review::edit_mode( $id );
 		wp_send_json_success(
 			array(
 				'id'      => $id,
+				'mode'    => $mode,
 				'diff'    => $this->plugin->review()->diff_for( $id ),
 				'content' => is_array( $content ) ? $content : array(),
-				'extras'  => $this->plugin->review()->extras_for( $id ),
+				'extras'  => $this->plugin->review()->extras_for( $id, 'live' === $mode ),
 			)
 		);
+	}
+
+	/**
+	 * Save a merchant's edit to one field of a product on the Review screen.
+	 *
+	 * `value` is JSON for list fields and HTML for the description. Nothing the
+	 * browser checked is trusted: Edit_Values::normalize() cleans and limits
+	 * every field again, and a value it refuses comes back as `errors` with row
+	 * indexes, so the screen can mark the rows rather than show one toast.
+	 */
+	public function review_save_edit() {
+		check_ajax_referer( self::NONCE_ACTION, 'nonce' );
+		$this->require_manage();
+
+		$id    = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : 0;
+		$field = isset( $_POST['type'] ) ? sanitize_key( wp_unslash( $_POST['type'] ) ) : '';
+		$mode  = isset( $_POST['mode'] ) ? sanitize_key( wp_unslash( $_POST['mode'] ) ) : '';
+
+		$raw = null;
+		if ( isset( $_POST['value'] ) ) {
+			if ( 'description' === $field ) {
+				$raw = wp_kses_post( wp_unslash( $_POST['value'] ) );
+			} elseif ( Edit_Values::is_structured( $field ) ) {
+				// Unslashed BEFORE decoding, or every quote inside the JSON is
+				// still escaped and nothing decodes. Each field of the decoded
+				// list is sanitized by Edit_Values::normalize() below.
+				// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON; every field is sanitized by Edit_Values::normalize().
+				$raw = json_decode( wp_unslash( $_POST['value'] ), true );
+			} else {
+				$raw = sanitize_text_field( wp_unslash( $_POST['value'] ) );
+			}
+		}
+
+		$result = $this->plugin->review()->save_edit( $id, $field, $mode, $raw );
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( $this->error_payload( $result ) );
+		}
+		if ( empty( $result['ok'] ) ) {
+			$errors = isset( $result['errors'] ) && is_array( $result['errors'] ) ? $result['errors'] : array();
+			wp_send_json_error(
+				array(
+					'message' => 1 === count( $errors ) && isset( $errors[0]['message'] )
+						? $errors[0]['message']
+						: __( 'Some of this needs fixing before it can be saved.', 'agentic-commerce-engine' ),
+					'errors'  => $errors,
+				)
+			);
+		}
+		wp_send_json_success( $result );
 	}
 
 	/**
