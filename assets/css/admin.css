@@ -1173,3 +1173,16 @@
 /* Utility classes (initial states formerly inline) */
 .ace-skeleton-chart { height: 180px; }
 .ace-center-note { text-align: center; margin: 8px 0 0; }
+
+/* Review extras (4.16.0): highlights, Q&A, attributes, image alt text. */
+.ace-ct-qa { margin: 0; }
+.ace-ct-qa dt { font-weight: 600; margin-top: 8px; }
+.ace-ct-qa dd { margin: 2px 0 0 0; }
+.ace-ct-table { width: 100%; border-collapse: collapse; }
+.ace-ct-table th,
+.ace-ct-table td { text-align: left; vertical-align: middle; padding: 6px 8px 6px 0; border-bottom: 1px solid var(--ace-border-light); }
+.ace-ct-alt img { display: block; width: 48px; height: 48px; object-fit: cover; border-radius: 4px; }
+.ace-ct-chip { display: inline-block; font-size: 11px; line-height: 1.6; padding: 0 8px; border-radius: 999px; white-space: nowrap; }
+.ace-ct-chip--ok { background: #e7f6ec; color: #1e6b3a; }
+.ace-ct-chip--muted { background: #f0f0f1; color: #50575e; }
+.ace-ct-chip--warn { background: #fcf0e3; color: #8a4b0f; }

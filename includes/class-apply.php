@@ -3,9 +3,11 @@
  * Writes enriched content onto live products and supports exact revert.
  *
  * Two layers: (1) core on-page fields from the flat payload (name, description,
- * short description, SEO title/description); (2) additive content types stored
- * for storefront rendering or feed serving (JSON-LD schema, IRL cards, internal
- * links, channel feeds). Originals are backed up once at first apply.
+ * short description, SEO title/description); (2) content types stored for
+ * storefront rendering or feed serving (JSON-LD schema, IRL cards, internal
+ * links, highlights, Q&A, channel feeds) or written to native fields through
+ * Native_Fields (tags, attributes, image alt text). Originals are backed up once
+ * at first apply; native writes keep their own ledger.
  *
  * @package Agencoen
  */
@@ -70,7 +72,8 @@ class Apply {
 			switch ( $key ) {
 				case 'title':
 					$product->set_name( sanitize_text_field( $value ) );
-					$touched = true;
+					$touched                        = true;
+					$applied_types['product-title'] = true;
 					break;
 				case 'short_description':
 					$product->set_short_description( wp_kses_post( $value ) );
@@ -168,6 +171,39 @@ class Apply {
 				$links = ( isset( $data['links'] ) && is_array( $data['links'] ) ) ? $data['links'] : $data;
 				update_post_meta( $product_id, Meta::LINKS, $links );
 				$applied_types['internal-links'] = true;
+			} elseif ( 'highlights' === $type ) {
+				// Never blank what is live: an empty result writes nothing.
+				$highlights = Pdp_Content::highlights( $data );
+				if ( ! empty( $highlights ) ) {
+					update_post_meta( $product_id, Meta::HIGHLIGHTS, $highlights );
+					$applied_types['highlights'] = true;
+				}
+			} elseif ( 'product-qa' === $type ) {
+				$qa = Pdp_Content::qa( $data );
+				if ( ! empty( $qa ) ) {
+					update_post_meta( $product_id, Meta::QA, $qa );
+					$applied_types['product-qa'] = true;
+				}
+			} elseif ( 'product-attributes' === $type ) {
+				// The same add-only writer as the `woocommerce` type: an attribute
+				// the product already has is kept, never replaced.
+				$attributes = Native_Fields::normalize_attributes( $data );
+				$product    = empty( $attributes ) ? null : wc_get_product( $product_id );
+				if ( $product && Native_Fields::write_attributes( $product, $attributes ) ) {
+					$product->save();
+					$applied_types['product-attributes'] = true;
+				}
+			} elseif ( 'image-alt' === $type ) {
+				$product = wc_get_product( $product_id );
+				if ( $product ) {
+					$match = Pdp_Content::match_image_alts(
+						Pdp_Content::image_alts( $data ),
+						Native_Fields::image_candidates( $product )
+					);
+					if ( Native_Fields::write_image_alts( $product_id, $match['matches'] ) > 0 ) {
+						$applied_types['image-alt'] = true;
+					}
+				}
 			} elseif ( 'woocommerce' === $type ) {
 				// Native WooCommerce fields, not an artifact stored for later
 				// rendering. SEO title and description are NOT read here:
@@ -268,10 +304,13 @@ class Apply {
 			$this->plugin->seo()->write_seo_description( $product_id, $backup['seo_description'] );
 		}
 
-		// Remove additive artifacts (schema/IRL/links/feeds).
+		// Remove additive artifacts (schema/IRL/links/highlights/Q&A/feeds).
+		// Attributes and alt text were already taken back by Native_Fields::undo.
 		delete_post_meta( $product_id, Meta::JSONLD );
 		delete_post_meta( $product_id, Meta::IRL );
 		delete_post_meta( $product_id, Meta::LINKS );
+		delete_post_meta( $product_id, Meta::HIGHLIGHTS );
+		delete_post_meta( $product_id, Meta::QA );
 		foreach ( self::FEED_CHANNELS as $channel ) {
 			delete_post_meta( $product_id, Meta::FEED_PREFIX . $channel );
 		}

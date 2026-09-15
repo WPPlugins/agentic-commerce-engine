@@ -4,7 +4,7 @@ Tags: ai, seo, woocommerce, ai search, content
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 4.15.0
+Stable tag: 4.16.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,9 +34,9 @@ Rezolve Ai connects your WordPress site to the Rezolve Ai platform and puts the 
 **Product optimization (with WooCommerce)**
 
 * **Sync** your products to Rezolve Ai in batches, safely, even on catalogs of thousands of products.
-* **Enrich** products with AI across every content type: titles, descriptions, SEO meta, Product schema, real-life usage scenarios, internal links, and channel feeds.
+* **Enrich** products with AI across every content type: titles, descriptions, SEO meta, Product schema, real-life usage scenarios, internal links, highlights, product Q&A, product attributes, image alt text, and channel feeds.
 * **Review** every suggestion with a clear before/after diff, approve per product or in bulk, or turn on auto-apply. Revert any product with one click.
-* **Display** the new on-page content with a block, shortcodes, or an automatic append below the product summary.
+* **Display** the new on-page content with blocks, shortcodes ([agencoen_irl], [agencoen_internal_links], [agencoen_highlights], [agencoen_product_qa]), or automatic placement on the product page.
 * **Serve** Google, Microsoft, and Agentic Commerce product feeds straight from your store as feed URLs.
 
 **Built for scale**
@@ -137,6 +137,16 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 8. The Settings screen with publishing, automation, and crawler tracking options.
 
 == Changelog ==
+
+= 4.16.0 =
+* Added: five more things to enrich. Product title, highlights (short benefit bullets), product Q&A, product attributes and image alt text now appear in the enrichment picker, once your Rezolve Ai account supports them.
+* Added: highlights and Q&A show on the product page, positioned the same way as scenario cards and internal links. Place them yourself with the new [agencoen_highlights] and [agencoen_product_qa] shortcodes or editor blocks if you prefer.
+* Added: approved Q&A is also published as FAQ structured data, but only on pages where the questions are actually shown, and never twice.
+* Added: product attributes are added to your products as custom attributes. Attributes a product already has are kept exactly as they are, and variations are never touched.
+* Added: image alt text replaces the alt text on each product image when you approve it. The review screen shows every image with its current and proposed alt text first. Revert puts the old text back, except on images whose alt text you have edited yourself since.
+* Added: highlights, Q&A and alt text approved in the Rezolve Ai web app now reach this site too.
+* Fixed: the product title suggestion was listed on the review screen but never filled in, so a new title could not be approved from WordPress.
+* Fixed: a product whose review details were already cleared did not tell Rezolve Ai which content had been applied to it.
 
 = 4.15.0 =
 * Added: what you approve, dismiss or revert on this site now shows up in Rezolve Ai too. Until now the two review screens could not see each other, so a product you had already dealt with here still looked untouched there, and the counts on your Rezolve Ai dashboard were missing everything you had done from WordPress.
@@ -283,6 +293,9 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 * Product enrichment now runs on the platform's durable jobs API with webhook-accelerated polling.
 
 == Upgrade Notice ==
+
+= 4.16.0 =
+Adds highlights, product Q&A, product attributes, image alt text and product title enrichment. Approving a title or alt text now writes it onto the live product, and approving alt text replaces what each image had. Revert undoes both.
 
 = 4.13.0 =
 Important if you sell variable products. AI shopping agents were being told your stock was empty and your prices were in dollars, and were refusing to buy as a result. This release sends your real stock status, your shop currency, and every variation with its own price and options.

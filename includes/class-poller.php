@@ -198,6 +198,17 @@ class Poller {
 	public static function derive_flat_fields( array $per_type ) {
 		$flat = array();
 
+		// `product-title` feeds the product name. Before 4.16.0 nothing here read
+		// it, so `title` was listed as a reviewable field and `Apply` had a
+		// set_name() path that nothing ever filled. The generator returns
+		// { title, shortTitle, ... }; `title` is the product name, `shortTitle` is
+		// a feed-only variant and is deliberately not used.
+		$pt    = isset( $per_type['product-title'] ) ? $per_type['product-title'] : null;
+		$title = is_array( $pt ) && isset( $pt['title'] ) ? $pt['title'] : $pt;
+		if ( is_string( $title ) && '' !== trim( $title ) ) {
+			$flat['title'] = trim( $title );
+		}
+
 		$pd = isset( $per_type['product-description'] ) && is_array( $per_type['product-description'] )
 			? $per_type['product-description']
 			: array();

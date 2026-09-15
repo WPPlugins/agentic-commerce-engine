@@ -40,4 +40,31 @@
 			return null;
 		}
 	} );
+	blocks.registerBlockType( 'agencoen/highlights', {
+		apiVersion: 2,
+		title: 'Rezolve Ai: Highlights',
+		description: 'Short benefit bullets for this product (from Rezolve Ai).',
+		icon: 'list-view',
+		category: 'widgets',
+		edit: function () {
+			return preview( 'agencoen/highlights' );
+		},
+		save: function () {
+			return null;
+		}
+	} );
+
+	blocks.registerBlockType( 'agencoen/product-qa', {
+		apiVersion: 2,
+		title: 'Rezolve Ai: Product Q&A',
+		description: 'Shopper questions and answers for this product (from Rezolve Ai).',
+		icon: 'editor-help',
+		category: 'widgets',
+		edit: function () {
+			return preview( 'agencoen/product-qa' );
+		},
+		save: function () {
+			return null;
+		}
+	} );
 } )( window.wp && window.wp.blocks, window.wp && window.wp.element, window.wp && window.wp.serverSideRender );

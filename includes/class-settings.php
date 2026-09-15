@@ -428,7 +428,7 @@ class Settings {
 	 * @return string[]
 	 */
 	public static function placeable_types() {
-		return array( 'irl-cards', 'internal-links' );
+		return array( 'irl-cards', 'internal-links', 'highlights', 'product-qa' );
 	}
 
 	/**

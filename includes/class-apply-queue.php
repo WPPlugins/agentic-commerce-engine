@@ -295,6 +295,47 @@ class Apply_Queue {
 				}
 				update_post_meta( $post_id, Meta::LINKS, $links );
 				return true;
+
+			/*
+			 * Highlights, product Q&A and image alt text (4.16.0). Rezolve Ai only
+			 * sends these to a plugin reporting 4.16.0 or later. Pdp_Content does
+			 * the reading, shared with Apply, so the queue and the local flow
+			 * write the same thing. Product attributes need no case of their own:
+			 * they arrive as `productAttributes`, above.
+			 */
+			case 'highlights':
+				$highlights = Pdp_Content::highlights( $value );
+				if ( empty( $highlights ) ) {
+					return 'no usable highlights in payload';
+				}
+				update_post_meta( $post_id, Meta::HIGHLIGHTS, $highlights );
+				return true;
+
+			case 'productQa':
+				$qa = Pdp_Content::qa( $value );
+				if ( empty( $qa ) ) {
+					return 'no usable questions and answers in payload';
+				}
+				update_post_meta( $post_id, Meta::QA, $qa );
+				return true;
+
+			case 'imageAlt':
+				$entries = Pdp_Content::image_alts( $value );
+				if ( empty( $entries ) ) {
+					return 'no usable alt text in payload';
+				}
+				$product = wc_get_product( $post_id );
+				if ( ! $product ) {
+					return 'product not loadable';
+				}
+				$match = Pdp_Content::match_image_alts( $entries, Native_Fields::image_candidates( $product ) );
+				if ( empty( $match['matches'] ) ) {
+					return 'no image in payload is on this product any more';
+				}
+				// Every matched image already carrying the proposed text is a
+				// success, not a failure: the product says what was approved.
+				Native_Fields::write_image_alts( $post_id, $match['matches'] );
+				return true;
 		}
 
 		// An unknown field is not a failure to retry forever. A newer Rezolve Ai may

@@ -27,13 +27,21 @@ final class Meta {
 	const JSONLD        = '_agencoen_jsonld';         // applied Product JSON-LD graph.
 	const IRL           = '_agencoen_irl';            // applied IRL scenario cards.
 	const LINKS         = '_agencoen_links';          // applied internal links.
+	const HIGHLIGHTS    = '_agencoen_highlights';     // applied highlight bullets (4.16.0).
+	const QA            = '_agencoen_qa';             // applied product Q&A pairs (4.16.0).
 	const APPLIED_TYPES = '_agencoen_applied_types';  // which content types were applied.
 	const FEED_PREFIX   = '_agencoen_feed_';          // + channel (google|microsoft|agentic).
 
 	/**
 	 * What the `woocommerce` content type ADDED to a product, for exact undo:
 	 * array( 'tags' => array( 'added' => int[], 'created' => int[] ),
-	 *        'attributes' => array( 'keys' => string[] ) ).
+	 *        'attributes' => array( 'keys' => string[] ),
+	 *        'image_alt' => array( attachment_id => array( 'previous' => string, 'written' => string ) ) ).
+	 *
+	 * `image_alt` (4.16.0) is the one entry that OVERWRITES rather than adds,
+	 * because the merchant approved replacing each image's alt text after seeing
+	 * both. It keeps the value from before the FIRST write, so a revert after two
+	 * applies still restores the merchant's own text.
 	 *
 	 * A ledger and not part of Meta::BACKUP on purpose. BACKUP is a once-only
 	 * whole-value snapshot, which is right for scalars this plugin exclusively

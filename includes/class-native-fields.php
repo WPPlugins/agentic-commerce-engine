@@ -130,6 +130,10 @@ class Native_Fields {
 		if ( ! is_array( $list ) ) {
 			return array();
 		}
+		// The `product-attributes` generator wraps its list as { attributes }.
+		if ( isset( $list['attributes'] ) && is_array( $list['attributes'] ) ) {
+			$list = $list['attributes'];
+		}
 
 		$out  = array();
 		$seen = array();
@@ -148,7 +152,9 @@ class Native_Fields {
 				continue;
 			}
 
-			$raw_values = isset( $entry['values'] ) ? $entry['values'] : null;
+			// `values` is the wire shape; the generator emits one `value` per
+			// attribute, so accept that too rather than dropping every one.
+			$raw_values = isset( $entry['values'] ) ? $entry['values'] : ( isset( $entry['value'] ) ? $entry['value'] : null );
 			if ( is_scalar( $raw_values ) ) {
 				$raw_values = array( $raw_values );
 			}
@@ -329,6 +335,27 @@ class Native_Fields {
 			}
 		}
 
+		// Alt text goes back only where it is still exactly what we wrote. An
+		// image whose alt the merchant has since edited is theirs now, and an
+		// attachment that no longer exists has nothing to restore.
+		$alts = isset( $ledger['image_alt'] ) && is_array( $ledger['image_alt'] ) ? $ledger['image_alt'] : array();
+		foreach ( $alts as $attachment_id => $entry ) {
+			$attachment_id = (int) $attachment_id;
+			if ( $attachment_id <= 0 || ! is_array( $entry ) || ! isset( $entry['written'] ) ) {
+				continue;
+			}
+			$current = (string) get_post_meta( $attachment_id, '_wp_attachment_image_alt', true );
+			if ( $current !== (string) $entry['written'] ) {
+				continue;
+			}
+			$previous = isset( $entry['previous'] ) ? (string) $entry['previous'] : '';
+			if ( '' === $previous ) {
+				delete_post_meta( $attachment_id, '_wp_attachment_image_alt' );
+			} else {
+				update_post_meta( $attachment_id, '_wp_attachment_image_alt', $previous );
+			}
+		}
+
 		$attributes = isset( $ledger['attributes'] ) && is_array( $ledger['attributes'] ) ? $ledger['attributes'] : array();
 		$keys       = isset( $attributes['keys'] ) && is_array( $attributes['keys'] ) ? $attributes['keys'] : array();
 		if ( ! empty( $keys ) && is_object( $product ) ) {
@@ -341,6 +368,106 @@ class Native_Fields {
 		}
 
 		delete_post_meta( $product_id, Meta::NATIVE_WRITES );
+	}
+
+	/**
+	 * The product's own images, with every URL each one is known by.
+	 *
+	 * Featured image first, then the gallery, the same order the serializer
+	 * sends to Rezolve Ai. Several URLs per attachment because the one the alt
+	 * text was generated from may be the full size, the original before
+	 * WordPress scaled it, or the attachment URL itself.
+	 *
+	 * @param \WC_Product $product Product.
+	 * @return array<int,string[]> attachment_id => URLs.
+	 */
+	public static function image_candidates( $product ) {
+		if ( ! is_object( $product ) ) {
+			return array();
+		}
+		$ids = array();
+		if ( $product->get_image_id() ) {
+			$ids[] = (int) $product->get_image_id();
+		}
+		foreach ( (array) $product->get_gallery_image_ids() as $gallery_id ) {
+			$ids[] = (int) $gallery_id;
+		}
+
+		$out = array();
+		foreach ( array_unique( array_filter( $ids ) ) as $id ) {
+			$urls = array(
+				wp_get_attachment_image_url( $id, 'full' ),
+				wp_get_attachment_url( $id ),
+			);
+			if ( function_exists( 'wp_get_original_image_url' ) ) {
+				$urls[] = wp_get_original_image_url( $id );
+			}
+			$urls = array_values( array_unique( array_filter( $urls, 'is_string' ) ) );
+			if ( ! empty( $urls ) ) {
+				$out[ $id ] = $urls;
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * Write approved alt text onto attachments, recording what each held first.
+	 *
+	 * OVERWRITES, unlike everything else in this class: the merchant saw each
+	 * image's current and proposed alt text in Review and approved the change.
+	 * An image already carrying exactly the proposed text is left alone.
+	 *
+	 * @param int                $product_id Product post id (owns the ledger).
+	 * @param array<int,string>  $alt_by_id  attachment_id => alt text.
+	 * @return int How many images were written.
+	 */
+	public static function write_image_alts( $product_id, array $alt_by_id ) {
+		$product_id = (int) $product_id;
+		$written    = array();
+		foreach ( $alt_by_id as $attachment_id => $alt ) {
+			$attachment_id = (int) $attachment_id;
+			$alt           = trim( sanitize_text_field( (string) $alt ) );
+			if ( $attachment_id <= 0 || '' === $alt ) {
+				continue;
+			}
+			$current = (string) get_post_meta( $attachment_id, '_wp_attachment_image_alt', true );
+			if ( $current === $alt ) {
+				continue;
+			}
+			update_post_meta( $attachment_id, '_wp_attachment_image_alt', $alt );
+			$written[ $attachment_id ] = array(
+				'previous' => $current,
+				'written'  => $alt,
+			);
+		}
+		if ( ! empty( $written ) ) {
+			self::record_image_alts( $product_id, $written );
+		}
+		return count( $written );
+	}
+
+	/**
+	 * Merge alt writes into the ledger, keeping each image's EARLIEST previous
+	 * value so a second apply cannot make our own first write look like the
+	 * merchant's original.
+	 *
+	 * @param int   $product_id Product post id.
+	 * @param array $written    attachment_id => { previous, written }.
+	 * @return void
+	 */
+	private static function record_image_alts( $product_id, array $written ) {
+		$ledger = get_post_meta( $product_id, Meta::NATIVE_WRITES, true );
+		$ledger = is_array( $ledger ) ? $ledger : array();
+		$alts   = isset( $ledger['image_alt'] ) && is_array( $ledger['image_alt'] ) ? $ledger['image_alt'] : array();
+		foreach ( $written as $attachment_id => $entry ) {
+			$previous               = isset( $alts[ $attachment_id ]['previous'] ) ? $alts[ $attachment_id ]['previous'] : $entry['previous'];
+			$alts[ $attachment_id ] = array(
+				'previous' => (string) $previous,
+				'written'  => (string) $entry['written'],
+			);
+		}
+		$ledger['image_alt'] = $alts;
+		update_post_meta( $product_id, Meta::NATIVE_WRITES, $ledger );
 	}
 
 	/**

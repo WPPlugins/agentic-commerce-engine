@@ -1,6 +1,6 @@
 <?php
 /**
- * AI Search (Ecom AEO) service: a thin caching layer over the platform's
+ * AI Search service: a thin caching layer over the platform's
  * /api/v1/plugin/aeo/* endpoints plus pure normalizers for chart shapes.
  *
  * Reads are cached per group 'aeo' (config 15 min, overview 5 min, runs 60s);

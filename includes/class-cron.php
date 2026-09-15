@@ -183,6 +183,14 @@ class Cron {
 		// Keep the dashboard balance reasonably fresh.
 		Dashboard::credits( $this->plugin, Dashboard::FETCH_FRESH );
 
+		// Refresh the content-type catalog. The enrichment picker reads it from
+		// cache only, and it is what decides whether highlights, Q&A, attributes,
+		// alt text and product title are offered. Fetched FRESH, after the
+		// heartbeat above has told Rezolve Ai which version this is: the platform
+		// only lists those types to a plugin it knows can apply them, so a
+		// catalog cached before an upgrade would hide them for up to twelve hours.
+		$this->plugin->articles()->types( true );
+
 		// Pull anything Rezolve Ai has approved for this site and report what landed.
 		// HOURLY, not daily: the ack is what makes a version count as live for
 		// an A/B test, so a daily tick would put up to a day between a merchant

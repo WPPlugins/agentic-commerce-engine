@@ -199,9 +199,9 @@ $agencoen_offline = empty( $connected );
 
 			<label class="ace-toggle">
 				<input type="checkbox" id="ace-auto-append" <?php checked( $agencoen_settings->is_auto_append() ); ?> />
-				<span><?php esc_html_e( 'Show IRL scenarios and internal links on the product page automatically', 'agentic-commerce-engine' ); ?></span>
+				<span><?php esc_html_e( 'Show IRL scenarios, internal links, highlights and Q&A on the product page automatically', 'agentic-commerce-engine' ); ?></span>
 			</label>
-			<p class="ace-help ace-indent"><?php esc_html_e( 'Or place them yourself with the [agencoen_irl] and [agencoen_internal_links] shortcodes, or the Rezolve Ai editor blocks.', 'agentic-commerce-engine' ); ?></p>
+			<p class="ace-help ace-indent"><?php esc_html_e( 'Or place them yourself with the [agencoen_irl], [agencoen_internal_links], [agencoen_highlights] and [agencoen_product_qa] shortcodes, or the Rezolve Ai editor blocks.', 'agentic-commerce-engine' ); ?></p>
 
 			<?php
 			/*
@@ -225,6 +225,8 @@ $agencoen_offline = empty( $connected );
 			$agencoen_type_labels      = array(
 				'irl-cards'      => __( 'IRL scenario cards', 'agentic-commerce-engine' ),
 				'internal-links' => __( 'Internal links', 'agentic-commerce-engine' ),
+				'highlights'     => __( 'Highlights', 'agentic-commerce-engine' ),
+				'product-qa'     => __( 'Product Q&A', 'agentic-commerce-engine' ),
 			);
 			foreach ( \Agencoen\Settings::placeable_types() as $agencoen_type ) :
 				$agencoen_field_id = 'ace-placement-' . $agencoen_type;

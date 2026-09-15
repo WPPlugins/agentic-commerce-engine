@@ -126,6 +126,20 @@ class Articles {
 	}
 
 	/**
+	 * The cached catalog, WITHOUT ever fetching it.
+	 *
+	 * For callers on a hot path, such as every admin page load building the
+	 * enrichment picker, where waiting on Rezolve Ai is not acceptable. False when
+	 * nothing is cached yet; {@see Cron::heartbeat()} keeps it warm.
+	 *
+	 * @return array|false
+	 */
+	public function cached_types() {
+		$hit = $this->plugin->cache()->get( 'content', 'types' );
+		return is_array( $hit ) ? $hit : false;
+	}
+
+	/**
 	 * List project briefs (uncached; the list changes as jobs land).
 	 *
 	 * @param array $args { status?, search?, page?, pageSize? }.

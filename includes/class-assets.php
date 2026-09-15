@@ -236,6 +236,7 @@ class Assets {
 			'enrichNow'         => __( 'Enrich now', 'agentic-commerce-engine' ),
 			'pickAtLeastOne'    => __( 'Pick at least one content type.', 'agentic-commerce-engine' ),
 			'onPage'            => __( 'On the product page', 'agentic-commerce-engine' ),
+			'productData'       => __( 'Product data', 'agentic-commerce-engine' ),
 			'feeds'             => __( 'Channel feeds', 'agentic-commerce-engine' ),
 			'recommended'       => __( 'Recommended', 'agentic-commerce-engine' ),
 
@@ -277,6 +278,17 @@ class Assets {
 			'irlTitle'          => __( 'IRL scenarios (%s)', 'agentic-commerce-engine' ),
 			'internalLinks'     => __( 'Internal links', 'agentic-commerce-engine' ),
 			'jsonldTitle'       => __( 'JSON-LD schema', 'agentic-commerce-engine' ),
+			'highlightsTitle'   => __( 'Highlights', 'agentic-commerce-engine' ),
+			'qaTitle'           => __( 'Product Q&A', 'agentic-commerce-engine' ),
+			'attributesTitle'   => __( 'Product attributes', 'agentic-commerce-engine' ),
+			'attrAdd'           => __( 'Will be added', 'agentic-commerce-engine' ),
+			'attrExists'        => __( 'Already on the product, kept', 'agentic-commerce-engine' ),
+			'imageAltTitle'     => __( 'Image alt text', 'agentic-commerce-engine' ),
+			'altWrite'          => __( 'Will be replaced', 'agentic-commerce-engine' ),
+			'altSame'           => __( 'Already matches', 'agentic-commerce-engine' ),
+			'altUnmatched'      => __( 'Image no longer on this product, skipped', 'agentic-commerce-engine' ),
+			'currentAlt'        => __( 'Current alt text', 'agentic-commerce-engine' ),
+			'proposedAlt'       => __( 'Proposed alt text', 'agentic-commerce-engine' ),
 			/* translators: %s: feed channel key. */
 			'feedTitle'         => __( '%s feed', 'agentic-commerce-engine' ),
 
@@ -530,8 +542,9 @@ class Assets {
 	 * @return array
 	 */
 	private function content_types_for_js() {
-		$out = array();
-		foreach ( Content_Types::all() as $key => $config ) {
+		$out    = array();
+		$server = Content_Types::server_ids( $this->plugin->articles()->cached_types() );
+		foreach ( Content_Types::available( $server ) as $key => $config ) {
 			$out[] = array(
 				'key'         => $key,
 				'label'       => $config['label'],

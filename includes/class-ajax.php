@@ -441,10 +441,25 @@ class Ajax extends Ajax_Base {
 				// Best effort: the local save already happened, and the merchant
 				// should not see an error because the platform was briefly
 				// unreachable. The next heartbeat reconciles either way.
-				$this->plugin->api()->update_content_placement(
+				$agencoen_pushed = $this->plugin->api()->update_content_placement(
 					$settings->get_store_id(),
 					$settings->get_placements()
 				);
+				// A platform older than 4.16.0's server change rejects the whole
+				// request over the two keys it does not know (highlights and
+				// product-qa), which would silently drop the merchant's IRL and
+				// links choice too, and the next heartbeat would then overwrite
+				// it locally. Retry with only the keys every platform accepts;
+				// the other two stay local until the platform learns them.
+				if ( is_wp_error( $agencoen_pushed ) ) {
+					$agencoen_error = $agencoen_pushed->get_error_data();
+					if ( is_array( $agencoen_error ) && isset( $agencoen_error['status'] ) && 400 === (int) $agencoen_error['status'] ) {
+						$this->plugin->api()->update_content_placement(
+							$settings->get_store_id(),
+							array_intersect_key( $settings->get_placements(), array_flip( array( 'irl-cards', 'internal-links' ) ) )
+						);
+					}
+				}
 			}
 		}
 
@@ -582,6 +597,7 @@ class Ajax extends Ajax_Base {
 				'id'      => $id,
 				'diff'    => $this->plugin->review()->diff_for( $id ),
 				'content' => is_array( $content ) ? $content : array(),
+				'extras'  => $this->plugin->review()->extras_for( $id ),
 			)
 		);
 	}

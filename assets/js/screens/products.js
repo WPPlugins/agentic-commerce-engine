@@ -84,7 +84,7 @@
 			} ).join( '' ) + '</div>';
 		}
 
-		list.innerHTML = group( 'onpage', t( 'onPage', 'On the product page' ) ) + group( 'feed', t( 'feeds', 'Channel feeds' ) );
+		list.innerHTML = group( 'onpage', t( 'onPage', 'On the product page' ) ) + group( 'catalog', t( 'productData', 'Product data' ) ) + group( 'feed', t( 'feeds', 'Channel feeds' ) );
 		var errBox = $( '#ace-modal-error' );
 		if ( errBox ) {
 			errBox.style.display = 'none';

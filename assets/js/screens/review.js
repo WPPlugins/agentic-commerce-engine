@@ -89,6 +89,58 @@
 		return html;
 	}
 
+	/**
+	 * Highlights, Q&A, attributes and alt text, from the server's `extras`, so
+	 * the preview matches what Approve will write (same matching, same
+	 * "already on the product" check). Every value goes through core.esc.
+	 */
+	function renderExtrasHtml( extras ) {
+		if ( ! extras || 'object' !== typeof extras ) {
+			return '';
+		}
+		var html = '';
+		var block = function ( title, body ) {
+			return '<div class="ace-ct-block"><div class="ace-ct-title">' + core.esc( title ) + '</div>' + body + '</div>';
+		};
+		var chip = function ( text, tone ) {
+			return '<span class="ace-ct-chip ace-ct-chip--' + tone + '">' + core.esc( text ) + '</span>';
+		};
+
+		if ( Array.isArray( extras.highlights ) && extras.highlights.length ) {
+			html += block( t( 'highlightsTitle', 'Highlights' ), '<ul class="ace-ct-links">' + extras.highlights.map( function ( h ) {
+				return '<li>' + core.esc( h ) + '</li>';
+			} ).join( '' ) + '</ul>' );
+		}
+
+		if ( Array.isArray( extras.qa ) && extras.qa.length ) {
+			html += block( t( 'qaTitle', 'Product Q&A' ), '<dl class="ace-ct-qa">' + extras.qa.map( function ( pair ) {
+				return '<dt>' + core.esc( pair.question ) + '</dt><dd>' + core.esc( pair.answer ) + '</dd>';
+			} ).join( '' ) + '</dl>' );
+		}
+
+		if ( Array.isArray( extras.attributes ) && extras.attributes.length ) {
+			html += block( t( 'attributesTitle', 'Product attributes' ), '<table class="ace-ct-table"><tbody>' + extras.attributes.map( function ( a ) {
+				var action = 'exists' === a.action ? chip( t( 'attrExists', 'Already on the product, kept' ), 'muted' ) : chip( t( 'attrAdd', 'Will be added' ), 'ok' );
+				return '<tr><th scope="row">' + core.esc( a.name ) + '</th><td>' + core.esc( ( a.values || [] ).join( ', ' ) ) + '</td><td>' + action + '</td></tr>';
+			} ).join( '' ) + '</tbody></table>' );
+		}
+
+		if ( Array.isArray( extras.imageAlt ) && extras.imageAlt.length ) {
+			var labels = {
+				write: [ t( 'altWrite', 'Will be replaced' ), 'ok' ],
+				same: [ t( 'altSame', 'Already matches' ), 'muted' ],
+				unmatched: [ t( 'altUnmatched', 'Image no longer on this product, skipped' ), 'warn' ],
+			};
+			html += block( t( 'imageAltTitle', 'Image alt text' ), '<table class="ace-ct-table ace-ct-alt"><thead><tr><th></th><th>' + core.esc( t( 'currentAlt', 'Current alt text' ) ) + '</th><th>' + core.esc( t( 'proposedAlt', 'Proposed alt text' ) ) + '</th><th></th></tr></thead><tbody>' + extras.imageAlt.map( function ( row ) {
+				var label = labels[ row.action ] || labels.write;
+				var thumb = row.thumb ? '<img src="' + core.esc( row.thumb ).replace( /"/g, '&quot;' ) + '" alt="" width="48" height="48" loading="lazy">' : '';
+				return '<tr><td>' + thumb + '</td><td>' + ( row.current ? core.esc( row.current ) : '<em class="ace-muted">' + core.esc( t( 'emptyValue', '(empty)' ) ) + '</em>' ) + '</td><td>' + core.esc( row.proposed ) + '</td><td>' + chip( label[ 0 ], label[ 1 ] ) + '</td></tr>';
+			} ).join( '' ) + '</tbody></table>' );
+		}
+
+		return html;
+	}
+
 	/* ------------------------------------------------------------------ */
 	/* Approve-all batch                                                   */
 	/* ------------------------------------------------------------------ */
@@ -302,7 +354,7 @@
 					if ( ! body.getAttribute( 'data-loaded' ) ) {
 						core.skeleton( body, 'text' );
 						core.post( 'review_diff', { product_id: id } ).then( function ( d ) {
-							body.innerHTML = renderDiffHtml( d.diff || [] ) + renderContentHtml( d.content || {} );
+							body.innerHTML = renderDiffHtml( d.diff || [] ) + renderContentHtml( d.content || {} ) + renderExtrasHtml( d.extras || {} );
 							body.setAttribute( 'data-loaded', '1' );
 						} ).catch( core.errorToast );
 					}

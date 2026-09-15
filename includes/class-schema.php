@@ -30,6 +30,15 @@ class Schema {
 	private $emitted_types = array();
 
 	/**
+	 * Product ids whose Q&A was actually rendered on this page, by any of the
+	 * shortcode, the block or auto-placement. FAQPage markup is emitted only for
+	 * these: FAQ structured data has to describe content a shopper can see.
+	 *
+	 * @var array<int,bool>
+	 */
+	private $qa_rendered = array();
+
+	/**
 	 * @param Plugin $plugin Orchestrator.
 	 */
 	public function __construct( Plugin $plugin ) {
@@ -41,6 +50,9 @@ class Schema {
 	 */
 	public function register() {
 		add_action( 'wp_head', array( $this, 'output' ), 99 );
+		// The footer, not the head: whether Q&A is on the page is only known once
+		// the page body has rendered it.
+		add_action( 'wp_footer', array( $this, 'output_faq' ), 20 );
 		add_filter( 'woocommerce_structured_data_type_for_page', array( $this, 'filter_wc_types' ) );
 	}
 
@@ -140,6 +152,104 @@ class Schema {
 
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_json_encode output inside a JSON-LD script tag.
 		echo "\n<script type=\"application/ld+json\">" . $json . "</script>\n";
+	}
+
+	/**
+	 * Record that a product's Q&A is visible on this page. Called by Frontend.
+	 *
+	 * @param int $product_id Product id.
+	 */
+	public function note_qa_rendered( $product_id ) {
+		$this->qa_rendered[ (int) $product_id ] = true;
+	}
+
+	/**
+	 * Print FAQPage JSON-LD for the product's approved Q&A (4.16.0).
+	 *
+	 * A SEPARATE block from the Product graph, and NOT suppressed when an SEO
+	 * plugin emits Product schema: Yoast WooCommerce SEO, Rank Math and AIOSEO
+	 * describe the product but not its Q&A, so suppressing this with them would
+	 * leave the questions with no markup at all.
+	 */
+	public function output_faq() {
+		$pid = (int) get_queried_object_id();
+		if ( ! $pid ) {
+			return;
+		}
+		$seo_faq_block = function_exists( 'has_block' )
+			&& ( has_block( 'yoast/faq-block', $pid ) || has_block( 'rank-math/faq-block', $pid ) );
+		if ( ! self::faq_gate(
+			$this->plugin->settings()->is_schema_enabled(),
+			function_exists( 'is_product' ) && is_product(),
+			isset( $this->qa_rendered[ $pid ] ),
+			in_array( 'faqpage', $this->emitted_types, true ),
+			$seo_faq_block
+		) ) {
+			return;
+		}
+
+		$graph = self::build_faq_graph( Pdp_Content::qa( get_post_meta( $pid, Meta::QA, true ) ), (string) get_permalink( $pid ) );
+		if ( empty( $graph ) ) {
+			return;
+		}
+		$json = wp_json_encode( $graph, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+		if ( ! is_string( $json ) || '' === $json ) {
+			return;
+		}
+		$json = str_ireplace( '</script', '<\/script', $json );
+
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_json_encode output inside a JSON-LD script tag.
+		echo "\n<script type=\"application/ld+json\">" . $json . "</script>\n";
+	}
+
+	/**
+	 * Pure FAQPage gate.
+	 *
+	 * @param bool $enabled         Schema output enabled.
+	 * @param bool $is_product      On a single product page.
+	 * @param bool $qa_rendered     The Q&A is visible on this page.
+	 * @param bool $already_emitted Our Product graph already carried a FAQPage.
+	 * @param bool $seo_faq_block   The post content has an SEO plugin's FAQ block.
+	 * @return bool
+	 */
+	public static function faq_gate( $enabled, $is_product, $qa_rendered, $already_emitted, $seo_faq_block ) {
+		return (bool) $enabled && (bool) $is_product && (bool) $qa_rendered && ! $already_emitted && ! $seo_faq_block;
+	}
+
+	/**
+	 * Pure FAQPage builder. Empty when there are no pairs.
+	 *
+	 * @param array  $qa  From Pdp_Content::qa().
+	 * @param string $url Product permalink, for the @id.
+	 * @return array
+	 */
+	public static function build_faq_graph( array $qa, $url ) {
+		$questions = array();
+		foreach ( $qa as $pair ) {
+			if ( ! is_array( $pair ) || empty( $pair['question'] ) || empty( $pair['answer'] ) ) {
+				continue;
+			}
+			$questions[] = array(
+				'@type'          => 'Question',
+				'name'           => (string) $pair['question'],
+				'acceptedAnswer' => array(
+					'@type' => 'Answer',
+					'text'  => (string) $pair['answer'],
+				),
+			);
+		}
+		if ( empty( $questions ) ) {
+			return array();
+		}
+		$graph = array(
+			'@context' => 'https://schema.org',
+			'@type'    => 'FAQPage',
+		);
+		if ( '' !== (string) $url ) {
+			$graph['@id'] = $url . '#faq';
+		}
+		$graph['mainEntity'] = $questions;
+		return $graph;
 	}
 
 	/**

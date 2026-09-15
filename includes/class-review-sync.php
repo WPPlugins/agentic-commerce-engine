@@ -190,9 +190,13 @@ class Review_Sync {
 		// Every spelling the platform has emitted is accepted, matching that
 		// method and the Shopify app's `deriveProposals`.
 		$from_content = array(
-			'json_ld'        => array( 'jsonld-schema', 'json-ld-schema' ),
-			'irl_cards'      => array( 'irl-scenarios', 'irl-cards' ),
-			'internal_links' => array( 'internal-links' ),
+			'json_ld'            => array( 'jsonld-schema', 'json-ld-schema' ),
+			'irl_cards'          => array( 'irl-scenarios', 'irl-cards' ),
+			'internal_links'     => array( 'internal-links' ),
+			'highlights'         => array( 'highlights' ),
+			'product_qa'         => array( 'product-qa' ),
+			'product_attributes' => array( 'product-attributes' ),
+			'image_alt'          => array( 'image-alt' ),
 		);
 		foreach ( $from_content as $field => $keys ) {
 			foreach ( $keys as $key ) {
@@ -209,13 +213,22 @@ class Review_Sync {
 			$applied = get_post_meta( $product_id, Meta::APPLIED_TYPES, true );
 			$applied = is_array( $applied ) ? $applied : array();
 			$map     = array(
-				'meta-tags'       => array( 'seo_title', 'seo_description' ),
-				'jsonld-schema'   => array( 'json_ld' ),
-				'json-ld-schema'  => array( 'json_ld' ),
-				'irl-scenarios'   => array( 'irl_cards' ),
-				'internal-links'  => array( 'internal_links' ),
+				'meta-tags'          => array( 'seo_title', 'seo_description' ),
+				'jsonld-schema'      => array( 'json_ld' ),
+				'json-ld-schema'     => array( 'json_ld' ),
+				'irl-scenarios'      => array( 'irl_cards' ),
+				'internal-links'     => array( 'internal_links' ),
+				'product-title'      => array( 'title' ),
+				'highlights'         => array( 'highlights' ),
+				'product-qa'         => array( 'product_qa' ),
+				'product-attributes' => array( 'product_attributes' ),
+				'image-alt'          => array( 'image_alt' ),
 			);
-			foreach ( array_keys( $applied ) as $type ) {
+			// A plain LIST of type ids (Apply stores `array_keys( $applied_types )`).
+			// This used to loop over `array_keys( $applied )`, i.e. 0, 1, 2, so
+			// the map above never matched anything and an applied product whose
+			// pending meta was cleared reported no decision at all.
+			foreach ( $applied as $type ) {
 				if ( isset( $map[ $type ] ) ) {
 					$fields = array_merge( $fields, $map[ $type ] );
 				}

@@ -1,8 +1,8 @@
 <?php
 /**
- * Storefront rendering for applied content: IRL scenario cards and internal
- * links, via shortcodes, dynamic Gutenberg blocks, and an optional auto-append
- * below the product summary.
+ * Storefront rendering for applied content: IRL scenario cards, internal links,
+ * highlights and product Q&A, via shortcodes, dynamic Gutenberg blocks, and
+ * placement on the product page.
  *
  * @package Agencoen
  */
@@ -32,6 +32,8 @@ class Frontend {
 	public function register() {
 		add_shortcode( 'agencoen_irl', array( $this, 'shortcode_irl' ) );
 		add_shortcode( 'agencoen_internal_links', array( $this, 'shortcode_links' ) );
+		add_shortcode( 'agencoen_highlights', array( $this, 'shortcode_highlights' ) );
+		add_shortcode( 'agencoen_product_qa', array( $this, 'shortcode_qa' ) );
 		add_action( 'init', array( $this, 'register_blocks' ) );
 		/*
 		 * PLACEMENT, NOT ONE HARDCODED HOOK.
@@ -93,6 +95,22 @@ class Frontend {
 				'render_callback' => array( $this, 'block_links' ),
 			)
 		);
+		register_block_type(
+			'agencoen/highlights',
+			array(
+				'api_version'     => 2,
+				'editor_script'   => 'agencoen-blocks',
+				'render_callback' => array( $this, 'block_highlights' ),
+			)
+		);
+		register_block_type(
+			'agencoen/product-qa',
+			array(
+				'api_version'     => 2,
+				'editor_script'   => 'agencoen-blocks',
+				'render_callback' => array( $this, 'block_qa' ),
+			)
+		);
 	}
 
 	/* --------------------------------------------------------------------- */
@@ -117,6 +135,42 @@ class Frontend {
 		$atts = shortcode_atts( array( 'id' => 0 ), $atts, 'agencoen_internal_links' );
 		$pid  = (int) $atts['id'] ? (int) $atts['id'] : $this->current_product_id();
 		return $pid ? $this->render_links_html( $pid ) : '';
+	}
+
+	/**
+	 * @param array $atts Shortcode attributes.
+	 * @return string
+	 */
+	public function shortcode_highlights( $atts ) {
+		$atts = shortcode_atts( array( 'id' => 0 ), $atts, 'agencoen_highlights' );
+		$pid  = (int) $atts['id'] ? (int) $atts['id'] : $this->current_product_id();
+		return $pid ? $this->render_highlights_html( $pid ) : '';
+	}
+
+	/**
+	 * @param array $atts Shortcode attributes.
+	 * @return string
+	 */
+	public function shortcode_qa( $atts ) {
+		$atts = shortcode_atts( array( 'id' => 0 ), $atts, 'agencoen_product_qa' );
+		$pid  = (int) $atts['id'] ? (int) $atts['id'] : $this->current_product_id();
+		return $pid ? $this->render_qa_html( $pid ) : '';
+	}
+
+	/**
+	 * @return string
+	 */
+	public function block_highlights() {
+		$pid = $this->current_product_id();
+		return $pid ? $this->render_highlights_html( $pid ) : '';
+	}
+
+	/**
+	 * @return string
+	 */
+	public function block_qa() {
+		$pid = $this->current_product_id();
+		return $pid ? $this->render_qa_html( $pid ) : '';
 	}
 
 	/**
@@ -202,6 +256,10 @@ class Frontend {
 			$html = $this->render_irl_html( $pid );
 		} elseif ( 'internal-links' === $type ) {
 			$html = $this->render_links_html( $pid );
+		} elseif ( 'highlights' === $type ) {
+			$html = $this->render_highlights_html( $pid );
+		} elseif ( 'product-qa' === $type ) {
+			$html = $this->render_qa_html( $pid );
 		} else {
 			return;
 		}
@@ -275,6 +333,44 @@ class Frontend {
 		}
 		$out .= '</ul></nav>';
 		return $out;
+	}
+
+	/**
+	 * @param int $product_id Product id.
+	 * @return string
+	 */
+	private function render_highlights_html( $product_id ) {
+		$highlights = Pdp_Content::highlights( get_post_meta( $product_id, Meta::HIGHLIGHTS, true ) );
+		if ( empty( $highlights ) ) {
+			return '';
+		}
+		$out = '<section class="agencoen-highlights" aria-label="' . esc_attr__( 'Product highlights', 'agentic-commerce-engine' ) . '"><h2 class="agencoen-highlights-heading">' . esc_html__( 'Highlights', 'agentic-commerce-engine' ) . '</h2><ul>';
+		foreach ( $highlights as $highlight ) {
+			$out .= '<li>' . esc_html( $highlight ) . '</li>';
+		}
+		return $out . '</ul></section>';
+	}
+
+	/**
+	 * Questions and answers as <details>, which open and close with no
+	 * JavaScript, are accessible by default, and keep every answer in the HTML
+	 * for crawlers. Tells Schema the Q&A is on the page, which is what allows the
+	 * FAQPage markup in the footer.
+	 *
+	 * @param int $product_id Product id.
+	 * @return string
+	 */
+	private function render_qa_html( $product_id ) {
+		$qa = Pdp_Content::qa( get_post_meta( $product_id, Meta::QA, true ) );
+		if ( empty( $qa ) ) {
+			return '';
+		}
+		$this->plugin->schema()->note_qa_rendered( $product_id );
+		$out = '<section class="agencoen-qa" aria-label="' . esc_attr__( 'Questions and answers about this product', 'agentic-commerce-engine' ) . '"><h2 class="agencoen-qa-heading">' . esc_html__( 'Questions and answers', 'agentic-commerce-engine' ) . '</h2>';
+		foreach ( $qa as $pair ) {
+			$out .= '<details class="agencoen-qa-item"><summary>' . esc_html( $pair['question'] ) . '</summary><div class="agencoen-qa-answer">' . nl2br( esc_html( $pair['answer'] ) ) . '</div></details>';
+		}
+		return $out . '</section>';
 	}
 
 	/**

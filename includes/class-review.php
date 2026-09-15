@@ -92,6 +92,67 @@ class Review {
 	}
 
 	/**
+	 * What approving would do with highlights, Q&A, attributes and alt text,
+	 * computed here rather than in the browser so the preview uses the same
+	 * reading and the same image matching as {@see Apply}. A merchant approving
+	 * alt text sees each image, its current alt and what replaces it.
+	 *
+	 * @param int $product_id Product id.
+	 * @return array{highlights:string[],qa:array,attributes:array,imageAlt:array}
+	 */
+	public function extras_for( $product_id ) {
+		$product_id = (int) $product_id;
+		$content    = get_post_meta( $product_id, Meta::CONTENT, true );
+		$content    = is_array( $content ) ? $content : array();
+		$product    = wc_get_product( $product_id );
+
+		$extras = array(
+			'highlights' => isset( $content['highlights'] ) ? Pdp_Content::highlights( $content['highlights'] ) : array(),
+			'qa'         => isset( $content['product-qa'] ) ? Pdp_Content::qa( $content['product-qa'] ) : array(),
+			'attributes' => array(),
+			'imageAlt'   => array(),
+		);
+
+		if ( $product && isset( $content['product-attributes'] ) ) {
+			$existing = $product->get_attributes();
+			$existing = is_array( $existing ) ? $existing : array();
+			foreach ( Native_Fields::normalize_attributes( $content['product-attributes'] ) as $attribute ) {
+				$extras['attributes'][] = array(
+					'name'   => $attribute['name'],
+					'values' => $attribute['values'],
+					'action' => isset( $existing[ sanitize_title( $attribute['name'] ) ] ) ? 'exists' : 'add',
+				);
+			}
+		}
+
+		if ( $product && isset( $content['image-alt'] ) ) {
+			$entries = Pdp_Content::image_alts( $content['image-alt'] );
+			$match   = Pdp_Content::match_image_alts( $entries, Native_Fields::image_candidates( $product ) );
+			foreach ( $match['matches'] as $attachment_id => $alt ) {
+				$current              = (string) get_post_meta( $attachment_id, '_wp_attachment_image_alt', true );
+				$extras['imageAlt'][] = array(
+					'id'       => (int) $attachment_id,
+					'thumb'    => esc_url_raw( (string) wp_get_attachment_image_url( $attachment_id, 'thumbnail' ) ),
+					'current'  => $current,
+					'proposed' => $alt,
+					'action'   => $current === $alt ? 'same' : 'write',
+				);
+			}
+			foreach ( $match['unmatched'] as $entry ) {
+				$extras['imageAlt'][] = array(
+					'id'       => 0,
+					'thumb'    => '',
+					'current'  => '',
+					'proposed' => $entry['alt'],
+					'action'   => 'unmatched',
+				);
+			}
+		}
+
+		return $extras;
+	}
+
+	/**
 	 * Approve (apply) a product's enrichment.
 	 *
 	 * @param int   $product_id Product id.

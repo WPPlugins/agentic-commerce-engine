@@ -3,7 +3,7 @@
  * Plugin Name:       Rezolve Ai
  * Plugin URI:        https://ace.authoritas.com
  * Description:       Free AI crawler analytics, schema output and publishing tools for any WordPress site. Article generation and AI search research additionally use the Rezolve Ai service.
- * Version:           4.15.0
+ * Version:           4.16.0
  * Author:            Rezolve Ai Limited
  * Author URI:        https://rezolve.com
  * License:           GPLv2 or later
@@ -30,7 +30,7 @@ defined( 'ABSPATH' ) || exit;
  * Constants
  * -------------------------------------------------------------------------
  */
-define( 'AGENCOEN_VERSION', '4.15.0' );
+define( 'AGENCOEN_VERSION', '4.16.0' );
 define( 'AGENCOEN_PLUGIN_FILE', __FILE__ );
 define( 'AGENCOEN_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AGENCOEN_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
