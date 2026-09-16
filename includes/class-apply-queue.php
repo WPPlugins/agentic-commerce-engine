@@ -53,6 +53,9 @@ class Apply_Queue {
 	 */
 	const DEFERRED = 'deferred';
 
+	/** How long an unreported local edit may hold back an approved entry. */
+	const DEFER_MAX_SECONDS = 86400;
+
 	/** @var Plugin */
 	private $plugin;
 
@@ -423,6 +426,18 @@ class Apply_Queue {
 		$edited_at = strtotime( (string) $edited[ $type ] );
 		$synced_at = strtotime( (string) get_post_meta( (int) $post_id, Meta::REVIEW_SYNCED_AT, true ) );
 		if ( false === $edited_at ) {
+			return false;
+		}
+		// BOUNDED. A deferred entry is left out of the ack, so it is delivered
+		// again until the edit has been reported. If the report can never
+		// succeed -- a revoked key, a site whose drain fails every attempt --
+		// that wait never ends, the entry is never acked, and it squats the
+		// hundred-row window that every other product shares. A day covers
+		// every real path back (hourly drain, a merchant reconnecting) and
+		// stops one unreportable edit from freezing the whole queue. After it
+		// the approved value wins: one overwritten edit a merchant can see and
+		// redo beats silent, indefinite starvation.
+		if ( ( time() - $edited_at ) > self::DEFER_MAX_SECONDS ) {
 			return false;
 		}
 		return false === $synced_at || $edited_at > $synced_at;

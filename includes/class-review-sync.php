@@ -53,7 +53,12 @@ class Review_Sync {
 	const MAX_ATTEMPTS = 8;
 
 	/** Statuses the review-decisions endpoint accepts an edited `value` with. */
-	const VALUE_STATUSES = array( 'pending', 'approved', 'applied' );
+	/**
+	 * Statuses an edited value rides along with. `failed` included: a failed
+	 * apply keeps the merchant's edit on this site, and withholding it while the
+	 * row still counted as reported let a later Rezolve Ai approval overwrite it.
+	 */
+	const VALUE_STATUSES = array( 'pending', 'approved', 'applied', 'failed' );
 
 	/** @var Plugin */
 	private $plugin;

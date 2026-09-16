@@ -4,7 +4,7 @@ Tags: ai, seo, woocommerce, ai search, content
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 4.18.0
+Stable tag: 4.18.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -137,6 +137,10 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 8. The Settings screen with publishing, automation, and crawler tracking options.
 
 == Changelog ==
+
+= 4.18.1 =
+* Fixed: an approval made in Rezolve Ai no longer waits for ever when your edit cannot be reported. After a day it applies, so one stuck edit cannot hold up everything else waiting to reach your products.
+* Fixed: when applying a change to your product fails, your edited version is still sent to Rezolve Ai, so a later approval there cannot overwrite it.
 
 = 4.18.0 =
 * Added: edit suggestions before you approve them. On the Review screen, open a product and choose Edit on its title, description, SEO title, meta description, highlights, questions and answers, specifications or image alt text. Approving then applies your version.
@@ -319,6 +323,9 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 * Product enrichment now runs on the platform's durable jobs API with webhook-accelerated polling.
 
 == Upgrade Notice ==
+
+= 4.18.1 =
+Fixes for edits made on this site: they can no longer hold up other approved changes, and a failed apply no longer loses your version.
 
 = 4.18.0 =
 Edit any suggestion on the Review screen before approving it, or edit content that is already live. Your edits are sent to Rezolve Ai, and revert still restores the original product.
