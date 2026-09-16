@@ -101,7 +101,7 @@ $agencoen_ab_on = $plugin->settings()->is_ab_enabled();
 				</label>
 				<label class="ace-label">
 					<input type="radio" name="type" value="product_holdout" />
-					<span><?php esc_html_e( 'Split products. Some products get new copy and some are held back unchanged, and you compare how the pages performed.', 'agentic-commerce-engine' ); ?></span>
+					<span><?php esc_html_e( 'Split products. Some products get the new content and some are held back unchanged, and you compare how they sold.', 'agentic-commerce-engine' ); ?></span>
 				</label>
 			</fieldset>
 
@@ -115,28 +115,45 @@ $agencoen_ab_on = $plugin->settings()->is_ab_enabled();
 			</fieldset>
 
 			<fieldset class="ace-card">
-				<legend class="ace-card-title"><?php esc_html_e( '3. How many versions', 'agentic-commerce-engine' ); ?></legend>
-				<label for="ace-exp-levels"><?php esc_html_e( 'Versions to compare', 'agentic-commerce-engine' ); ?></label>
-				<select id="ace-exp-levels" name="levels" class="ace-input">
-					<option value="2"><?php esc_html_e( '2, your copy and one challenger', 'agentic-commerce-engine' ); ?></option>
-					<option value="3">3</option>
-					<option value="4">4</option>
-				</select>
-				<p class="description">
-					<?php esc_html_e( 'Every extra version splits your shoppers further, so more versions need more traffic to reach an answer.', 'agentic-commerce-engine' ); ?>
+				<legend class="ace-card-title"><?php esc_html_e( '3. What to test', 'agentic-commerce-engine' ); ?></legend>
+				<?php
+				/*
+				 * Filled by the screen script from the platform's own list, with
+				 * the reason beside anything this split cannot test. This form
+				 * used to test the description and nothing else.
+				 */
+				?>
+				<div id="ace-exp-content" aria-live="polite"></div>
+				<p class="description" id="ace-exp-content-note" hidden>
+					<?php esc_html_e( 'Each piece of content you choose goes live on the products in the test and stays off the ones held back. Test one at a time to measure each on its own: content that goes live together cannot be told apart.', 'agentic-commerce-engine' ); ?>
 				</p>
 			</fieldset>
 
 			<fieldset class="ace-card">
-				<legend class="ace-card-title"><?php esc_html_e( '4. What to measure', 'agentic-commerce-engine' ); ?></legend>
+				<legend class="ace-card-title"><?php esc_html_e( '4. How many versions', 'agentic-commerce-engine' ); ?></legend>
+				<label for="ace-exp-levels"><?php esc_html_e( 'Versions to write', 'agentic-commerce-engine' ); ?></label>
+				<select id="ace-exp-levels" name="levels" class="ace-input">
+					<option value="1"><?php esc_html_e( '1, your house style against unchanged products', 'agentic-commerce-engine' ); ?></option>
+					<option value="2" selected><?php esc_html_e( '2, your copy and one challenger', 'agentic-commerce-engine' ); ?></option>
+					<option value="3">3</option>
+					<option value="4">4</option>
+				</select>
+				<p class="description">
+					<?php esc_html_e( 'Every extra version needs more traffic to reach an answer. This applies to the description and meta tags; other content is written once, in your house style.', 'agentic-commerce-engine' ); ?>
+				</p>
+			</fieldset>
+
+			<fieldset class="ace-card">
+				<legend class="ace-card-title"><?php esc_html_e( '5. What to measure', 'agentic-commerce-engine' ); ?></legend>
 				<label for="ace-exp-goal"><?php esc_html_e( 'Goal', 'agentic-commerce-engine' ); ?></label>
 				<select id="ace-exp-goal" name="goal" class="ace-input"></select>
+				<p class="description" id="ace-exp-goal-detail"></p>
 				<label for="ace-exp-days"><?php esc_html_e( 'Days to run', 'agentic-commerce-engine' ); ?></label>
 				<input type="number" id="ace-exp-days" name="days" class="ace-input" value="28" min="7" max="180" />
 			</fieldset>
 
 			<fieldset class="ace-card">
-				<legend class="ace-card-title"><?php esc_html_e( '5. Check and launch', 'agentic-commerce-engine' ); ?></legend>
+				<legend class="ace-card-title"><?php esc_html_e( '6. Check and launch', 'agentic-commerce-engine' ); ?></legend>
 				<label for="ace-exp-name"><?php esc_html_e( 'Name this test', 'agentic-commerce-engine' ); ?></label>
 				<input type="text" id="ace-exp-name" name="name" class="ace-input" maxlength="120" />
 
@@ -166,12 +183,12 @@ $agencoen_ab_on = $plugin->settings()->is_ab_enabled();
 						<?php esc_html_e( 'Check this design', 'agentic-commerce-engine' ); ?>
 					</button>
 					<button type="button" class="ace-btn ace-btn-primary ace-btn-sm" id="ace-exp-launch" disabled>
-						<?php esc_html_e( 'Write the versions and launch', 'agentic-commerce-engine' ); ?>
+						<?php esc_html_e( 'Write the content and launch', 'agentic-commerce-engine' ); ?>
 					</button>
 				</div>
 
 				<p class="description">
-					<?php esc_html_e( 'Launching writes the new versions with AI, which uses credits. Nothing is shown to a visitor until you approve it in Review and it goes live on your site.', 'agentic-commerce-engine' ); ?>
+					<?php esc_html_e( 'Launching writes the content with AI, which uses credits. Nothing is shown to a visitor until you approve it in Review and it goes live on your site.', 'agentic-commerce-engine' ); ?>
 				</p>
 			</fieldset>
 		</form>

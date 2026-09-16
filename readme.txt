@@ -4,7 +4,7 @@ Tags: ai, seo, woocommerce, ai search, content
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 4.18.1
+Stable tag: 4.19.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -137,6 +137,13 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 8. The Settings screen with publishing, automation, and crawler tracking options.
 
 == Changelog ==
+
+= 4.19.0 =
+* Added: test IRL scenario cards, highlights, questions and answers, product titles, schema markup, image alt text, product attributes and your shopping feeds, not only the description. Split products, so some get the new content and some are held back, and see which content changed sales.
+* Added: orders and revenue as goals when you split products.
+* Changed: the content, versions and goals the Experiments form offers now come from Rezolve Ai, so they stay current without updating the plugin.
+* Changed: a result broken down by content type is labelled with that content type.
+* Fixed: AI citations is no longer offered as a goal, because it cannot be measured yet.
 
 = 4.18.1 =
 * Fixed: an approval made in Rezolve Ai no longer waits for ever when your edit cannot be reported. After a day it applies, so one stuck edit cannot hold up everything else waiting to reach your products.
@@ -323,6 +330,9 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 * Product enrichment now runs on the platform's durable jobs API with webhook-accelerated polling.
 
 == Upgrade Notice ==
+
+= 4.19.0 =
+Test every kind of content on your products, not only the description, and measure orders and revenue when you split products.
 
 = 4.18.1 =
 Fixes for edits made on this site: they can no longer hold up other approved changes, and a failed apply no longer loses your version.

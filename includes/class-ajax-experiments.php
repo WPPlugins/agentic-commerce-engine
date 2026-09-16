@@ -37,6 +37,7 @@ class Ajax_Experiments extends Ajax_Base {
 			'experiments_list'      => 'list_experiments',
 			'experiment_get'        => 'get_experiment',
 			'experiment_subjects'   => 'subjects',
+			'experiment_options'    => 'options',
 			'experiment_preflight'  => 'preflight',
 			'experiment_create'     => 'create',
 			'experiment_action'     => 'act',
@@ -137,6 +138,15 @@ class Ajax_Experiments extends Ajax_Base {
 	}
 
 	/**
+	 * What the create form may offer, from the platform.
+	 */
+	public function options() {
+		check_ajax_referer( self::NONCE_ACTION, 'nonce' );
+		$this->require_manage();
+		$this->respond( $this->plugin->experiments()->options() );
+	}
+
+	/**
 	 * The costless power check.
 	 */
 	public function preflight() {
@@ -158,7 +168,6 @@ class Ajax_Experiments extends Ajax_Base {
 			wp_send_json_error( array( 'message' => __( 'Give this test a name.', 'agentic-commerce-engine' ) ) );
 		}
 		$body['name']       = $name;
-		$body['goal']       = isset( $_POST['goal'] ) ? sanitize_text_field( wp_unslash( $_POST['goal'] ) ) : 'checkout';
 		$body['acceptSlow'] = ! empty( $_POST['acceptSlow'] );
 
 		$this->respond( $this->plugin->experiments()->create( $body ) );
@@ -219,14 +228,32 @@ class Ajax_Experiments extends Ajax_Base {
 		check_ajax_referer( self::NONCE_ACTION, 'nonce' );
 		$type     = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : 'visitor_split';
 		$category = isset( $_POST['category'] ) ? sanitize_text_field( wp_unslash( $_POST['category'] ) ) : '';
-		$levels   = isset( $_POST['levels'] ) ? (int) $_POST['levels'] : 2;
+		$levels   = isset( $_POST['levels'] ) ? (int) $_POST['levels'] : 0;
 		$days     = isset( $_POST['days'] ) ? (int) $_POST['days'] : 28;
+		$goal     = isset( $_POST['goal'] ) ? sanitize_text_field( wp_unslash( $_POST['goal'] ) ) : '';
+
+		// Sent by the 4.19.0 form, which also sends `contentChosen` because an
+		// empty selection posts no `contentTypes` at all. A script cached from an
+		// earlier version sends neither, and gets the description it has always
+		// tested.
+		$content = empty( $_POST['contentChosen'] ) ? array( 'product-description' ) : array();
+		if ( isset( $_POST['contentTypes'] ) && is_array( $_POST['contentTypes'] ) ) {
+			$content = array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['contentTypes'] ) );
+		}
 
 		if ( ! in_array( $type, array( 'visitor_split', 'product_holdout' ), true ) ) {
 			$type = 'visitor_split';
 		}
-		$levels = max( 2, min( 4, $levels ) );
-		$days   = max( 7, min( 180, $days ) );
+		$days = max( 7, min( 180, $days ) );
+
+		$options = $this->plugin->experiments()->options();
+		if ( is_wp_error( $options ) ) {
+			wp_send_json_error( $this->error_payload( $options ) );
+		}
+		$factors = self::build_factors( $type, $content, $levels, $options );
+		if ( empty( $factors ) ) {
+			wp_send_json_error( array( 'message' => __( 'Choose something to test.', 'agentic-commerce-engine' ) ) );
+		}
 
 		$subjects = $this->plugin->experiments()->subjects( '' !== $category ? $category : null );
 		if ( is_wp_error( $subjects ) ) {
@@ -241,15 +268,83 @@ class Ajax_Experiments extends Ajax_Base {
 
 		return array(
 			'type'       => $type,
-			'factors'    => array(
-				array(
-					'contentTypeId' => 'product-description',
-					'levels'        => array_slice( array( 'a', 'b', 'c', 'd' ), 0, $levels ),
-				),
-			),
+			'factors'    => $factors,
 			'subjectIds' => array_slice( $ids, 0, self::MAX_SUBJECTS ),
 			'days'       => $days,
+			// Sent to the power check as well as to create: a product split is
+			// sized against the goal it will measure, and orders are far rarer
+			// than visits.
+			'goal'       => '' !== $goal ? $goal : self::first_goal( $type, $options ),
 		);
+	}
+
+	/**
+	 * The factors a design sends, held to the rules the platform validates.
+	 *
+	 * A shopper split swaps versions, so each factor needs at least two. A
+	 * product split compares against products left unchanged, so one version is
+	 * a whole test. Content with no writing angles is written once, in house
+	 * style, because asking for more would bill copies that come back identical.
+	 * Only content the split can use is sent. The platform refuses a design that
+	 * breaks these rules; applying them here keeps a merchant from being refused
+	 * for a combination the form let them make.
+	 *
+	 * @param string $type    Split.
+	 * @param array  $content Content type ids the merchant chose.
+	 * @param int    $levels  Versions asked for.
+	 * @param mixed  $options The platform's options payload.
+	 * @return array
+	 */
+	public static function build_factors( $type, array $content, $levels, $options ) {
+		$min    = 'visitor_split' === $type ? 2 : 1;
+		$levels = max( $min, min( 4, (int) $levels ) );
+
+		$offered = array();
+		$list    = ( is_array( $options ) && isset( $options['factors'][ $type ] ) && is_array( $options['factors'][ $type ] ) )
+			? $options['factors'][ $type ]
+			: array();
+		foreach ( $list as $factor ) {
+			if ( is_array( $factor ) && ! empty( $factor['available'] ) && isset( $factor['contentTypeId'] ) ) {
+				$offered[ (string) $factor['contentTypeId'] ] = ! empty( $factor['angleTestable'] );
+			}
+		}
+
+		$factors = array();
+		foreach ( array_values( array_unique( array_map( 'strval', $content ) ) ) as $id ) {
+			if ( ! array_key_exists( $id, $offered ) ) {
+				continue;
+			}
+			if ( $offered[ $id ] ) {
+				$factors[] = array(
+					'contentTypeId' => $id,
+					'levels'        => array_slice( array( 'a', 'b', 'c', 'd' ), 0, $levels ),
+				);
+			} elseif ( 'product_holdout' === $type ) {
+				$factors[] = array(
+					'contentTypeId' => $id,
+					'levels'        => array( 'a' ),
+				);
+			}
+		}
+		return $factors;
+	}
+
+	/**
+	 * The first goal a split can headline, in the platform's order.
+	 *
+	 * @param string $type    Split.
+	 * @param mixed  $options The platform's options payload.
+	 * @return string
+	 */
+	private static function first_goal( $type, $options ) {
+		$goals = ( is_array( $options ) && isset( $options['goals'] ) && is_array( $options['goals'] ) ) ? $options['goals'] : array();
+		foreach ( $goals as $goal ) {
+			if ( is_array( $goal ) && empty( $goal['guardrailOnly'] ) && isset( $goal['types'], $goal['id'] )
+				&& is_array( $goal['types'] ) && in_array( $type, $goal['types'], true ) ) {
+				return (string) $goal['id'];
+			}
+		}
+		return '';
 	}
 
 	/**

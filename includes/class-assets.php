@@ -600,6 +600,7 @@ class Assets {
 			'perShopper'       => __( 'Per shopper', 'agentic-commerce-engine' ),
 			'preflightFailed'  => __( 'Could not check that design.', 'agentic-commerce-engine' ),
 			'preflightRefused' => __( 'This design cannot be checked yet', 'agentic-commerce-engine' ),
+			'optionsFailed'    => __( 'Could not load what can be tested', 'agentic-commerce-engine' ),
 
 			/* Experiments: history and what testing has been worth */
 			'worthHeading'      => __( 'What testing has been worth', 'agentic-commerce-engine' ),

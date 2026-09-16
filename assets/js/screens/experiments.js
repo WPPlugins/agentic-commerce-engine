@@ -38,18 +38,17 @@
 		var i18n = ( window.agencoenConfig || {} ).i18n || {};
 		function t( key, fallback ) { return i18n[ key ] || fallback; }
 
-		/* Goals the platform can actually measure, per design. */
-		var GOALS = {
-			visitor_split: [
-				{ id: 'checkout', label: 'Reached checkout' },
-				{ id: 'revenue_per_visitor', label: 'Revenue per shopper' }
-			],
-			product_holdout: [
-				{ id: 'sessions', label: 'Visits' },
-				{ id: 'clicks', label: 'Shopping clicks' },
-				{ id: 'ai_citations', label: 'AI citations' }
-			]
-		};
+		/*
+		 * What the create form may offer: the content each split can test, the
+		 * versions and the goals, from the platform (`experiment_options`).
+		 *
+		 * This file used to carry its own goal list and test only the
+		 * description. The copy went stale on merchants' servers: it offered
+		 * "AI citations", which the platform refuses on every project, and never
+		 * offered orders or revenue. Null until loaded, and null again if the
+		 * read fails, in which case the form says so and offers nothing.
+		 */
+		var OPTIONS = null;
 
 		var STATUS = {
 			draft: { label: 'Not started', tone: 'info' },
@@ -140,6 +139,17 @@
 			}
 			var pct = Math.round( point * 1000 ) / 10;
 			return ( pct > 0 ? '+' : '' ) + pct + '%';
+		}
+
+		/**
+		 * A result row's name. A row with no arm is either the whole test or, when
+		 * the test was read out per content type, one content type. Naming both
+		 * "Test group" printed the same label on every row of a breakdown.
+		 */
+		function rowLabel( r ) {
+			if ( r.armLabel ) { return r.armLabel; }
+			if ( r.arm ) { return 'Version ' + String( r.arm ).toUpperCase(); }
+			return r.contentTypeLabel || 'Test group';
 		}
 
 		function interval( lo, hi ) {
@@ -452,7 +462,7 @@
 					'</th><th>' + esc( t( 'reading', 'Reading' ) ) + '</th></tr></thead><tbody>' +
 					results.map( function ( r ) {
 						var range = interval( r.lo, r.hi );
-						return '<tr><td>' + esc( r.armLabel || ( r.arm ? 'Version ' + String( r.arm ).toUpperCase() : 'Test group' ) ) +
+						return '<tr><td>' + esc( rowLabel( r ) ) +
 							// A refusal renders as its reason and NO number.
 							'</td><td>' + esc( lift( r.point ) ) +
 							'</td><td>' + esc( range || 'n/a' ) +
@@ -667,7 +677,7 @@
 				if ( plottable.length ) {
 					charts.forest( forestEl, plottable.map( function ( r ) {
 						return {
-							label: r.armLabel || ( r.arm ? 'Version ' + String( r.arm ).toUpperCase() : 'Test group' ),
+							label: rowLabel( r ),
 							estimate: r.point * 100,
 							lo: r.lo * 100,
 							hi: r.hi * 100,
@@ -706,11 +716,108 @@
 			return picked ? picked.value : 'visitor_split';
 		}
 
+		/** Content type ids the merchant has ticked, in form order. */
+		function checkedContent() {
+			return Array.prototype.map.call(
+				form.querySelectorAll( 'input[name="contentTypes"]:checked' ),
+				function ( el ) { return el.value; }
+			);
+		}
+
+		/** The platform's factor entries for the chosen split. */
+		function factorsForType() {
+			return ( OPTIONS && OPTIONS.factors && OPTIONS.factors[ currentType() ] ) || [];
+		}
+
 		function fillGoals() {
 			var select = byId( 'ace-exp-goal' );
-			select.innerHTML = ( GOALS[ currentType() ] || [] ).map( function ( g ) {
+			var detail = byId( 'ace-exp-goal-detail' );
+			var previous = select.value;
+			var goals = ( ( OPTIONS && OPTIONS.goals ) || [] ).filter( function ( g ) {
+				return ! g.guardrailOnly && ( g.types || [] ).indexOf( currentType() ) !== -1;
+			} );
+			select.innerHTML = goals.map( function ( g ) {
 				return '<option value="' + esc( g.id ) + '">' + esc( g.label ) + '</option>';
 			} ).join( '' );
+			// Keep the merchant's choice when the new split can still measure it.
+			if ( goals.some( function ( g ) { return g.id === previous; } ) ) {
+				select.value = previous;
+			}
+			var picked = goals.filter( function ( g ) { return g.id === select.value; } )[ 0 ];
+			if ( detail ) { detail.textContent = picked ? picked.detail : ''; }
+		}
+
+		/**
+		 * Content checkboxes for the chosen split. Unavailable content is drawn
+		 * disabled with its reason rather than left out: a choice that silently
+		 * vanishes tells a merchant nothing.
+		 */
+		function fillContent() {
+			var el = byId( 'ace-exp-content' );
+			var note = byId( 'ace-exp-content-note' );
+			if ( ! el ) { return; }
+			var kept = checkedContent();
+			if ( ! kept.length ) { kept = [ 'product-description' ]; }
+			el.innerHTML = factorsForType().map( function ( f ) {
+				var on = f.available && kept.indexOf( f.contentTypeId ) !== -1;
+				return '<label class="ace-label">' +
+					'<input type="checkbox" name="contentTypes" value="' + esc( f.contentTypeId ) + '"' +
+					( on ? ' checked' : '' ) + ( f.available ? '' : ' disabled' ) + ' /> ' +
+					'<span><strong>' + esc( f.label ) + '</strong><br />' +
+					'<span class="description">' + esc( f.available ? f.summary : ( f.unavailableReason || '' ) ) + '</span></span>' +
+					'</label>';
+			} ).join( '' );
+			if ( note ) { note.hidden = currentType() !== 'product_holdout'; }
+			syncVersions();
+		}
+
+		/**
+		 * Versions only apply to content the platform can write more than one
+		 * way, and a single version is only a test when products are held back.
+		 */
+		function syncVersions() {
+			var select = byId( 'ace-exp-levels' );
+			if ( ! select ) { return; }
+			var angled = factorsForType().some( function ( f ) {
+				return f.angleTestable && checkedContent().indexOf( f.contentTypeId ) !== -1;
+			} );
+			var one = select.querySelector( 'option[value="1"]' );
+			var shopper = currentType() === 'visitor_split';
+			if ( one ) {
+				one.disabled = shopper;
+				one.hidden = shopper;
+			}
+			if ( shopper && select.value === '1' ) { select.value = '2'; }
+			select.disabled = ! angled;
+		}
+
+		function clearVerdict() {
+			// The design changed, so the verdict is about a test that no longer
+			// exists. Clearing it is the honest move; leaving a green tick
+			// against a different design is not.
+			verdictEl.hidden = true;
+			launchBtn.disabled = true;
+		}
+
+		function loadOptions() {
+			core.post( 'experiment_options', {} )
+				.then( function ( payload ) {
+					OPTIONS = payload || null;
+					fillContent();
+					fillGoals();
+				} )
+				.catch( function ( err ) {
+					OPTIONS = null;
+					fillContent();
+					fillGoals();
+					verdictEl.hidden = false;
+					verdictEl.className = 'ace-banner ace-banner-error';
+					verdictEl.innerHTML = '<strong>' +
+						esc( t( 'optionsFailed', 'Could not load what can be tested' ) ) +
+						'</strong><p>' + esc( ( err && err.message ) || '' ) + '</p>';
+					checkBtn.disabled = true;
+					launchBtn.disabled = true;
+				} );
 		}
 
 		function fillCategories() {
@@ -733,7 +840,15 @@
 			return {
 				type: currentType(),
 				category: byId( 'ace-exp-category' ).value,
+				contentTypes: checkedContent(),
+				// An empty array posts nothing at all, which the PHP would read as a
+				// script from before 4.19.0 and test the description. This says the
+				// choice was made, even when the choice was nothing.
+				contentChosen: 1,
 				levels: byId( 'ace-exp-levels' ).value,
+				// Sent to the power check too: a product split is sized against
+				// the goal it will measure, and orders are far rarer than visits.
+				goal: byId( 'ace-exp-goal' ).value,
 				days: byId( 'ace-exp-days' ).value
 			};
 		}
@@ -845,7 +960,6 @@
 		function launch() {
 			var payload = designPayload();
 			payload.name = byId( 'ace-exp-name' ).value;
-			payload.goal = byId( 'ace-exp-goal' ).value;
 			var slow = form.querySelector( 'input[name="acceptSlow"]' );
 			payload.acceptSlow = slow && slow.checked ? 1 : '';
 
@@ -1232,13 +1346,19 @@
 		launchBtn.addEventListener( 'click', launch );
 		Array.prototype.forEach.call( form.querySelectorAll( 'input[name="type"]' ), function ( el ) {
 			el.addEventListener( 'change', function () {
+				fillContent();
 				fillGoals();
-				// The design changed, so the verdict is about a test that no
-				// longer exists. Clearing it is the honest move; leaving a green
-				// tick against a different design is not.
-				verdictEl.hidden = true;
-				launchBtn.disabled = true;
+				clearVerdict();
 			} );
+		} );
+		// Delegated, because the checkboxes are redrawn on every split change.
+		byId( 'ace-exp-content' ).addEventListener( 'change', function () {
+			syncVersions();
+			clearVerdict();
+		} );
+		byId( 'ace-exp-goal' ).addEventListener( 'change', function () {
+			fillGoals();
+			clearVerdict();
 		} );
 
 		/* Debounced through the shared helper rather than firing on every
@@ -1252,7 +1372,7 @@
 			}, 350 ) );
 		}
 
-		fillGoals();
+		loadOptions();
 		fillCategories();
 		loadList( false );
 	}

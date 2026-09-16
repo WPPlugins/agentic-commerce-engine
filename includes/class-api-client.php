@@ -651,6 +651,21 @@ class Api_Client {
 	}
 
 	/**
+	 * What the create form may offer: the content each split can test, the
+	 * versions, and the goals.
+	 *
+	 * Asked for rather than kept here. This plugin used to carry its own goal
+	 * list and test only the description, and a list on a merchant's server
+	 * changes only when they update the plugin.
+	 *
+	 * @param string $store_id Store id.
+	 * @return array|\WP_Error
+	 */
+	public function experiment_options( $store_id ) {
+		return $this->request( 'GET', '/api/v1/plugin/experiments/options', null, array( 'storeId' => $store_id ) );
+	}
+
+	/**
 	 * The costless power check. Spends nothing and creates nothing.
 	 *
 	 * @param array $body Design and product set.

@@ -155,6 +155,16 @@ class Experiments {
 		return $this->plugin->api()->experiment_subjects( $this->store_id(), $category );
 	}
 
+	/**
+	 * What the create form may offer. Not cached: it is read once per visit to
+	 * the form, and a stale answer is exactly the defect it replaces.
+	 *
+	 * @return array|\WP_Error
+	 */
+	public function options() {
+		return $this->plugin->api()->experiment_options( $this->store_id() );
+	}
+
 	/* --------------------------------------------------------------------- */
 	/* Writes                                                                */
 	/* --------------------------------------------------------------------- */
