@@ -205,8 +205,9 @@ class Review_Sync {
 			$decided_at = (string) get_post_meta( $product_id, Meta::ENRICHED_AT, true );
 		}
 
-		$edited  = get_post_meta( $product_id, Meta::EDITED, true );
-		$edited  = ( is_array( $edited ) && in_array( $remote, self::VALUE_STATUSES, true ) ) ? $edited : array();
+		$edited_any = get_post_meta( $product_id, Meta::EDITED, true );
+		$edited_any = is_array( $edited_any ) ? $edited_any : array();
+		$edited     = in_array( $remote, self::VALUE_STATUSES, true ) ? $edited_any : array();
 		$pending = get_post_meta( $product_id, Meta::PENDING, true );
 		$pending = is_array( $pending ) ? $pending : array();
 		$content = get_post_meta( $product_id, Meta::CONTENT, true );
@@ -228,6 +229,11 @@ class Review_Sync {
 						$at = (string) $edited[ $field ];
 					}
 				}
+			} elseif ( empty( $edited_any[ $field ] ) ) {
+				$proposed = self::proposed_value( $field, $pending, $content );
+				if ( null !== $proposed ) {
+					$decision['proposedValue'] = $proposed;
+				}
 			}
 			if ( '' !== $at ) {
 				$decision['decidedAt'] = $at;
@@ -235,6 +241,34 @@ class Review_Sync {
 			$decisions[] = $decision;
 		}
 		return $decisions;
+	}
+
+	/**
+	 * The proposal a decision is about, sent as `proposedValue` (4.19.1).
+	 *
+	 * Rezolve Ai files a decision on its review row for the same product and
+	 * field, and content this plugin generated need not be that row's content.
+	 * Without the proposal, approving this site's own copy marked a different
+	 * web copy approved and live (seen on the Shopify app, 16 Sep 2026, and the
+	 * same report shape here). Rezolve Ai compares it with the row and never
+	 * stores it. An edited field sends none: its text is the merchant's and would
+	 * never match, even when the row it came from is Rezolve Ai's own.
+	 *
+	 * @param string $field   Field name.
+	 * @param array  $pending Meta::PENDING.
+	 * @param array  $content Meta::CONTENT.
+	 * @return mixed|null Null when there is nothing to compare.
+	 */
+	public static function proposed_value( $field, array $pending, array $content ) {
+		if ( 'irl_cards' === $field ) {
+			foreach ( array( 'irl-scenarios', 'irl-cards' ) as $key ) {
+				if ( ! empty( $content[ $key ] ) ) {
+					return $content[ $key ];
+				}
+			}
+			return null;
+		}
+		return Edit_Values::stored_value( $field, $pending, $content );
 	}
 
 	/**
