@@ -5,7 +5,8 @@
  * via core.tabs), search, paged lists with lazy before/after diffs and
  * per-content-type previews, measured quality scores with re-score,
  * approve/dismiss/revert row actions, and a server-driven approve-all batch
- * with progress.
+ * with progress. Since 4.20.0 every row shows the product's main image and a
+ * View live page link, and an expanded row opens with all of its images.
  */
 ( function () {
 	'use strict';
@@ -38,6 +39,71 @@
 	/** core.esc leaves quotes alone, which is only safe outside an attribute. */
 	function attr( s ) {
 		return core.esc( s ).replace( /"/g, '&quot;' );
+	}
+	/**
+	 * fmt() for a merchant string: a function replacer, so "$&" or "$$" in a
+	 * product name stays literal (String.replace reads them as patterns).
+	 */
+	function withName( template, name ) {
+		var value = String( name == null ? '' : name );
+		return template.replace( /%(?:1\$)?s/, function () {
+			return value;
+		} );
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* Product images and the live page (4.20.0)                           */
+	/* ------------------------------------------------------------------ */
+
+	/** A row's main image, or an empty frame: never a stand-in photo. */
+	function thumbHtml( url ) {
+		return url
+			? '<img class="ace-thumb ace-rev-thumb" src="' + attr( url ) + '" alt="" width="38" height="38" loading="lazy" decoding="async">'
+			: '<span class="ace-thumb ace-rev-thumb is-empty" aria-hidden="true"></span>';
+	}
+
+	/**
+	 * "View live page", or nothing for a product that is not published.
+	 * attr(), never encodeURI(): WordPress keeps non-ASCII slugs percent
+	 * encoded, and encoding them again turns caf%C3%A9 into a 404.
+	 */
+	function liveLinkHtml( url, name ) {
+		if ( ! url ) {
+			return '';
+		}
+		return '<a class="ace-link-sm ace-rev-live" href="' + attr( url ) + '" target="_blank" rel="noopener" aria-label="' +
+			attr( withName( t( 'viewLivePageFor', 'View live page for %s (opens in a new tab)' ), name ) ) + '">' +
+			core.esc( t( 'viewLivePage', 'View live page' ) ) + '</a>';
+	}
+
+	/**
+	 * Every image on the product, the main image first, each with the alt text
+	 * it has now. Each opens at full size, because the thumbnail is a crop.
+	 */
+	function galleryHtml( gallery ) {
+		if ( ! gallery ) {
+			return '';
+		}
+		var images = gallery.images || [];
+		var html = '<div class="ace-gallery-block"><div class="ace-ct-title">' + core.esc( t( 'imagesTitle', 'Product images' ) ) + '</div>';
+		if ( ! images.length ) {
+			return html + '<p class="ace-muted ace-gallery-note">' + core.esc( t( 'noImages', 'This product has no images.' ) ) + '</p></div>';
+		}
+		var total = Math.max( gallery.total || 0, images.length );
+		html += '<p class="ace-muted ace-gallery-note">' + core.esc( t( 'imagesHint', 'Main image first, then the gallery, each with the alt text it has now.' ) ) + '</p>';
+		html += '<ul class="ace-gallery">' + images.map( function ( image, i ) {
+			var caption = ( image.featured ? core.chip( 'neutral', t( 'mainImage', 'Main image' ) ) + ' ' : '' ) +
+				( image.alt ? core.esc( image.alt ) : '<em class="ace-muted">' + core.esc( t( 'noAltText', 'No alt text' ) ) + '</em>' );
+			return '<li class="ace-gallery-item"><figure>' +
+				'<a class="ace-gallery-link" href="' + attr( image.full ) + '" target="_blank" rel="noopener" aria-label="' +
+				attr( fmt( t( 'openImage', 'Open image %1$s of %2$s at full size (opens in a new tab)' ), core.num( i + 1 ), core.num( total ) ) ) + '">' +
+				'<img src="' + attr( image.thumb ) + '" alt="" width="96" height="96" loading="lazy" decoding="async"></a>' +
+				'<figcaption>' + caption + '</figcaption></figure></li>';
+		} ).join( '' ) + '</ul>';
+		if ( total > images.length ) {
+			html += '<p class="ace-muted ace-gallery-note">' + core.esc( fmt( t( 'imagesMore', 'Showing the first %1$s of %2$s images.' ), core.num( images.length ), core.num( total ) ) ) + '</p>';
+		}
+		return html + '</div>';
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -352,6 +418,9 @@
 	/** The whole expanded body for one product's last read. */
 	function bodyHtml( d ) {
 		return '<div class="ace-quality"></div>' +
+			// A section like _content, so refreshSections redraws it after a
+			// save (a live alt text edit changes the captions).
+			sectionHtml( '_images', galleryHtml( d.gallery ) ) +
 			renderDiffHtml( d.diff || [], d.mode ) +
 			sectionHtml( '_content', renderContentHtml( d.content || {} ) ) +
 			renderExtrasHtml( d.extras || {}, d.mode );
@@ -799,7 +868,7 @@
 				mode: d.mode,
 				value: readEditorValue( editor, type ),
 			} ).then( function ( res ) {
-				details[ id ] = { mode: res.mode, diff: res.diff || [], extras: res.extras || {}, content: res.content || {} };
+				details[ id ] = { mode: res.mode, diff: res.diff || [], extras: res.extras || {}, content: res.content || {}, gallery: res.gallery || d.gallery || null };
 				closeEditor( item, section, id );
 				var message = 'live' === res.mode ? t( 'editSavedLive', 'Saved and republished to your store.' ) : t( 'editSaved', 'Saved. Approving applies your edited version.' );
 				if ( res.kept && res.kept.length ) {
@@ -915,12 +984,16 @@
 			} ).join( '' );
 			var q = item.quality || {};
 			var score = '<span class="ace-rev-score">' + scoreChipHtml( !! q.known, q.overall ) + '</span>';
-			return '<div class="ace-rev-item" data-id="' + item.id + '">' +
+			// The thumbnail and the links sit outside every <button>, so the
+			// delegated click handler below never reads them as a toggle.
+			return '<div class="ace-rev-item" data-id="' + attr( item.id ) + '">' +
 				'<div class="ace-rev-head">' +
 				'<button type="button" class="ace-rev-toggle" aria-label="' + core.esc( t( 'expand', 'Expand' ) ) + '"><span class="ace-caret">&rsaquo;</span></button>' +
+				thumbHtml( item.thumb ) +
 				'<div class="ace-rev-main"><div class="ace-rev-title">' + core.esc( item.name ) + ' ' + score + '</div><div class="ace-rev-chips">' + chips + '</div></div>' +
 				'<div class="ace-rev-actions">' +
-				( item.editLink ? '<a class="ace-link-sm" href="' + encodeURI( item.editLink ) + '" target="_blank" rel="noopener">' + core.esc( t( 'edit', 'Edit' ) ) + '</a>' : '' ) +
+				liveLinkHtml( item.liveUrl, item.name ) +
+				( item.editLink ? '<a class="ace-link-sm" href="' + attr( item.editLink ) + '" target="_blank" rel="noopener">' + core.esc( t( 'edit', 'Edit' ) ) + '</a>' : '' ) +
 				'<button type="button" class="ace-btn ace-btn-secondary ace-btn-sm ace-rev-dismiss">' + core.esc( t( 'dismiss', 'Dismiss' ) ) + '</button>' +
 				'<button type="button" class="ace-btn ace-btn-primary ace-btn-sm ace-rev-approve">' + core.esc( t( 'approve', 'Approve' ) ) + '</button>' +
 				'</div></div><div class="ace-rev-body" hidden></div></div>';
@@ -974,6 +1047,21 @@
 			} ).catch( core.errorToast );
 		}
 
+		/**
+		 * One applied product. `thumb`, not `image`: the shared products
+		 * action puts WooCommerce's placeholder in `image` for the Products
+		 * table, and a stand-in photo here would hide a missing image.
+		 */
+		function appliedItemHtml( row ) {
+			return '<div class="ace-rev-item ace-rev-applied" data-id="' + attr( row.id ) + '"><div class="ace-rev-head">' +
+				'<button type="button" class="ace-rev-toggle" aria-label="' + attr( t( 'expand', 'Expand' ) ) + '"><span class="ace-caret">&rsaquo;</span></button>' +
+				thumbHtml( row.thumb ) +
+				'<div class="ace-rev-main"><div class="ace-rev-title">' + core.esc( row.name ) + ' ' + core.chip( 'success', t( 'statusApplied', 'Applied' ) ) + '</div></div>' +
+				'<div class="ace-rev-actions">' + liveLinkHtml( row.liveUrl, row.name ) +
+				'<button type="button" class="ace-btn ace-btn-secondary ace-btn-sm ace-rev-revert">' + core.esc( t( 'revertToOriginal', 'Revert to original' ) ) + '</button></div></div>' +
+				'<div class="ace-rev-body" hidden></div></div>';
+		}
+
 		function loadApplied( reset ) {
 			if ( reset ) {
 				applied.page = 1;
@@ -981,13 +1069,7 @@
 			}
 			core.post( 'products', { page: applied.page, status: 'applied' } ).then( function ( d ) {
 				// Expandable since 4.18.0, so what is live can be edited in place.
-				var html = d.rows.map( function ( row ) {
-					return '<div class="ace-rev-item ace-rev-applied" data-id="' + attr( row.id ) + '"><div class="ace-rev-head">' +
-						'<button type="button" class="ace-rev-toggle" aria-label="' + attr( t( 'expand', 'Expand' ) ) + '"><span class="ace-caret">&rsaquo;</span></button>' +
-						'<div class="ace-rev-main"><div class="ace-rev-title">' + core.esc( row.name ) + ' ' + core.chip( 'success', t( 'statusApplied', 'Applied' ) ) + '</div></div>' +
-						'<div class="ace-rev-actions"><button type="button" class="ace-btn ace-btn-secondary ace-btn-sm ace-rev-revert">' + core.esc( t( 'revertToOriginal', 'Revert to original' ) ) + '</button></div></div>' +
-						'<div class="ace-rev-body" hidden></div></div>';
-				} ).join( '' );
+				var html = d.rows.map( appliedItemHtml ).join( '' );
 				if ( 1 === applied.page ) {
 					removeEditors( appliedList );
 					appliedList.innerHTML = d.rows.length ? html : '<div class="ace-empty"><p>' + core.esc( t( 'noApplied', 'No applied products yet.' ) ) + '</p></div>';
@@ -1067,7 +1149,7 @@
 					if ( ! body.getAttribute( 'data-loaded' ) ) {
 						core.skeleton( body, 'text' );
 						core.post( 'review_diff', { product_id: id } ).then( function ( d ) {
-							details[ id ] = { mode: d.mode || '', diff: d.diff || [], extras: d.extras || {}, content: d.content || {} };
+							details[ id ] = { mode: d.mode || '', diff: d.diff || [], extras: d.extras || {}, content: d.content || {}, gallery: d.gallery || null };
 							body.innerHTML = bodyHtml( details[ id ] );
 							body.setAttribute( 'data-loaded', '1' );
 							renderQuality( id );

@@ -4,7 +4,7 @@ Tags: ai, seo, woocommerce, ai search, content
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 4.19.1
+Stable tag: 4.20.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -35,7 +35,7 @@ Rezolve Ai connects your WordPress site to the Rezolve Ai platform and puts the 
 
 * **Sync** your products to Rezolve Ai in batches, safely, even on catalogs of thousands of products.
 * **Enrich** products with AI across every content type: titles, descriptions, SEO meta, Product schema, real-life usage scenarios, internal links, highlights, product Q&A, product attributes, image alt text, and channel feeds.
-* **Review** every suggestion with a clear before/after diff and the quality scores Rezolve Ai measured for it (content quality, SEO, AI readability and brand voice), approve per product or in bulk, or turn on auto-apply. Revert any product with one click.
+* **Review** every suggestion with a clear before/after diff and the quality scores Rezolve Ai measured for it (content quality, SEO, AI readability and brand voice), next to the product's images and a link to its live page. Approve per product or in bulk, or turn on auto-apply. Revert any product with one click.
 * **Display** the new on-page content with blocks, shortcodes ([agencoen_irl], [agencoen_internal_links], [agencoen_highlights], [agencoen_product_qa]), or automatic placement on the product page.
 * **Serve** Google, Microsoft, and Agentic Commerce product feeds straight from your store as feed URLs.
 
@@ -137,6 +137,10 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 8. The Settings screen with publishing, automation, and crawler tracking options.
 
 == Changelog ==
+
+= 4.20.0 =
+* Added: a View live page link on every product on the Review screen, waiting or applied. It opens the product's page on your store in a new tab, and appears once the product is published.
+* Added: each product on the Review screen shows its main image. Open a product to see all of its images, the main image first and then the gallery, each with the alt text it has now. Select an image to open it at full size.
 
 = 4.19.1 =
 * Fixed: approving or dismissing content this site wrote itself no longer changes different content for the same product in Rezolve Ai. Only the content you actually decided on is marked approved, dismissed or live there.
@@ -333,6 +337,9 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 * Product enrichment now runs on the platform's durable jobs API with webhook-accelerated polling.
 
 == Upgrade Notice ==
+
+= 4.20.0 =
+See every product image and its current alt text on the Review screen, and open any product's live page from its row.
 
 = 4.19.1 =
 Your approvals and dismissals on this site now only update the matching content in Rezolve Ai.

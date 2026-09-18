@@ -504,16 +504,20 @@ class Ajax extends Ajax_Base {
 			if ( ! $product ) {
 				continue;
 			}
-			$img_id = $product->get_image_id();
+			$media  = Review::row_media( $product );
 			$status = (string) get_post_meta( $id, Meta::STATUS, true );
 			$rows[] = array(
-				'id'     => $id,
-				'name'   => $product->get_name(),
-				'sku'    => $product->get_sku(),
-				'image'  => $img_id ? wp_get_attachment_image_url( $img_id, 'thumbnail' ) : wc_placeholder_img_src( 'thumbnail' ),
-				'status' => '' !== $status ? $status : 'none',
+				'id'      => $id,
+				'name'    => $product->get_name(),
+				'sku'     => $product->get_sku(),
+				// The Products table keeps WooCommerce's placeholder; Review
+				// reads `thumb`, which is '' when the product has no image.
+				'image'   => '' !== $media['thumb'] ? $media['thumb'] : wc_placeholder_img_src( 'thumbnail' ),
+				'thumb'   => $media['thumb'],
+				'liveUrl' => $media['liveUrl'],
+				'status'  => '' !== $status ? $status : 'none',
 				// Measured product-level quality, or null for "Not scored".
-				'score'  => Quality::cached_overall( $id ),
+				'score'   => Quality::cached_overall( $id ),
 			);
 		}
 
@@ -569,9 +573,14 @@ class Ajax extends Ajax_Base {
 					}
 				}
 			}
+			// The main image and the live page only; the full gallery is read
+			// on expand (review_diff), so twenty rows stay light.
+			$media   = Review::row_media( $product );
 			$items[] = array(
 				'id'       => $id,
 				'name'     => $product->get_name(),
+				'thumb'    => $media['thumb'],
+				'liveUrl'  => $media['liveUrl'],
 				// From the cache, so the chip can paint at once. The screen then
 				// asks `quality_get` for fresh numbers. `known` separates "never
 				// read" (no chip yet) from "read, and nothing is measured".
@@ -612,6 +621,7 @@ class Ajax extends Ajax_Base {
 				'diff'    => $this->plugin->review()->diff_for( $id ),
 				'content' => is_array( $content ) ? $content : array(),
 				'extras'  => $this->plugin->review()->extras_for( $id, 'live' === $mode ),
+				'gallery' => Review::gallery( wc_get_product( $id ) ),
 			)
 		);
 	}

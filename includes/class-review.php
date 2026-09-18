@@ -15,6 +15,9 @@ defined( 'ABSPATH' ) || exit;
  */
 class Review {
 
+	/** How many images one expanded product lists (4.20.0). Every image is still counted. */
+	const GALLERY_MAX = 50;
+
 	/** @var Plugin */
 	private $plugin;
 
@@ -198,6 +201,86 @@ class Review {
 	}
 
 	/**
+	 * What a Review row shows of the product itself (4.20.0): its main image
+	 * and a link to its live page.
+	 *
+	 * The link appears only for a published product, as the Content screen's
+	 * View does. Password-protected and catalog-hidden products are published
+	 * and reachable by their URL, so they keep it: a shopper reaches the same
+	 * page. A missing image is '' rather than WooCommerce's placeholder: on the
+	 * screen where merchants check images, a stand-in photo would hide the gap
+	 * they came to find.
+	 *
+	 * @param \WC_Product|mixed $product Product.
+	 * @return array{thumb:string,liveUrl:string}
+	 */
+	public static function row_media( $product ) {
+		$media = array(
+			'thumb'   => '',
+			'liveUrl' => '',
+		);
+		if ( ! is_object( $product ) ) {
+			return $media;
+		}
+		$image_id = (int) $product->get_image_id();
+		if ( $image_id > 0 ) {
+			$media['thumb'] = self::safe_url( wp_get_attachment_image_url( $image_id, 'thumbnail' ) );
+		}
+		$id = (int) $product->get_id();
+		if ( $id > 0 && 'publish' === get_post_status( $id ) ) {
+			$media['liveUrl'] = self::safe_url( get_permalink( $id ) );
+		}
+		return $media;
+	}
+
+	/**
+	 * Every image on the product, the main image first and then the gallery,
+	 * each with the alt text it has now, for an expanded Review row (4.20.0).
+	 *
+	 * Order and membership come from Native_Fields::image_candidates(), the
+	 * list alt text suggestions are matched against, so the strip shows the
+	 * images an approval would write to. Alt text is read as stored and never
+	 * falls back to the product name the way the sync serializer does, so an
+	 * empty one reads as empty.
+	 *
+	 * @param \WC_Product|mixed $product Product.
+	 * @return array{images:array<int,array{id:int,thumb:string,full:string,alt:string,featured:bool}>,total:int}
+	 */
+	public static function gallery( $product ) {
+		$candidates = Native_Fields::image_candidates( $product );
+		$main       = is_object( $product ) ? (int) $product->get_image_id() : 0;
+		$images     = array();
+		foreach ( array_slice( array_keys( $candidates ), 0, self::GALLERY_MAX ) as $attachment_id ) {
+			$full = self::safe_url( wp_get_attachment_image_url( $attachment_id, 'full' ) );
+			if ( '' === $full ) {
+				$full = self::safe_url( $candidates[ $attachment_id ][0] );
+			}
+			$thumb    = self::safe_url( wp_get_attachment_image_url( $attachment_id, 'thumbnail' ) );
+			$images[] = array(
+				'id'       => (int) $attachment_id,
+				'thumb'    => '' !== $thumb ? $thumb : $full,
+				'full'     => $full,
+				'alt'      => (string) get_post_meta( $attachment_id, '_wp_attachment_image_alt', true ),
+				'featured' => (int) $attachment_id === $main,
+			);
+		}
+		return array(
+			'images' => $images,
+			'total'  => count( $candidates ),
+		);
+	}
+
+	/**
+	 * A URL safe to hand the screen, or '' for anything unusable.
+	 *
+	 * @param mixed $url Candidate URL.
+	 * @return string
+	 */
+	private static function safe_url( $url ) {
+		return is_string( $url ) && '' !== $url ? esc_url_raw( $url ) : '';
+	}
+
+	/**
 	 * Save a merchant's edit to one field of a product (4.18.0).
 	 *
 	 * DRAFT (a proposal still waiting). The proposal is rewritten in place:
@@ -321,6 +404,9 @@ class Review {
 			'diff'   => $this->diff_for( $product_id ),
 			'extras' => $this->extras_for( $product_id, 'live' === $mode ),
 			'content' => $content,
+			// A live alt text edit rewrites _wp_attachment_image_alt, so the
+			// image strip has to come back fresh or it shows the old alt.
+			'gallery' => self::gallery( wc_get_product( $product_id ) ),
 		);
 	}
 

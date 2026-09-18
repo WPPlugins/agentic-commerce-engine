@@ -1257,3 +1257,29 @@
 .ace-edit-note { margin: 0; font-size: 12px; }
 .ace-edit-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
 .ace-editor .wp-editor-wrap { margin-bottom: 4px; }
+
+/* Review: product images and the live page link (4.20.0). */
+.ace-rev-thumb { flex: 0 0 auto; }
+.ace-rev-thumb.is-empty { background: var(--ace-surface-3); }
+.ace-rev-live { white-space: nowrap; }
+.ace-gallery-block { padding: 12px 0 4px; }
+.ace-gallery-note { margin: 4px 0 0; font-size: 12px; }
+.ace-gallery { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 12px; }
+.ace-gallery-item { width: 96px; margin: 0; }
+.ace-gallery-item figure { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.ace-gallery-link { display: block; border-radius: var(--ace-radius-md); }
+.ace-gallery-link:focus-visible { outline: 2px solid var(--ace-primary); outline-offset: 2px; }
+.ace-gallery img {
+	display: block;
+	width: 96px;
+	height: 96px;
+	object-fit: cover;
+	border-radius: var(--ace-radius-md);
+	border: 1px solid var(--ace-border-light);
+	background: var(--ace-surface-3);
+}
+.ace-gallery figcaption { font-size: 12px; line-height: 1.4; overflow-wrap: anywhere; }
+@media (max-width: 782px) {
+	.ace-rev-head { flex-wrap: wrap; }
+	.ace-rev-actions { flex: 1 1 100%; justify-content: flex-end; }
+}

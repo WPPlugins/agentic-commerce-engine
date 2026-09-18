@@ -295,6 +295,20 @@ class Assets {
 			'scoreLabel'        => __( 'Score %s', 'agentic-commerce-engine' ),
 			'notScored'         => __( 'Not scored', 'agentic-commerce-engine' ),
 
+			/* Review: product images and the live page (4.20.0). */
+			'viewLivePage'      => __( 'View live page', 'agentic-commerce-engine' ),
+			/* translators: %s: product name. */
+			'viewLivePageFor'   => __( 'View live page for %s (opens in a new tab)', 'agentic-commerce-engine' ),
+			'imagesTitle'       => __( 'Product images', 'agentic-commerce-engine' ),
+			'imagesHint'        => __( 'Main image first, then the gallery, each with the alt text it has now.', 'agentic-commerce-engine' ),
+			'mainImage'         => __( 'Main image', 'agentic-commerce-engine' ),
+			'noAltText'         => __( 'No alt text', 'agentic-commerce-engine' ),
+			'noImages'          => __( 'This product has no images.', 'agentic-commerce-engine' ),
+			/* translators: 1: position of the image, 2: number of images. */
+			'openImage'         => __( 'Open image %1$s of %2$s at full size (opens in a new tab)', 'agentic-commerce-engine' ),
+			/* translators: 1: number of images shown, 2: number of images on the product. */
+			'imagesMore'        => __( 'Showing the first %1$s of %2$s images.', 'agentic-commerce-engine' ),
+
 			/*
 			 * Quality scores (4.17.0). The state sentences are the web review
 			 * queue's, word for word, so a merchant reads the same thing about
