@@ -2,19 +2,23 @@
  * Rezolve Ai — dynamic (server-rendered) editor blocks.
  * No build step: registers directly against the wp.* globals.
  */
-( function ( blocks, element, serverSideRender ) {
+( function ( blocks, element, blockEditor, serverSideRender ) {
 	'use strict';
-	if ( ! blocks || ! element || ! serverSideRender ) {
+	if ( ! blocks || ! element || ! blockEditor || ! serverSideRender ) {
 		return;
 	}
 	var el = element.createElement;
+	var useBlockProps = blockEditor.useBlockProps;
 
+	// apiVersion 3: the editor canvas is an iframe and the block draws its
+	// own wrapper, so the wrapper must carry useBlockProps() for selection,
+	// toolbar and alignment to work.
 	function preview( name ) {
-		return el( serverSideRender, { block: name } );
+		return el( 'div', useBlockProps(), el( serverSideRender, { block: name } ) );
 	}
 
 	blocks.registerBlockType( 'agencoen/irl', {
-		apiVersion: 2,
+		apiVersion: 3,
 		title: 'Rezolve Ai: IRL scenario cards',
 		description: 'Real-life usage scenarios for this product (from Rezolve Ai).',
 		icon: 'images-alt2',
@@ -28,9 +32,9 @@
 	} );
 
 	blocks.registerBlockType( 'agencoen/internal-links', {
-		apiVersion: 2,
+		apiVersion: 3,
 		title: 'Rezolve Ai: Internal links',
-		description: 'AI-suggested related product links (from Rezolve Ai).',
+		description: 'Related product links suggested by Rezolve Ai.',
 		icon: 'admin-links',
 		category: 'widgets',
 		edit: function () {
@@ -41,7 +45,7 @@
 		}
 	} );
 	blocks.registerBlockType( 'agencoen/highlights', {
-		apiVersion: 2,
+		apiVersion: 3,
 		title: 'Rezolve Ai: Highlights',
 		description: 'Short benefit bullets for this product (from Rezolve Ai).',
 		icon: 'list-view',
@@ -55,7 +59,7 @@
 	} );
 
 	blocks.registerBlockType( 'agencoen/product-qa', {
-		apiVersion: 2,
+		apiVersion: 3,
 		title: 'Rezolve Ai: Product Q&A',
 		description: 'Shopper questions and answers for this product (from Rezolve Ai).',
 		icon: 'editor-help',
@@ -67,4 +71,9 @@
 			return null;
 		}
 	} );
-} )( window.wp && window.wp.blocks, window.wp && window.wp.element, window.wp && window.wp.serverSideRender );
+} )(
+	window.wp && window.wp.blocks,
+	window.wp && window.wp.element,
+	window.wp && window.wp.blockEditor,
+	window.wp && window.wp.serverSideRender
+);

@@ -2,6 +2,16 @@
 /**
  * Per-visitor A/B testing on a WordPress storefront.
  *
+ * @package Agencoen
+ */
+
+namespace Agencoen;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
  * WHY THIS IS THE ONE FEATURE IN THE PLUGIN THAT SETS A COOKIE
  * Every other tracker here is aggregate-only by design. Traffic_Tracker says so
  * in its own header: no cookie, no session id, no fingerprint, no IP, because
@@ -44,16 +54,7 @@
  * attribute conversions to the wrong arm and the number would be worse than
  * useless. class-ab-test-asset.guard.test.ts fails the build if the shipped
  * file and the generator disagree.
- *
- * @package Agencoen
  */
-
-namespace Agencoen;
-
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
 class Ab_Test {
 
 	/** Post meta holding the storefront config Rezolve Ai sent for this product. */

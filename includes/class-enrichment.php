@@ -39,7 +39,7 @@ class Enrichment {
 	 *
 	 * @param int[] $ids     Product ids.
 	 * @param array $options Enrichment options.
-	 * @return array|\WP_Error { jobIds, count }
+	 * @return array|\WP_Error { jobIds, count, skipped }
 	 */
 	public function enrich_ids( array $ids, array $options = array() ) {
 		$ids = array_values( array_unique( array_map( 'intval', $ids ) ) );
@@ -54,8 +54,9 @@ class Enrichment {
 		}
 
 		$settings = $this->plugin->settings();
-		$store_id = $settings->get_store_id();
-		$job_ids  = array();
+		$store_id       = $settings->get_store_id();
+		$job_ids        = array();
+		$skipped_total  = 0;
 
 		foreach ( array_chunk( $ids, self::ENRICH_CHUNK ) as $chunk ) {
 			$result = $this->plugin->api()->enrich( $store_id, $chunk, $options );
@@ -73,7 +74,33 @@ class Enrichment {
 			}
 			$job_ids[] = $job_id;
 
+			/*
+			 * Products a running experiment is measuring never entered the job.
+			 *
+			 * The platform drops them and names them under the envelope's
+			 * `meta.skipped`. Marking them queued anyway would leave them
+			 * waiting on results that are never coming: the poller only ever
+			 * sees the products the job actually holds, so the row would sit at
+			 * "Queued" until someone re-enriched it by hand.
+			 */
+			$skipped = array();
+			if ( isset( $result['_meta']['skipped'] ) && is_array( $result['_meta']['skipped'] ) ) {
+				foreach ( $result['_meta']['skipped'] as $entry ) {
+					if ( isset( $entry['productId'] ) ) {
+						$skipped[ (int) $entry['productId'] ] = true;
+					}
+				}
+			}
+			$skipped_in_chunk = array_values( array_intersect( $chunk, array_keys( $skipped ) ) );
+			if ( ! empty( $skipped_in_chunk ) ) {
+				$this->reset_to_not_enriched( $skipped_in_chunk );
+				$skipped_total += count( $skipped_in_chunk );
+			}
+
 			foreach ( $chunk as $id ) {
+				if ( isset( $skipped[ $id ] ) ) {
+					continue;
+				}
 				update_post_meta( $id, Meta::STATUS, Meta::STATUS_QUEUED );
 				update_post_meta( $id, Meta::JOB_ID, $job_id );
 				delete_post_meta( $id, Meta::PENDING );
@@ -85,8 +112,9 @@ class Enrichment {
 		$this->plugin->repository()->bust_counts_cache();
 
 		return array(
-			'jobIds' => $job_ids,
-			'count'  => count( $ids ),
+			'jobIds'  => $job_ids,
+			'count'   => count( $ids ) - $skipped_total,
+			'skipped' => $skipped_total,
 		);
 	}
 
@@ -124,6 +152,7 @@ class Enrichment {
 		$ingested   = 0;
 		$auto_apply = $this->plugin->settings()->is_auto_apply();
 		$job_id     = (string) $job_id;
+		$to_apply   = array();
 
 		foreach ( $products as $product ) {
 			if ( ! is_array( $product ) ) {
@@ -154,6 +183,9 @@ class Enrichment {
 			// Edits were made to the proposal this one replaces. Carrying the
 			// ledger over would report generated copy as the merchant's own.
 			delete_post_meta( $id, Meta::EDITED );
+			// So was the held-back answer: this proposal may write other
+			// content types, so it is asked about afresh.
+			delete_post_meta( $id, Meta::HELD_BACK );
 			update_post_meta( $id, Meta::ENRICHED_AT, isset( $product['enrichedAt'] ) ? (string) $product['enrichedAt'] : gmdate( 'c' ) );
 			// Status LAST, so a request that dies part way leaves the product
 			// queued and the next poll ingests it, rather than an enriched
@@ -167,6 +199,16 @@ class Enrichment {
 			++$ingested;
 
 			if ( $auto_apply ) {
+				$to_apply[] = $id;
+			}
+		}
+
+		// After the loop, so one held-back request covers every product this
+		// poll ingested (4.29.0). Apply refuses a held product, and refuses
+		// everything when the check fails; those stay in Review for the sweep.
+		if ( ! empty( $to_apply ) ) {
+			$this->plugin->held_back()->check( $to_apply );
+			foreach ( $to_apply as $id ) {
 				$this->plugin->apply()->apply( $id );
 			}
 		}

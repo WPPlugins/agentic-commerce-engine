@@ -203,6 +203,13 @@ class Product_Repository {
 			$joins        .= " LEFT JOIN {$wpdb->postmeta} sc ON sc.post_id = p.ID AND sc.meta_key = %s ";
 			$join_params[] = Meta::QUALITY_OVERALL;
 		}
+		// Products a product split holds, as last checked (4.29.0): `exclude`
+		// for a batch that applies, `only` to count them.
+		$held = isset( $args['held'] ) ? (string) $args['held'] : '';
+		if ( 'exclude' === $held || 'only' === $held ) {
+			$joins        .= " LEFT JOIN {$wpdb->postmeta} hb ON hb.post_id = p.ID AND hb.meta_key = %s ";
+			$join_params[] = Meta::HELD_BACK;
+		}
 
 		$where        = " WHERE p.post_type = 'product' AND p.post_status = 'publish' ";
 		$where_params = array();
@@ -211,6 +218,11 @@ class Product_Repository {
 			$where         .= ' AND ( p.post_title LIKE %s OR sk.meta_value LIKE %s ) ';
 			$where_params[] = $like;
 			$where_params[] = $like;
+		}
+		if ( 'exclude' === $held ) {
+			$where .= ' AND hb.meta_id IS NULL ';
+		} elseif ( 'only' === $held ) {
+			$where .= ' AND hb.meta_id IS NOT NULL ';
 		}
 		if ( 'not_enriched' === $status ) {
 			$where .= ' AND st.meta_value IS NULL ';
@@ -427,12 +439,26 @@ class Product_Repository {
 	 * wp_postmeta (products are not affected by HPOS), and meta_query support in
 	 * wc_get_products varies by version.
 	 *
-	 * @param string $status Status value.
-	 * @param int    $page   1-based page.
-	 * @param int    $per    Page size.
+	 * @param string $status       Status value.
+	 * @param int    $page         1-based page.
+	 * @param int    $per          Page size.
+	 * @param bool   $exclude_held Step past products a product split was last
+	 *                             found holding (4.29.0), for batches that apply.
 	 * @return int[]
 	 */
-	public function ids_with_status( $status, $page = 1, $per = 20 ) {
+	public function ids_with_status( $status, $page = 1, $per = 20, $exclude_held = false ) {
+		$meta_query = array(
+			array(
+				'key'   => Meta::STATUS,
+				'value' => $status,
+			),
+		);
+		if ( $exclude_held ) {
+			$meta_query[] = array(
+				'key'     => Meta::HELD_BACK,
+				'compare' => 'NOT EXISTS',
+			);
+		}
 		$query = new \WP_Query(
 			array(
 				'post_type'              => 'product',
@@ -445,12 +471,7 @@ class Product_Repository {
 				'no_found_rows'          => true,
 				'update_post_meta_cache' => false,
 				'update_post_term_cache' => false,
-				'meta_query'             => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-					array(
-						'key'   => Meta::STATUS,
-						'value' => $status,
-					),
-				),
+				'meta_query'             => $meta_query, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 			)
 		);
 		return array_map( 'intval', $query->posts );

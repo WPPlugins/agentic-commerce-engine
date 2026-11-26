@@ -2,6 +2,14 @@
 /**
  * Writing WooCommerce's own product fields, and taking them back exactly.
  *
+ * @package Agencoen
+ */
+
+namespace Agencoen;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
  * WHAT THIS WRITES
  * Product tags (`product_tag` terms) and custom per-product attributes. SEO
  * title and meta description are NOT here: they travel the existing flat-field
@@ -50,16 +58,6 @@
  * terms, which is a schema change to the merchant's store that cannot be
  * cleanly undone. Custom per-product attributes create no terms and are undone
  * by removing an array key.
- *
- * @package Agencoen
- */
-
-namespace Agencoen;
-
-defined( 'ABSPATH' ) || exit;
-
-/**
- * Class Native_Fields
  */
 class Native_Fields {
 

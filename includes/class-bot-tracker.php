@@ -73,6 +73,12 @@ class Bot_Tracker {
 			return;
 		}
 
+		// A signed agent may look like any browser, so this comes before the user agent is read.
+		// Kept only to be sent, so only when the daily report is on.
+		if ( $this->plugin->settings()->is_bots_report() ) {
+			Signed_Agents::capture();
+		}
+
 		$ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
 		if ( '' === $ua ) {
 			return;

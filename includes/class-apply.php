@@ -21,6 +21,18 @@ defined( 'ABSPATH' ) || exit;
  */
 class Apply {
 
+	/**
+	 * Engine content keys whose destination the merchant chooses, to the
+	 * platform's content type (4.25.0). See Content_Destinations.
+	 */
+	const DESTINATION_TYPES = array(
+		'irl-scenarios'      => 'irl-cards',
+		'internal-links'     => 'internal-links',
+		'highlights'         => 'highlights',
+		'product-qa'         => 'product-qa',
+		'product-attributes' => 'product-attributes',
+	);
+
 	const FEED_CHANNELS = array(
 		'google-shopping'    => 'google',
 		'microsoft-shopping' => 'microsoft',
@@ -58,6 +70,19 @@ class Apply {
 		$product = wc_get_product( $product_id );
 		if ( ! $product ) {
 			return new \WP_Error( 'agencoen_no_product', __( 'Product not found.', 'agentic-commerce-engine' ) );
+		}
+
+		// A product split's control product keeps its content until the
+		// experiment releases it (4.29.0). Asked before anything is written,
+		// so a refusal, or a check that could not be made, changes nothing.
+		// Every approval arrives here: Review, Approve all, auto-apply and the
+		// sweep. See Held_Back.
+		$held = $this->plugin->held_back()->note_for( $product_id );
+		if ( is_wp_error( $held ) ) {
+			return $held;
+		}
+		if ( null !== $held ) {
+			return Held_Back::refusal( $held );
 		}
 
 		$this->backup_once( $product );
@@ -153,6 +178,21 @@ class Apply {
 	 */
 	private function apply_content_types( $product_id, array $content, array &$applied_types ) {
 		foreach ( $content as $type => $data ) {
+			// Where the merchant sends this type (4.25.0): one of their own
+			// fields or a section of the description. Null keeps the block,
+			// which the branches below write exactly as before.
+			$destination_type = isset( self::DESTINATION_TYPES[ $type ] ) ? self::DESTINATION_TYPES[ $type ] : '';
+			if ( '' !== $destination_type ) {
+				$routed = Content_Destinations::route( $this->plugin, $product_id, $destination_type, $data );
+				if ( true === $routed ) {
+					$applied_types[ $type ] = true;
+					continue;
+				}
+				if ( null !== $routed ) {
+					$this->plugin->logger()->log( 'content not written to its destination: ' . $routed, 'warning' );
+					continue;
+				}
+			}
 			if ( 'jsonld-schema' === $type || 'json-ld-schema' === $type ) {
 				$graph = is_string( $data ) ? json_decode( $data, true ) : $data;
 				if ( is_array( $graph ) && ! empty( $graph ) ) {
@@ -191,6 +231,15 @@ class Apply {
 				$product = wc_get_product( $product_id );
 				if ( $product && self::write_image_alts( $product, $data ) > 0 ) {
 					$applied_types['image-alt'] = true;
+				}
+			} elseif ( 'custom-fields' === $type ) {
+				// The merchant's own custom fields, rewritten (4.24.0). Each is
+				// written only if it still holds what the suggestion was written
+				// from; Custom_Fields keeps the ledger revert() reads.
+				$fields = ( is_array( $data ) && isset( $data['fields'] ) && is_array( $data['fields'] ) ) ? $data['fields'] : ( is_array( $data ) ? $data : array() );
+				$result = Custom_Fields::write_rewrites( $product_id, $fields );
+				if ( $result['written'] > 0 ) {
+					$applied_types['custom-fields'] = true;
 				}
 			} elseif ( 'woocommerce' === $type ) {
 				// Native WooCommerce fields, not an artifact stored for later
@@ -233,6 +282,11 @@ class Apply {
 	 * merchant added themselves are never changed; ones Rezolve Ai added are
 	 * replaced, and ones the merchant deleted from THIS editor are removed.
 	 *
+	 * A PRODUCT SPLIT'S CONTROL PRODUCT IS NOT EDITED (4.30.1). An edit lands on
+	 * the storefront at once, exactly as an approval would, so it asks
+	 * {@see Held_Back} first, as {@see apply()} does, and a check that could not
+	 * be made writes nothing either.
+	 *
 	 * @param int    $product_id       Product id.
 	 * @param string $field            One of Edit_Values::FIELDS.
 	 * @param mixed  $value            Normalized by Edit_Values::normalize().
@@ -244,6 +298,14 @@ class Apply {
 		$product    = wc_get_product( $product_id );
 		if ( ! $product ) {
 			return new \WP_Error( 'agencoen_no_product', __( 'Product not found.', 'agentic-commerce-engine' ) );
+		}
+
+		$held = $this->plugin->held_back()->note_for( $product_id );
+		if ( is_wp_error( $held ) ) {
+			return Held_Back::edit_unavailable();
+		}
+		if ( null !== $held ) {
+			return Held_Back::edit_refusal( $held );
 		}
 
 		$notes = array();
@@ -289,14 +351,22 @@ class Apply {
 				break;
 
 			case 'highlights':
-				if ( ! self::write_highlights( $product_id, $value ) ) {
+				$routed = Content_Destinations::route( $this->plugin, $product_id, 'highlights', $value );
+				if ( is_string( $routed ) ) {
+					return new \WP_Error( 'agencoen_edit_destination', $routed );
+				}
+				if ( null === $routed && ! self::write_highlights( $product_id, $value ) ) {
 					return new \WP_Error( 'agencoen_edit_empty', __( 'Nothing usable was left to save.', 'agentic-commerce-engine' ) );
 				}
 				$type = 'highlights';
 				break;
 
 			case 'product_qa':
-				if ( ! self::write_qa( $product_id, $value ) ) {
+				$routed = Content_Destinations::route( $this->plugin, $product_id, 'product-qa', $value );
+				if ( is_string( $routed ) ) {
+					return new \WP_Error( 'agencoen_edit_destination', $routed );
+				}
+				if ( null === $routed && ! self::write_qa( $product_id, $value ) ) {
 					return new \WP_Error( 'agencoen_edit_empty', __( 'Nothing usable was left to save.', 'agentic-commerce-engine' ) );
 				}
 				// The applied schema may carry its own FAQPage, built from the
@@ -311,6 +381,14 @@ class Apply {
 				break;
 
 			case 'product_attributes':
+				$routed = Content_Destinations::route( $this->plugin, $product_id, 'product-attributes', $value );
+				if ( is_string( $routed ) ) {
+					return new \WP_Error( 'agencoen_edit_destination', $routed );
+				}
+				if ( true === $routed ) {
+					$type = 'product-attributes';
+					break;
+				}
 				$attributes = Edit_Values::attributes_for_write( $value );
 				if ( empty( $attributes ) ) {
 					return new \WP_Error( 'agencoen_edit_empty', __( 'Nothing usable was left to save.', 'agentic-commerce-engine' ) );
@@ -371,7 +449,9 @@ class Apply {
 		if ( 'title' === $key ) {
 			$product->set_name( sanitize_text_field( $value ) );
 		} elseif ( 'description' === $key ) {
-			$product->set_description( wp_kses_post( $value ) );
+			// Sections the merchant sends into the description (4.25.0) were
+			// approved on their own and are not this write's to remove.
+			$product->set_description( wp_kses_post( Content_Destinations::description_for( $product, $value ) ) );
 		} elseif ( 'short_description' === $key ) {
 			$product->set_short_description( wp_kses_post( $value ) );
 		}
@@ -474,7 +554,12 @@ class Apply {
 		// a Native_Fields ledger and no backup, because the queue path never
 		// calls backup_once(). Requiring a backup here left exactly those
 		// products' tags and attributes unrevertable.
-		if ( empty( $backup ) && ! Native_Fields::has_writes( $product_id ) ) {
+		if (
+			empty( $backup )
+			&& ! Native_Fields::has_writes( $product_id )
+			&& ! Custom_Fields::has_writes( $product_id )
+			&& ! Content_Destinations::has_sections( get_post_field( 'post_content', $product_id ) )
+		) {
 			return new \WP_Error( 'agencoen_no_backup', __( 'No backup to revert to.', 'agentic-commerce-engine' ) );
 		}
 
@@ -492,10 +577,16 @@ class Apply {
 		if ( isset( $backup['short_description'] ) ) {
 			$product->set_short_description( $backup['short_description'] );
 		}
+		// Sections sent into the description (4.25.0) go with the rest of the
+		// additive content, whether or not a backup was taken before them.
+		$product->set_description( Content_Destinations::strip_sections( (string) $product->get_description( 'edit' ) ) );
 		// Before the single save, so removing our attributes rides the same
 		// write as the restored scalars. Removes exactly what we added and
 		// leaves anything the merchant added afterwards alone.
 		Native_Fields::undo( $product_id, $product );
+		// Custom fields a rewrite wrote (4.24.0): restored where they still hold
+		// our text, left alone where the merchant has changed them since.
+		Custom_Fields::undo( $product_id, $product );
 		$product->save();
 
 		if ( isset( $backup['seo_title'] ) ) {
@@ -533,11 +624,12 @@ class Apply {
 	}
 
 	/**
-	 * Capture original values once, before the first apply.
+	 * Capture original values once, before the first apply. Public for
+	 * Content_Destinations, whose description sections are a first change too.
 	 *
 	 * @param \WC_Product $product Product.
 	 */
-	private function backup_once( $product ) {
+	public function backup_once( $product ) {
 		$product_id = $product->get_id();
 		if ( get_post_meta( $product_id, Meta::BACKUP, true ) ) {
 			return;

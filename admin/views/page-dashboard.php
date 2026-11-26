@@ -22,6 +22,23 @@ $agencoen_credits = $data['credits'];
  * so they render either way. Credits and share-of-answers come from Rezolve Ai.
  */
 $agencoen_offline = empty( $connected );
+
+/*
+ * A chart card's heading and its help button. The button sits beside the
+ * heading rather than inside it, so the heading reads as the chart's title
+ * alone, and it is named after its chart: a screen reader listing the
+ * buttons on this screen would otherwise hear "Help" six times.
+ */
+$agencoen_chart_head = static function ( $title, $help ) {
+	$label = /* translators: %s: the title of a dashboard chart, for example "Optimization coverage". */
+		__( 'About %s', 'agentic-commerce-engine' );
+	printf(
+		'<div class="ace-chart-head"><h2 class="ace-h3">%1$s</h2><button type="button" class="ace-help-icon" data-help="%2$s" aria-label="%3$s">?</button></div>',
+		esc_html( $title ),
+		esc_attr( $help ),
+		esc_attr( sprintf( $label, $title ) )
+	);
+};
 ?>
 <div id="ace-dashboard" class="ace-dashboard">
 
@@ -67,8 +84,8 @@ $agencoen_offline = empty( $connected );
 		<?php endif; ?>
 		<button type="button" class="ace-btn ace-btn-secondary ace-btn-sm" id="ace-refresh-dash"><?php esc_html_e( 'Refresh', 'agentic-commerce-engine' ); ?></button>
 		<div class="ace-batch" id="ace-batch" hidden>
-			<div class="ace-batch-bar"><span class="ace-batch-fill" id="ace-batch-fill"></span></div>
-			<span class="ace-batch-text" id="ace-batch-text"></span>
+			<div class="ace-batch-bar" role="progressbar" aria-label="<?php esc_attr_e( 'Enrichment progress', 'agentic-commerce-engine' ); ?>" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="ace-batch-fill" id="ace-batch-fill"></span></div>
+			<span class="ace-batch-text" id="ace-batch-text" role="status" aria-live="polite"></span>
 		</div>
 	</div>
 
@@ -76,21 +93,21 @@ $agencoen_offline = empty( $connected );
 	<div class="ace-charts-grid">
 		<?php if ( $has_woo ) : ?>
 			<div class="ace-card ace-chart-card">
-				<h2 class="ace-h3"><?php esc_html_e( 'Optimization coverage', 'agentic-commerce-engine' ); ?><button type="button" class="ace-help-icon" data-help="<?php esc_attr_e( 'How your catalog breaks down by enrichment status. Click a slice to filter Products.', 'agentic-commerce-engine' ); ?>" aria-label="<?php esc_attr_e( 'Help', 'agentic-commerce-engine' ); ?>">?</button></h2>
+				<?php $agencoen_chart_head( __( 'Optimization coverage', 'agentic-commerce-engine' ), __( 'How your catalog breaks down by enrichment status. Click a slice to filter Products.', 'agentic-commerce-engine' ) ); ?>
 				<div id="ace-chart-coverage" class="ace-chart"><div class="ace-skeleton ace-skeleton-block ace-skeleton-chart"></div></div>
 			</div>
 			<div class="ace-card ace-chart-card">
-				<h2 class="ace-h3"><?php esc_html_e( 'Quality score distribution', 'agentic-commerce-engine' ); ?><button type="button" class="ace-help-icon" data-help="<?php esc_attr_e( 'Quality scores measured by Rezolve Ai for products with content waiting for review or applied, grouped from 0 to 100. Products with nothing measured yet are counted as Not scored.', 'agentic-commerce-engine' ); ?>" aria-label="<?php esc_attr_e( 'Help', 'agentic-commerce-engine' ); ?>">?</button></h2>
+				<?php $agencoen_chart_head( __( 'Quality score distribution', 'agentic-commerce-engine' ), __( 'Quality scores measured by Rezolve Ai for products with content waiting for review or applied, grouped from 0 to 100. Products with nothing measured yet are counted as Not scored.', 'agentic-commerce-engine' ) ); ?>
 				<div id="ace-chart-scores" class="ace-chart"><div class="ace-skeleton ace-skeleton-block ace-skeleton-chart"></div></div>
 			</div>
 			<div class="ace-card ace-chart-card ace-chart-wide">
-				<h2 class="ace-h3"><?php esc_html_e( 'Products optimized in the last 14 days', 'agentic-commerce-engine' ); ?><button type="button" class="ace-help-icon" data-help="<?php esc_attr_e( 'Number of products you applied AI content to each day over the last 14 days.', 'agentic-commerce-engine' ); ?>" aria-label="<?php esc_attr_e( 'Help', 'agentic-commerce-engine' ); ?>">?</button></h2>
+				<?php $agencoen_chart_head( __( 'Products optimized in the last 14 days', 'agentic-commerce-engine' ), __( 'Number of products you applied new content to each day over the last 14 days.', 'agentic-commerce-engine' ) ); ?>
 				<div id="ace-chart-activity" class="ace-chart"><div class="ace-skeleton ace-skeleton-block ace-skeleton-chart"></div></div>
 			</div>
 		<?php endif; ?>
 
 		<div class="ace-card ace-chart-card">
-			<h2 class="ace-h3"><?php esc_html_e( 'AI bot hits, last 7 days', 'agentic-commerce-engine' ); ?><button type="button" class="ace-help-icon" data-help="<?php esc_attr_e( 'Visits from AI crawlers such as GPTBot, ClaudeBot, and PerplexityBot, tracked natively on this site.', 'agentic-commerce-engine' ); ?>" aria-label="<?php esc_attr_e( 'Help', 'agentic-commerce-engine' ); ?>">?</button></h2>
+			<?php $agencoen_chart_head( __( 'AI bot hits, last 7 days', 'agentic-commerce-engine' ), __( 'Visits from AI crawlers such as GPTBot, ClaudeBot, and PerplexityBot, tracked natively on this site.', 'agentic-commerce-engine' ) ); ?>
 			<div class="ace-spark-row">
 				<span class="ace-spark-num" id="ace-bots-total">0</span>
 				<div id="ace-spark-bots" class="ace-chart ace-spark-chart"></div>
@@ -102,7 +119,7 @@ $agencoen_offline = empty( $connected );
 
 		<?php if ( ! $agencoen_offline ) : ?>
 			<div class="ace-card ace-chart-card">
-				<h2 class="ace-h3"><?php esc_html_e( 'Credits', 'agentic-commerce-engine' ); ?><button type="button" class="ace-help-icon" data-help="<?php esc_attr_e( 'Your Rezolve Ai service balance. Generating content for one product or one content type uses about one credit.', 'agentic-commerce-engine' ); ?>" aria-label="<?php esc_attr_e( 'Help', 'agentic-commerce-engine' ); ?>">?</button></h2>
+				<?php $agencoen_chart_head( __( 'Credits', 'agentic-commerce-engine' ), __( 'Your Rezolve Ai service balance. Generating content for one product or one content type uses about one credit.', 'agentic-commerce-engine' ) ); ?>
 				<div id="ace-chart-credits" class="ace-chart"></div>
 				<p class="ace-muted ace-center-note" id="ace-credits-caption">
 					<?php
@@ -118,7 +135,7 @@ $agencoen_offline = empty( $connected );
 		<?php endif; ?>
 
 		<div class="ace-card ace-chart-card ace-chart-wide" id="ace-card-sov" hidden>
-			<h2 class="ace-h3"><?php esc_html_e( 'Your brand in AI answers', 'agentic-commerce-engine' ); ?><button type="button" class="ace-help-icon" data-help="<?php esc_attr_e( 'The share of AI answers that name your brand in each AI Search research run.', 'agentic-commerce-engine' ); ?>" aria-label="<?php esc_attr_e( 'Help', 'agentic-commerce-engine' ); ?>">?</button></h2>
+			<?php $agencoen_chart_head( __( 'Your brand in AI answers', 'agentic-commerce-engine' ), __( 'The share of AI answers that name your brand in each AI Search research run.', 'agentic-commerce-engine' ) ); ?>
 			<div id="ace-chart-sov" class="ace-chart"></div>
 			<p class="ace-help">
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=agencoen-aisearch' ) ); ?>"><?php esc_html_e( 'Open AI Search', 'agentic-commerce-engine' ); ?></a>
@@ -130,11 +147,11 @@ $agencoen_offline = empty( $connected );
 		<!-- Content-type picker (used by the Enrich all quick action) -->
 		<div class="ace-modal" id="ace-enrich-modal" hidden>
 			<div class="ace-modal-backdrop" id="ace-modal-backdrop"></div>
-			<div class="ace-modal-card" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Choose what to enrich', 'agentic-commerce-engine' ); ?>">
-				<h2 class="ace-h2"><?php esc_html_e( 'Choose what to enrich', 'agentic-commerce-engine' ); ?></h2>
+			<div class="ace-modal-card" role="dialog" aria-modal="true" aria-labelledby="ace-modal-title" aria-describedby="ace-modal-scope">
+				<h2 class="ace-h2" id="ace-modal-title"><?php esc_html_e( 'Choose what to enrich', 'agentic-commerce-engine' ); ?></h2>
 				<p class="ace-muted" id="ace-modal-scope"></p>
 				<div id="ace-types-list" class="ace-types-list"></div>
-				<div id="ace-modal-error" class="ace-banner ace-banner-error" style="display:none;"></div>
+				<div id="ace-modal-error" class="ace-banner ace-banner-error" role="alert" style="display:none;"></div>
 				<div class="ace-modal-actions">
 					<button type="button" class="ace-btn ace-btn-secondary" id="ace-modal-cancel"><?php esc_html_e( 'Cancel', 'agentic-commerce-engine' ); ?></button>
 					<button type="button" class="ace-btn ace-btn-primary" id="ace-modal-confirm"><?php esc_html_e( 'Enrich now', 'agentic-commerce-engine' ); ?></button>

@@ -87,6 +87,7 @@ final class Edit_Values {
 		'highlights'      => 'highlights',
 		'productQa'       => 'product_qa',
 		'productAttributes' => 'product_attributes',
+		'productSpecs'    => 'product_attributes',
 		'imageAlt'        => 'image_alt',
 	);
 

@@ -3,7 +3,7 @@
  * Plugin Name:       Rezolve Ai
  * Plugin URI:        https://ace.authoritas.com
  * Description:       Free AI crawler analytics, schema output and publishing tools for any WordPress site. Article generation and AI search research additionally use the Rezolve Ai service.
- * Version:           4.20.0
+ * Version:           4.34.3
  * Author:            Rezolve Ai Limited
  * Author URI:        https://rezolve.com
  * License:           GPLv2 or later
@@ -13,7 +13,7 @@
  * Requires at least: 6.5
  * Requires PHP:      8.0
  * WC requires at least: 7.0
- * WC tested up to:   10.9
+ * WC tested up to:   11.3
  *
  * WooCommerce is OPTIONAL since 4.0.0: on a plain WordPress site the Content,
  * AI Search, and Crawler analytics screens work fully; the commerce suite
@@ -30,7 +30,7 @@ defined( 'ABSPATH' ) || exit;
  * Constants
  * -------------------------------------------------------------------------
  */
-define( 'AGENCOEN_VERSION', '4.20.0' );
+define( 'AGENCOEN_VERSION', '4.34.3' );
 define( 'AGENCOEN_PLUGIN_FILE', __FILE__ );
 define( 'AGENCOEN_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AGENCOEN_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -168,6 +168,7 @@ register_deactivation_hook(
 			'agencoen_content_poll',
 			'agencoen_review_sync',
 			'agencoen_review_backfill',
+			'agencoen_catalog_resync',
 		);
 		foreach ( $hooks as $hook ) {
 			wp_clear_scheduled_hook( $hook );

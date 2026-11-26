@@ -50,6 +50,15 @@ final class Meta {
 	const NATIVE_WRITES = '_agencoen_native_writes';
 
 	/**
+	 * Ledger of custom fields a rewrite wrote (4.24.0), keyed by field id:
+	 * { source, namespace, key, previous, written }. `previous` is the value
+	 * before Rezolve Ai FIRST wrote the field, kept across re-applies, so a
+	 * revert restores the merchant's original; a field changed since is left
+	 * alone.
+	 */
+	const CUSTOM_FIELD_WRITES = '_agencoen_custom_field_writes';
+
+	/**
 	 * Review-sync bookkeeping (plugin 4.15.0).
 	 *
 	 * SYNC_DIRTY carries `{ reason, at }`, not merely a flag, and the reason is
@@ -79,6 +88,14 @@ final class Meta {
 	 */
 	const EDITED           = '_agencoen_edited';
 	const REVIEW_SYNCED_AT = '_agencoen_review_synced_at';
+
+	/**
+	 * Why a waiting product may not be applied yet (4.29.0): a product split
+	 * holds it in its control group. `{ experimentName, releaseAt, checkedAt }`
+	 * as Rezolve Ai last answered, absent when it is not held. Written only by
+	 * {@see Held_Back}, which every check rewrites.
+	 */
+	const HELD_BACK = '_agencoen_held_back';
 
 	/**
 	 * Measured quality scores (plugin 4.17.0), cached from Rezolve Ai.

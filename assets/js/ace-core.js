@@ -2,8 +2,8 @@
  * Rezolve Ai: shared admin runtime (v4).
  *
  * Defines window.agencoen.core: the ajax bridge, toasts, formatting helpers,
- * skeletons, SegmentedTabs wiring, stat tiles, chips, a backoff poller, and
- * the chunked batch runner. Every screen script (assets/js/screens/*.js)
+ * skeletons, modal dialogs, SegmentedTabs wiring, stat tiles, chips, a backoff
+ * poller, and the chunked batch runner. Every screen script (assets/js/screens/*.js)
  * builds on this file. Classic IIFE, no modules, no dependencies.
  */
 ( function () {
@@ -81,19 +81,30 @@
 		return el;
 	}
 
+	/**
+	 * Show a toast. Plain messages fade after six seconds (the status role has
+	 * already read them out). One carrying a link stays until it is closed:
+	 * a link that vanishes on a timer cannot be reached by keyboard in time.
+	 */
 	function toast( message, type, html ) {
 		var el = toastEl();
 		el.className = 'ace-toast ace-toast-' + ( type || 'info' );
 		if ( html ) {
-			el.innerHTML = message;
+			el.innerHTML = message + ' <button type="button" class="ace-toast-close" aria-label="' +
+				esc( t( 'dismissMessage', 'Dismiss message' ) ) + '">&times;</button>';
+			el.querySelector( '.ace-toast-close' ).addEventListener( 'click', function () {
+				el.style.display = 'none';
+			} );
 		} else {
 			el.textContent = message;
 		}
 		el.style.display = 'block';
 		window.clearTimeout( el._t );
-		el._t = window.setTimeout( function () {
-			el.style.display = 'none';
-		}, 6000 );
+		if ( ! html ) {
+			el._t = window.setTimeout( function () {
+				el.style.display = 'none';
+			}, 6000 );
+		}
 	}
 
 	/**
@@ -214,6 +225,15 @@
 	/* UI helpers                                                         */
 	/* ------------------------------------------------------------------ */
 
+	/**
+	 * Busy state for a button while its request runs.
+	 *
+	 * A disabled element cannot hold focus, so disabling the button the
+	 * merchant just pressed drops keyboard focus to the page body and a screen
+	 * reader starts again from the top. The focused button is marked
+	 * aria-disabled instead, and the capture listener below swallows its clicks
+	 * until the work is done, so it still cannot be pressed twice.
+	 */
 	function setBusy( button, busy, label ) {
 		if ( ! button ) {
 			return;
@@ -224,14 +244,57 @@
 				button.textContent = label;
 			}
 			button.classList.add( 'is-busy' );
-			button.disabled = true;
+			button.setAttribute( 'aria-disabled', 'true' );
+			if ( document.activeElement !== button ) {
+				button.disabled = true;
+			}
 		} else {
 			if ( button._label ) {
 				button.textContent = button._label;
 			}
 			button.classList.remove( 'is-busy' );
+			button.removeAttribute( 'aria-disabled' );
 			button.disabled = false;
 		}
+	}
+
+	// A busy button that kept its focus is still enabled; this is what keeps a
+	// second press from sending the request again.
+	document.addEventListener( 'click', function ( e ) {
+		var busy = e.target && e.target.closest ? e.target.closest( '.is-busy[aria-disabled="true"]' ) : null;
+		if ( busy ) {
+			e.preventDefault();
+			e.stopPropagation();
+		}
+	}, true );
+
+	/**
+	 * Mark a container aria-busy while it holds skeleton placeholders, and
+	 * clear it the moment the real content replaces them. The screens fill
+	 * containers with innerHTML, so watching for the placeholders to go is the
+	 * one place this can be done for all of them.
+	 */
+	function watchBusy( el ) {
+		if ( ! el ) {
+			return;
+		}
+		el.setAttribute( 'aria-busy', 'true' );
+		if ( el._aceBusy ) {
+			el._aceBusy.disconnect();
+			el._aceBusy = null;
+		}
+		if ( ! window.MutationObserver ) {
+			return;
+		}
+		var observer = new window.MutationObserver( function () {
+			if ( ! el.querySelector( '.ace-skeleton' ) ) {
+				el.removeAttribute( 'aria-busy' );
+				observer.disconnect();
+				el._aceBusy = null;
+			}
+		} );
+		observer.observe( el, { childList: true, subtree: true } );
+		el._aceBusy = observer;
 	}
 
 	/**
@@ -262,13 +325,232 @@
 				'<div class="ace-skeleton ace-skeleton-text" style="width:64%"></div>' +
 				'<div class="ace-skeleton ace-skeleton-text" style="width:73%"></div>';
 		}
-		el.innerHTML = html;
+		el.innerHTML = '<div class="ace-skeleton-wrap" aria-hidden="true">' + html + '</div>' +
+			'<span class="screen-reader-text">' + esc( t( 'loading', 'Loading' ) ) + '</span>';
+		watchBusy( el );
 	}
+
+	/* ------------------------------------------------------------------ */
+	/* Dialogs                                                             */
+	/* ------------------------------------------------------------------ */
+
+	var FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), ' +
+		'select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])';
+
+	/** Elements Tab can reach inside `root`, in document order. */
+	function focusables( root ) {
+		return Array.prototype.slice.call( root.querySelectorAll( FOCUSABLE ) ).filter( function ( node ) {
+			return ! node.closest( '[hidden]' ) && 'none' !== node.style.display;
+		} );
+	}
+
+	/**
+	 * Open a modal: `modal` is the hidden .ace-modal wrapper around a
+	 * [role="dialog"] card. Focus moves into the card, Tab and Shift+Tab stay
+	 * inside it, Escape and the backdrop close it, and closing puts focus back
+	 * on whatever opened it.
+	 *
+	 * opts: { onClose? } called when the merchant dismisses it.
+	 * Returns { close, dismiss }: close after the dialog did its job, dismiss
+	 * for Cancel (which also calls onClose).
+	 */
+	function dialog( modal, opts ) {
+		opts = opts || {};
+		if ( ! modal ) {
+			return { close: function () {}, dismiss: function () {} };
+		}
+		var card = modal.querySelector( '[role="dialog"]' ) || modal;
+		// Reopened while open (a second click on the opener): keep the first
+		// opener, which is where focus has to go back to.
+		var opener = modal._aceDialog ? modal._aceDialog.opener : document.activeElement;
+		if ( modal._aceDialog ) {
+			modal._aceDialog.teardown();
+		}
+		var open = true;
+
+		function onKey( e ) {
+			if ( 'Escape' === e.key || 'Esc' === e.key ) {
+				e.preventDefault();
+				e.stopPropagation();
+				close( true );
+				return;
+			}
+			if ( 'Tab' !== e.key ) {
+				return;
+			}
+			var items = focusables( card );
+			if ( ! items.length ) {
+				e.preventDefault();
+				card.focus();
+				return;
+			}
+			var first = items[ 0 ];
+			var last = items[ items.length - 1 ];
+			var active = document.activeElement;
+			if ( e.shiftKey && ( active === first || active === card || ! card.contains( active ) ) ) {
+				e.preventDefault();
+				last.focus();
+			} else if ( ! e.shiftKey && ( active === last || ! card.contains( active ) ) ) {
+				e.preventDefault();
+				first.focus();
+			}
+		}
+
+		// Anything that moves focus out while the dialog is open (a click
+		// on the page behind, a script) is pulled back in.
+		function onFocusIn( e ) {
+			if ( open && ! modal.contains( e.target ) ) {
+				( focusables( card )[ 0 ] || card ).focus();
+			}
+		}
+
+		function teardown() {
+			open = false;
+			modal.hidden = true;
+			modal.removeEventListener( 'keydown', onKey );
+			document.removeEventListener( 'focusin', onFocusIn, true );
+			modal._aceDialog = null;
+		}
+
+		function close( dismissed ) {
+			if ( ! open ) {
+				return;
+			}
+			teardown();
+			if ( opener && opener.focus && document.body.contains( opener ) ) {
+				opener.focus();
+			}
+			if ( dismissed && opts.onClose ) {
+				opts.onClose();
+			}
+		}
+
+		modal.hidden = false;
+		modal.addEventListener( 'keydown', onKey );
+		document.addEventListener( 'focusin', onFocusIn, true );
+		var backdrop = modal.querySelector( '.ace-modal-backdrop' );
+		if ( backdrop ) {
+			backdrop.onclick = function () {
+				close( true );
+			};
+		}
+		if ( ! card.hasAttribute( 'tabindex' ) ) {
+			card.setAttribute( 'tabindex', '-1' );
+		}
+		modal._aceDialog = { opener: opener, teardown: teardown };
+		( focusables( card )[ 0 ] || card ).focus();
+
+		return {
+			close: function () {
+				close( false );
+			},
+			dismiss: function () {
+				close( true );
+			}
+		};
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* Batch progress                                                      */
+	/* ------------------------------------------------------------------ */
+
+	/**
+	 * Move a batch progress bar. `fill` is the .ace-batch-fill inside the
+	 * role="progressbar" .ace-batch-bar; the bar carries the value so a
+	 * screen reader can ask for it, and the polite status text beside it says
+	 * it as it changes.
+	 */
+	function setProgress( fill, pct, text ) {
+		var value = Math.max( 0, Math.min( 100, Math.round( Number( pct ) || 0 ) ) );
+		if ( fill ) {
+			fill.style.width = value + '%';
+			var bar = fill.parentNode;
+			if ( bar && bar.setAttribute ) {
+				bar.setAttribute( 'aria-valuenow', String( value ) );
+				if ( text ) {
+					bar.setAttribute( 'aria-valuetext', text );
+				} else {
+					bar.removeAttribute( 'aria-valuetext' );
+				}
+			}
+		}
+	}
+
+	/** The usable tabs of a tablist, in order. */
+	function tabList( bar ) {
+		return Array.prototype.slice.call( bar.querySelectorAll( '[role="tab"]' ) ).filter( function ( tab ) {
+			return ! tab.disabled && ! tab.hidden;
+		} );
+	}
+
+	/** Only the selected tab sits in the Tab order; arrows reach the rest. */
+	function syncTabStops( bar ) {
+		var list = tabList( bar );
+		var selected = list.filter( function ( tab ) {
+			return 'true' === tab.getAttribute( 'aria-selected' );
+		} )[ 0 ] || list[ 0 ];
+		list.forEach( function ( tab ) {
+			tab.setAttribute( 'tabindex', tab === selected ? '0' : '-1' );
+		} );
+	}
+
+	/**
+	 * Arrow keys for a tablist: Left and Right move to the previous or next
+	 * tab and choose it (wrapping), Home and End go to the ends. Safe to call
+	 * again after the tabs are re-rendered; the listener is added once.
+	 */
+	function tabKeys( bar ) {
+		if ( ! bar ) {
+			return;
+		}
+		syncTabStops( bar );
+		if ( bar._aceTabKeys ) {
+			return;
+		}
+		bar._aceTabKeys = true;
+		bar.addEventListener( 'keydown', function ( e ) {
+			var list = tabList( bar );
+			var i = list.indexOf( e.target );
+			if ( i < 0 ) {
+				return;
+			}
+			var next = null;
+			if ( 'ArrowRight' === e.key ) {
+				next = list[ ( i + 1 ) % list.length ];
+			} else if ( 'ArrowLeft' === e.key ) {
+				next = list[ ( i - 1 + list.length ) % list.length ];
+			} else if ( 'Home' === e.key ) {
+				next = list[ 0 ];
+			} else if ( 'End' === e.key ) {
+				next = list[ list.length - 1 ];
+			}
+			if ( ! next ) {
+				return;
+			}
+			e.preventDefault();
+			next.focus();
+			next.click();
+			// A filter that re-renders its tabs has just replaced the one
+			// that had focus; put focus on its replacement.
+			if ( ! bar.contains( document.activeElement ) ) {
+				var chosen = bar.querySelector( '[role="tab"][aria-selected="true"]' );
+				if ( chosen ) {
+					chosen.focus();
+				}
+			}
+			syncTabStops( bar );
+		} );
+	}
+
+	var tabSeq = 0;
 
 	/**
 	 * Wire a SegmentedTabs bar. `container` is either the .ace-tabs element or
 	 * an ancestor containing one. Panels are [data-panel="<tab>"] elements in
 	 * the surrounding screen. Syncs location.hash and restores from it.
+	 *
+	 * Each tab controls its panel and each panel is labelled by its tab, so a
+	 * screen reader announces where a tab leads and what a panel is.
 	 */
 	function tabs( container, onChange ) {
 		if ( ! container ) {
@@ -285,6 +567,7 @@
 		if ( ! items.length ) {
 			return null;
 		}
+		var uid = bar.id || ( 'ace-tabs-' + ( ++tabSeq ) );
 
 		function activate( id, silent ) {
 			var found = false;
@@ -299,6 +582,7 @@
 			if ( ! found ) {
 				return false;
 			}
+			syncTabStops( bar );
 			Array.prototype.slice.call( scope.querySelectorAll( '[data-panel]' ) ).forEach( function ( panel ) {
 				panel.hidden = panel.getAttribute( 'data-panel' ) !== id;
 			} );
@@ -316,12 +600,26 @@
 		}
 
 		items.forEach( function ( item ) {
+			var key = item.getAttribute( 'data-tab' );
+			if ( ! item.id ) {
+				item.id = uid + '-tab-' + key;
+			}
 			item.setAttribute( 'role', 'tab' );
+			var panel = scope.querySelector( '[data-panel="' + key + '"]' );
+			if ( panel ) {
+				if ( ! panel.id ) {
+					panel.id = uid + '-panel-' + key;
+				}
+				panel.setAttribute( 'role', 'tabpanel' );
+				panel.setAttribute( 'aria-labelledby', item.id );
+				item.setAttribute( 'aria-controls', panel.id );
+			}
 			item.addEventListener( 'click', function () {
-				activate( item.getAttribute( 'data-tab' ) );
+				activate( key );
 			} );
 		} );
 		bar.setAttribute( 'role', 'tablist' );
+		tabKeys( bar );
 
 		// Restore from the hash, else honor the server-rendered active item.
 		var fromHash = ( window.location.hash || '' ).replace( /^#/, '' );
@@ -520,21 +818,45 @@
 		if ( ! btn ) {
 			return;
 		}
-		var submit = function () {
-			var keyEl = document.getElementById( 'ace-api-key' );
-			var baseEl = document.getElementById( 'ace-base-url' );
-			var errBox = document.getElementById( 'ace-connect-error' );
-			var key = keyEl ? keyEl.value : '';
-			if ( ! key.trim() ) {
-				if ( errBox ) {
-					errBox.textContent = t( 'connectError', 'Could not connect. Check your API key and try again.' );
-					errBox.style.display = 'block';
-				}
-				return;
+		var keyEl = document.getElementById( 'ace-api-key' );
+		var errBox = document.getElementById( 'ace-connect-error' );
+
+		// The message is an alert, and the key field says it is the field the
+		// message is about, so a screen reader hears both.
+		function showError( message ) {
+			if ( errBox ) {
+				errBox.textContent = message;
+				errBox.style.display = 'block';
 			}
+			if ( keyEl ) {
+				keyEl.setAttribute( 'aria-invalid', 'true' );
+				if ( errBox ) {
+					keyEl.setAttribute( 'aria-describedby', errBox.id );
+				}
+			}
+		}
+
+		function clearError() {
 			if ( errBox ) {
 				errBox.style.display = 'none';
 			}
+			if ( keyEl ) {
+				keyEl.removeAttribute( 'aria-invalid' );
+				keyEl.removeAttribute( 'aria-describedby' );
+			}
+		}
+
+		var submit = function () {
+			var baseEl = document.getElementById( 'ace-base-url' );
+			var key = keyEl ? keyEl.value : '';
+			if ( ! key.trim() ) {
+				showError( t( 'connectError', 'Could not connect. Check your API key and try again.' ) );
+				if ( keyEl ) {
+					keyEl.focus();
+				}
+				return;
+			}
+			clearError();
 			setBusy( btn, true, t( 'connecting', 'Connecting…' ) );
 			post( 'connect', { api_key: key, base_url: baseEl ? baseEl.value : '' } )
 				.then( function () {
@@ -542,16 +864,12 @@
 				} )
 				.catch( function ( err ) {
 					setBusy( btn, false );
-					if ( errBox ) {
-						errBox.textContent = ( err && err.message ) || t( 'connectError', 'Could not connect. Check your API key and try again.' );
-						errBox.style.display = 'block';
-					}
+					showError( ( err && err.message ) || t( 'connectError', 'Could not connect. Check your API key and try again.' ) );
 				} );
 		};
 		btn.addEventListener( 'click', submit );
-		var keyInput = document.getElementById( 'ace-api-key' );
-		if ( keyInput ) {
-			keyInput.addEventListener( 'keydown', function ( e ) {
+		if ( keyEl ) {
+			keyEl.addEventListener( 'keydown', function ( e ) {
 				if ( 'Enter' === e.key ) {
 					e.preventDefault();
 					submit();
@@ -564,6 +882,15 @@
 	/* Help tooltips (any [data-help] element)                             */
 	/* ------------------------------------------------------------------ */
 
+	/**
+	 * Help tooltips open on hover, on keyboard focus and on a click or tap,
+	 * stay open while the pointer is over the trigger or the tip itself, and
+	 * close on Escape. Each trigger is described by a hidden copy of its text,
+	 * so a screen reader reads the help with the button whether or not the
+	 * tip is showing.
+	 */
+	var helpSeq = 0;
+
 	function wireHelp() {
 		var tip = document.getElementById( 'ace-help-tip' );
 		if ( ! tip ) {
@@ -571,22 +898,128 @@
 			tip.id = 'ace-help-tip';
 			tip.className = 'ace-chart-tip ace-help-tip';
 			tip.style.display = 'none';
+			// The text is already each trigger's description; this copy is
+			// only for the eye.
+			tip.setAttribute( 'aria-hidden', 'true' );
 			document.body.appendChild( tip );
 		}
-		document.addEventListener( 'mouseover', function ( e ) {
-			var el = e.target.closest ? e.target.closest( '[data-help]' ) : null;
-			if ( ! el ) {
+		var current = null;
+		var pinned = false;
+		var hideTimer = null;
+
+		Array.prototype.slice.call( document.querySelectorAll( '[data-help]' ) ).forEach( function ( el ) {
+			if ( el.getAttribute( 'aria-describedby' ) ) {
 				return;
 			}
+			var desc = document.createElement( 'span' );
+			desc.id = 'ace-help-desc-' + ( ++helpSeq );
+			desc.hidden = true;
+			desc.textContent = el.getAttribute( 'data-help' );
+			el.parentNode.insertBefore( desc, el.nextSibling );
+			el.setAttribute( 'aria-describedby', desc.id );
+		} );
+
+		function show( el ) {
+			window.clearTimeout( hideTimer );
+			current = el;
 			tip.textContent = el.getAttribute( 'data-help' );
 			tip.style.display = 'block';
 			var r = el.getBoundingClientRect();
 			tip.style.left = Math.max( 8, r.left ) + 'px';
 			tip.style.top = ( r.bottom + 8 ) + 'px';
+		}
+
+		function hide() {
+			window.clearTimeout( hideTimer );
+			tip.style.display = 'none';
+			current = null;
+			pinned = false;
+		}
+
+		// A short grace period, so the pointer can travel from the trigger
+		// onto the tip without it vanishing on the way.
+		function hideSoon() {
+			if ( pinned ) {
+				return;
+			}
+			window.clearTimeout( hideTimer );
+			hideTimer = window.setTimeout( hide, 200 );
+		}
+
+		function triggerOf( node ) {
+			return node && node.closest ? node.closest( '[data-help]' ) : null;
+		}
+
+		document.addEventListener( 'mouseover', function ( e ) {
+			var el = triggerOf( e.target );
+			if ( el ) {
+				show( el );
+			} else if ( tip.contains( e.target ) ) {
+				window.clearTimeout( hideTimer );
+			}
 		} );
 		document.addEventListener( 'mouseout', function ( e ) {
-			if ( e.target.closest && e.target.closest( '[data-help]' ) ) {
-				tip.style.display = 'none';
+			var from = triggerOf( e.target ) || ( tip.contains( e.target ) ? tip : null );
+			if ( ! from ) {
+				return;
+			}
+			var to = e.relatedTarget;
+			if ( to && ( tip.contains( to ) || ( current && current.contains( to ) ) ) ) {
+				return;
+			}
+			hideSoon();
+		} );
+		document.addEventListener( 'focusin', function ( e ) {
+			var el = triggerOf( e.target );
+			if ( el ) {
+				show( el );
+			} else if ( current && ! tip.contains( e.target ) ) {
+				hide();
+			}
+		} );
+		document.addEventListener( 'focusout', function ( e ) {
+			if ( triggerOf( e.target ) && ! pinned ) {
+				hide();
+			}
+		} );
+		document.addEventListener( 'click', function ( e ) {
+			var el = triggerOf( e.target );
+			if ( el ) {
+				e.preventDefault();
+				if ( current === el && pinned ) {
+					hide();
+				} else {
+					show( el );
+					pinned = true;
+				}
+				return;
+			}
+			if ( current && ! tip.contains( e.target ) ) {
+				hide();
+			}
+		} );
+		document.addEventListener( 'keydown', function ( e ) {
+			if ( ( 'Escape' === e.key || 'Esc' === e.key ) && 'none' !== tip.style.display ) {
+				hide();
+			}
+		} );
+	}
+
+	/**
+	 * Placeholders the PHP renders (stat tiles, chart frames) mark their
+	 * container busy until the screen script fills it.
+	 */
+	function wireSkeletons() {
+		var seen = [];
+		Array.prototype.slice.call( document.querySelectorAll( '.agencoen-wrap .ace-skeleton' ) ).forEach( function ( node ) {
+			node.setAttribute( 'aria-hidden', 'true' );
+			var box = node.parentNode;
+			while ( box && box.classList && box.classList.contains( 'ace-skeleton-wrap' ) ) {
+				box = box.parentNode;
+			}
+			if ( box && seen.indexOf( box ) === -1 ) {
+				seen.push( box );
+				watchBusy( box );
 			}
 		} );
 	}
@@ -608,6 +1041,7 @@
 		wireTrafficNotice();
 		wireStartCard();
 		wireHelp();
+		wireSkeletons();
 		wireSelectOnClick();
 	} );
 
@@ -625,7 +1059,10 @@
 		debounce: debounce,
 		setBusy: setBusy,
 		skeleton: skeleton,
+		dialog: dialog,
+		setProgress: setProgress,
 		tabs: tabs,
+		tabKeys: tabKeys,
 		statTile: statTile,
 		chip: chip,
 		makePoller: makePoller,

@@ -10,6 +10,12 @@
  *   attributes[{name,option}]}], meta_data[{key,value}]
  * Anything else is dropped server-side, so we don't send it.
  *
+ * 4.24 adds `custom_fields` and `custom_fields_scheme`: the merchant's ACF
+ * fields, public custom fields, product attributes, custom tabs and custom
+ * taxonomies, which the platform reads as product content. They are built by
+ * Custom_Fields::collect(), which never sends protected or private-looking
+ * fields, or fields the merchant left out in Settings. See that class.
+ *
  * Two additions in 4.13, both because the catalogue Rezolve Ai publishes to
  * shopping agents was wrong without them, and Rezolve Ai cannot go and fetch
  * either one: a plugin-registered store has no WooCommerce API credentials.
@@ -70,11 +76,21 @@ class Product_Serializer {
 			'categories'        => $this->term_names( $product->get_id(), 'product_cat' ),
 			'variations'        => $this->variations( $product ),
 			'meta_data'         => $this->meta_data( $product ),
+			// Custom fields as product content (4.24). The scheme tells the
+			// platform what extracted them, so a change of extraction
+			// re-baselines Autopilot rather than reading as a product edit.
+			'custom_fields'        => Custom_Fields::collect( $product, Settings::custom_field_exclusions() ),
+			'custom_fields_scheme' => Custom_Fields::SCHEME,
 		);
 	}
 
 	/**
 	 * Featured image first, then gallery, as [{src, alt}].
+	 *
+	 * `alt` is the image's own alt text, '' when it has none (4.20.1). Until
+	 * then an empty one was sent as the product name, so every undescribed image
+	 * reached Rezolve Ai looking described: its review screens showed the name as
+	 * the current alt text, and its quality checks counted it as present.
 	 *
 	 * @param \WC_Product $product Product.
 	 * @return array
@@ -94,10 +110,9 @@ class Product_Serializer {
 			if ( ! $src ) {
 				continue;
 			}
-			$alt = get_post_meta( $id, '_wp_attachment_image_alt', true );
 			$images[] = array(
 				'src' => $src,
-				'alt' => '' !== $alt ? $alt : $product->get_name(),
+				'alt' => (string) get_post_meta( $id, '_wp_attachment_image_alt', true ),
 			);
 		}
 		return $images;

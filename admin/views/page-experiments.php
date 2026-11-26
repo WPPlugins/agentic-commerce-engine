@@ -48,6 +48,7 @@ $agencoen_ab_on = $plugin->settings()->is_ab_enabled();
 
 	<!-- ── The list ─────────────────────────────────────────────────────── -->
 	<div class="ace-panel" data-panel="list">
+		<h2 class="screen-reader-text"><?php esc_html_e( 'Your tests', 'agentic-commerce-engine' ); ?></h2>
 		<div class="ace-toolbar">
 			<div class="ace-toolbar-actions">
 				<button type="button" class="ace-btn ace-btn-sm" id="ace-exp-refresh">
@@ -63,6 +64,7 @@ $agencoen_ab_on = $plugin->settings()->is_ab_enabled();
 	<?php // stale local copy of "which version won" is the one thing this      ?>
 	<?php // screen must never show.                                            ?>
 	<div class="ace-panel" data-panel="history" hidden>
+		<h2 class="screen-reader-text"><?php esc_html_e( 'History', 'agentic-commerce-engine' ); ?></h2>
 		<div id="ace-exp-value" aria-live="polite"></div>
 		<div class="ace-toolbar">
 			<label class="ace-label" for="ace-exp-history-search">
@@ -91,6 +93,7 @@ $agencoen_ab_on = $plugin->settings()->is_ab_enabled();
 
 	<!-- ── The wizard ───────────────────────────────────────────────────── -->
 	<div class="ace-panel" data-panel="new" hidden>
+		<h2 class="screen-reader-text"><?php esc_html_e( 'New experiment', 'agentic-commerce-engine' ); ?></h2>
 		<form id="ace-exp-form">
 
 			<fieldset class="ace-card">
@@ -107,10 +110,43 @@ $agencoen_ab_on = $plugin->settings()->is_ab_enabled();
 
 			<fieldset class="ace-card">
 				<legend class="ace-card-title"><?php esc_html_e( '2. Which products', 'agentic-commerce-engine' ); ?></legend>
-				<label for="ace-exp-category"><?php esc_html_e( 'Category', 'agentic-commerce-engine' ); ?></label>
-				<select id="ace-exp-category" name="category" class="ace-input"></select>
-				<p class="description">
-					<?php esc_html_e( 'A test needs enough products behind it to tell a real change from noise, so pick a whole category rather than a handful.', 'agentic-commerce-engine' ); ?>
+
+				<?php // Containers only. Every one of these is filled by experiments.js, as with every other panel on this screen. ?>
+				<div id="ace-exp-groups-row" hidden>
+					<label for="ace-exp-group"><?php esc_html_e( 'Start from a saved group', 'agentic-commerce-engine' ); ?></label>
+					<select id="ace-exp-group" class="ace-input"></select>
+				</div>
+
+				<label class="ace-label">
+					<input type="checkbox" id="ace-exp-everything" />
+					<span id="ace-exp-everything-label"><?php esc_html_e( 'Every product', 'agentic-commerce-engine' ); ?></span>
+				</label>
+
+				<div id="ace-exp-facets"></div>
+
+				<details id="ace-exp-cohort-box">
+					<summary><?php esc_html_e( 'Describe them instead', 'agentic-commerce-engine' ); ?></summary>
+					<label for="ace-exp-cohort"><?php esc_html_e( 'Describe the products you want to test', 'agentic-commerce-engine' ); ?></label>
+					<textarea id="ace-exp-cohort" class="ace-input" rows="2" maxlength="300"></textarea>
+					<p>
+						<button type="button" class="button" id="ace-exp-cohort-go"><?php esc_html_e( 'Find products', 'agentic-commerce-engine' ); ?></button>
+					</p>
+					<div id="ace-exp-cohort-result"></div>
+				</details>
+
+				<details id="ace-exp-picker-box">
+					<summary><?php esc_html_e( 'Review and adjust', 'agentic-commerce-engine' ); ?></summary>
+					<label for="ace-exp-picker-search"><?php esc_html_e( 'Search your catalogue to add a product', 'agentic-commerce-engine' ); ?></label>
+					<input type="search" id="ace-exp-picker-search" class="ace-input" />
+					<div id="ace-exp-picker-list"></div>
+				</details>
+
+				<p id="ace-exp-subject-summary" class="description" aria-live="polite"></p>
+
+				<p>
+					<label class="screen-reader-text" for="ace-exp-group-name"><?php esc_html_e( 'Name this group', 'agentic-commerce-engine' ); ?></label>
+					<input type="text" id="ace-exp-group-name" class="ace-input" maxlength="60" placeholder="<?php esc_attr_e( 'Name this group', 'agentic-commerce-engine' ); ?>" />
+					<button type="button" class="button" id="ace-exp-group-save"><?php esc_html_e( 'Save as group', 'agentic-commerce-engine' ); ?></button>
 				</p>
 			</fieldset>
 
@@ -148,8 +184,28 @@ $agencoen_ab_on = $plugin->settings()->is_ab_enabled();
 				<label for="ace-exp-goal"><?php esc_html_e( 'Goal', 'agentic-commerce-engine' ); ?></label>
 				<select id="ace-exp-goal" name="goal" class="ace-input"></select>
 				<p class="description" id="ace-exp-goal-detail"></p>
+				<div id="ace-exp-secondary"></div>
 				<label for="ace-exp-days"><?php esc_html_e( 'Days to run', 'agentic-commerce-engine' ); ?></label>
 				<input type="number" id="ace-exp-days" name="days" class="ace-input" value="28" min="7" max="180" />
+				<?php // A product split only. Shown and hidden by experiments.js with the split type. ?>
+				<div id="ace-exp-holdout" hidden>
+					<p><strong><?php esc_html_e( 'How many to hold back', 'agentic-commerce-engine' ); ?></strong></p>
+					<label class="ace-label">
+						<input type="radio" name="holdoutFraction" value="auto" checked />
+						<span><strong><?php esc_html_e( 'Choose for me', 'agentic-commerce-engine' ); ?></strong><br />
+						<span class="description"><?php esc_html_e( 'Half when these products get few visits, a fifth when they get plenty.', 'agentic-commerce-engine' ); ?></span></span>
+					</label>
+					<label class="ace-label">
+						<input type="radio" name="holdoutFraction" value="0.5" />
+						<span><strong><?php esc_html_e( 'Half', 'agentic-commerce-engine' ); ?></strong><br />
+						<span class="description"><?php esc_html_e( 'The clearest answer from the same products.', 'agentic-commerce-engine' ); ?></span></span>
+					</label>
+					<label class="ace-label">
+						<input type="radio" name="holdoutFraction" value="0.2" />
+						<span><strong><?php esc_html_e( 'About a fifth', 'agentic-commerce-engine' ); ?></strong><br />
+						<span class="description"><?php esc_html_e( 'Keeps more products on the new content while the test runs, and needs more visits to give a clear answer.', 'agentic-commerce-engine' ); ?></span></span>
+					</label>
+				</div>
 			</fieldset>
 
 			<fieldset class="ace-card">
@@ -188,7 +244,7 @@ $agencoen_ab_on = $plugin->settings()->is_ab_enabled();
 				</div>
 
 				<p class="description">
-					<?php esc_html_e( 'Launching writes the content with AI, which uses credits. Nothing is shown to a visitor until you approve it in Review and it goes live on your site.', 'agentic-commerce-engine' ); ?>
+					<?php esc_html_e( 'Launching writes the content, which uses credits. Nothing is shown to a visitor until you approve it in Review and it goes live on your site.', 'agentic-commerce-engine' ); ?>
 				</p>
 			</fieldset>
 		</form>

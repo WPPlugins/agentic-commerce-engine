@@ -3,15 +3,24 @@
 .agencoen-irl-heading,
 .agencoen-links-heading { font-size: 1.25em; font-weight: 600; margin: 0 0 16px; }
 .agencoen-irl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
-.agencoen-irl-card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; background: #fff; }
-.agencoen-irl-card h3 { margin: 0 0 8px; font-size: 1em; font-weight: 600; }
+/* The card paints its own white background, so it sets its own text colours
+   too: a dark theme's light text would otherwise land on white. */
+.agencoen-irl-card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; background: #fff; color: #111827; }
+.agencoen-irl-card h3 { margin: 0 0 8px; font-size: 1em; font-weight: 600; color: inherit; }
 .agencoen-irl-card p { margin: 0 0 8px; color: #4b5563; line-height: 1.5; }
 .agencoen-irl-card ul { margin: 0; padding-left: 18px; color: #4b5563; }
 .agencoen-irl-card li { margin: 2px 0; }
 .agencoen-links { margin: 28px 0; }
 .agencoen-links ul { list-style: none; display: flex; flex-wrap: wrap; gap: 10px; padding: 0; margin: 0; }
-.agencoen-links a { display: inline-block; padding: 8px 14px; border: 1px solid #d1d5db; border-radius: 9999px; text-decoration: none; color: inherit; }
-.agencoen-links a:hover { background: #f9fafb; }
+/* The pill's outline is what says "this is a link", so it is drawn in the
+   theme's own text colour, which keeps it well past 3:1 on any background. */
+.agencoen-links a { display: inline-block; padding: 8px 14px; border: 1px solid currentColor; border-radius: 9999px; text-decoration: none; color: inherit; }
+.agencoen-links a:hover { text-decoration: underline; }
+.agencoen-links a:focus-visible,
+.agencoen-qa-item summary:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
+}
 .agencoen-highlights,
 .agencoen-qa { margin: 28px 0; }
 .agencoen-highlights-heading,
@@ -21,4 +30,6 @@
 .agencoen-qa-item { border-top: 1px solid #e5e7eb; padding: 12px 0; }
 .agencoen-qa-item:last-child { border-bottom: 1px solid #e5e7eb; }
 .agencoen-qa-item summary { cursor: pointer; font-weight: 600; }
-.agencoen-qa-answer { margin-top: 8px; color: #4b5563; line-height: 1.55; }
+/* The theme's text colour: a fixed grey here read at under 3:1 on a dark theme. */
+.agencoen-qa-answer { margin-top: 8px; color: inherit; line-height: 1.55; }
+

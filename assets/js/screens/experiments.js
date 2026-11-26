@@ -127,6 +127,60 @@
 			return STATUS[ status ] || { label: status || 'Unknown', tone: 'neutral' };
 		}
 
+		/** core.esc leaves quotes alone, which is only safe outside an attribute. */
+		function attr( s ) {
+			return esc( s ).replace( /"/g, '&quot;' );
+		}
+
+		/** The learning note's label, naming its test. A function replacer keeps "$&" in a name literal. */
+		function noteLabel( name ) {
+			var value = String( name == null ? '' : name );
+			return t( 'noteLabel', 'What you learned from %s' ).replace( '%s', function () {
+				return value;
+			} );
+		}
+
+		/*
+		 * PROGRESS: where a test is, as a caption and a bar, from the platform's
+		 * `progress` ("Writing 12 of 40", "3 of 40 reviewed", "Day 10 of 90").
+		 *
+		 * Local helpers, not `core` ones: a screen calling a core function that
+		 * an older cached ace-core.js lacks blanks the whole page. The colour
+		 * comes from the step state through STEP_TONE, the map the stepper
+		 * already uses, so there is no new vocabulary to keep in step with the
+		 * platform. A progress with no fraction draws NO bar, never an empty one:
+		 * a bar at zero for "waiting on your review" reads as "nothing happened".
+		 */
+		var FILL_CLASS = {
+			success: ' is-success',
+			warning: ' is-warning',
+			info: '',
+			neutral: ''
+		};
+
+		function progressBar( p, label ) {
+			if ( ! p || typeof p.fraction !== 'number' || ! isFinite( p.fraction ) ) { return ''; }
+			var pct = Math.round( Math.min( 1, Math.max( 0, p.fraction ) ) * 1000 ) / 10;
+			var fill = FILL_CLASS[ STEP_TONE[ p.state ] || 'neutral' ] || '';
+			return '<div class="ace-batch-bar ace-exp-progress-bar" role="progressbar" aria-label="' + attr( label ) +
+				'" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round( pct ) +
+				'" aria-valuetext="' + attr( p.label ) + '">' +
+				'<span class="ace-batch-fill' + fill + '" style="width:' + pct + '%"></span></div>';
+		}
+
+		/**
+		 * The list's Progress cell, or '' so the caller falls back to the day
+		 * label it always showed (an older platform, a failed read, a finished
+		 * test). Needs the merchant: the caption is a chip.
+		 */
+		function progressBlock( p, label ) {
+			if ( ! p || typeof p.label !== 'string' || ! p.label ) { return ''; }
+			var caption = p.state === 'blocked'
+				? core.chip( STEP_TONE[ p.state ] || 'neutral', p.label )
+				: '<span class="ace-exp-progress-caption">' + esc( p.label ) + '</span>';
+			return '<div class="ace-exp-progress">' + caption + progressBar( p, label ) + '</div>';
+		}
+
 		/**
 		 * A change as a percentage, or words.
 		 *
@@ -216,12 +270,12 @@
 					'<td>' + core.chip( chip.tone, chip.label ) + '</td>' +
 					'<td>' + esc( design ) + '</td>' +
 					'<td>' + core.num( products ) + '</td>' +
-					'<td>' + esc( day ) + '</td>' +
+					'<td>' + ( progressBlock( e.progress, ( e.name || '' ) + ': ' + t( 'progress', 'Progress' ) ) || esc( day ) ) + '</td>' +
 					'</tr>';
 			} ).join( '' );
 
-			listEl.innerHTML = '<table class="ace-table"><thead><tr>' +
-				'<th>Name</th><th>Status</th><th>Split</th><th>Products</th><th>Progress</th>' +
+			listEl.innerHTML = '<table class="ace-table"><caption class="screen-reader-text">' + esc( t( 'yourTests', 'Your tests' ) ) + '</caption><thead><tr>' +
+				'<th scope="col">Name</th><th scope="col">Status</th><th scope="col">Split</th><th scope="col">Products</th><th scope="col">Progress</th>' +
 				'</tr></thead><tbody>' + rows + '</tbody></table>';
 		}
 
@@ -254,6 +308,8 @@
 			var e = d.experiment || {};
 			var chip = statusChip( e.status );
 			var cov = d.coverage || {};
+			// A product split has one version, its new content; never "a second version".
+			var byShopper = isByShopper( e );
 			var html = '';
 
 			html += '<h2>' + esc( e.name || '' ) + ' ' + core.chip( chip.tone, chip.label ) + '</h2>';
@@ -305,15 +361,29 @@
 			var stage = d.stage;
 			if ( stage && stage.steps && stage.steps.length ) {
 				html += '<h3>' + esc( t( 'progress', 'Progress' ) ) + '</h3>';
-				html += '<table class="ace-table"><tbody>' + stage.steps.map( function ( s ) {
+				// The bar goes INSIDE the current step, under its own sentence, and
+				// only when the progress names that step: under another step's
+				// words it would be a second answer on one page.
+				var progress = d.progress;
+				html += '<table class="ace-table"><caption class="screen-reader-text">' + esc( t( 'progress', 'Progress' ) ) + '</caption>' +
+					'<thead><tr><th scope="col">' + esc( t( 'colStep', 'Step' ) ) + '</th><th scope="col">' + esc( t( 'colState', 'State' ) ) +
+					'</th><th scope="col">' + esc( t( 'colDetail', 'Detail' ) ) + '</th></tr></thead><tbody>' + stage.steps.map( function ( s, i ) {
 					var stepTone = STEP_TONE[ s.state ] || 'neutral';
 					var stepWord = t( 'step_' + s.state, STEP_WORD[ s.state ] || s.state );
-					return '<tr><td>' + esc( s.label ) + '</td><td>' + core.chip( stepTone, stepWord ) +
-						'</td><td>' + esc( s.detail ) + '</td></tr>';
+					var bar = ( i === stage.currentIndex && progress && progress.step === s.key )
+						? progressBar( progress, s.label + ': ' + t( 'progress', 'Progress' ) )
+						: '';
+					return '<tr><th scope="row">' + esc( s.label ) + '</th><td>' + core.chip( stepTone, stepWord ) +
+						'</td><td>' + esc( s.detail ) +
+						( bar
+							? '<div class="ace-exp-progress">' + bar +
+								'<span class="ace-exp-progress-caption">' + esc( progress.label ) + '</span></div>'
+							: '' ) +
+						'</td></tr>';
 				} ).join( '' ) + '</tbody></table>';
 			} else if ( cov.enrolledProducts > 0 && cov.liveProducts < cov.enrolledProducts ) {
-				html += '<p>' + esc( 'A second version is live on ' + core.num( cov.liveProducts ) +
-					' of ' + core.num( cov.enrolledProducts ) + ' products.' ) + '</p>';
+				html += '<p>' + esc( ( byShopper ? 'A second version' : 'The new content' ) + ' is live on ' +
+					core.num( cov.liveProducts ) + ' of ' + core.num( cov.enrolledProducts ) + ' products.' ) + '</p>';
 			}
 
 			var actions = ACTIONS[ e.status ] || [];
@@ -324,7 +394,9 @@
 					// itself rather than failing after a click.
 					var notReady = a === 'start' && ! ( cov.liveProducts > 0 );
 					return '<button type="button" class="ace-btn ace-btn-sm ace-exp-act" data-act="' + a + '"' +
-						( notReady ? ' disabled title="' + esc( 'No product in this test has a second version live yet.' ) + '"' : '' ) +
+						( notReady ? ' disabled title="' + esc( byShopper
+							? 'No product in this test has a second version live yet.'
+							: 'No product in this test has its new content live yet.' ) + '"' : '' ) +
 						'>' + esc( ACTION_LABEL[ a ] ) + '</button>';
 				} ).join( ' ' ) + '</div>';
 			}
@@ -332,13 +404,25 @@
 			/* The drawn half. Containers only: `drawDetailCharts` fills them
 			   after this HTML is in the DOM, because the kit measures the
 			   container's width to size itself. */
-			html += '<h3>' + esc( t( 'howEachVersion', 'How each version is doing' ) ) + '</h3>';
+			if ( byShopper ) {
+				html += '<h3>' + esc( t( 'howEachVersion', 'How each version is doing' ) ) + '</h3>';
+			} else {
+				// A product split's chart says which days are baseline; the hint
+				// is filled with the chart, from the same payload.
+				html += '<h3 id="ace-exp-trend-title">' + esc( trendTitle( ( d.timeline || {} ).holdout ) ) + '</h3>';
+				html += '<p class="description" id="ace-exp-trend-hint"></p>';
+			}
 			html += '<div class="ace-chart" id="ace-exp-trend"><div class="ace-skeleton-chart"></div></div>';
 
 			html += '<h3>' + esc( t( 'whenWillIKnow', 'When will I know?' ) ) + '</h3>';
-			html += '<p>' + esc( ( d.projection && d.projection.detail ) ||
-				t( 'projectionPending', 'Once both versions have been seen by enough shoppers, this shows the range narrowing and projects the day it becomes readable.' ) ) + '</p>';
-			html += '<div class="ace-chart" id="ace-exp-band"></div>';
+			if ( byShopper ) {
+				html += '<p>' + esc( ( d.projection && d.projection.detail ) ||
+					t( 'projectionPending', 'Once both versions have been seen by enough shoppers, this shows the range narrowing and projects the day it becomes readable.' ) ) + '</p>';
+				html += '<div class="ace-chart" id="ace-exp-band"></div>';
+			} else {
+				html += '<p><strong>' + esc( productSplitReadinessTitle( e ) ) + '</strong></p>';
+				html += '<p>' + esc( t( 'productSplitReadiness', 'This test compares the products with new content against the held-back products, so it is read once its planned days are done rather than as shoppers arrive. There is no range to draw while it runs.' ) ) + '</p>';
+			}
 
 			html += '<h3>' + esc( t( 'whereDropOff', 'Where shoppers drop off' ) ) + '</h3>';
 			html += '<div class="ace-chart" id="ace-exp-funnel"></div>';
@@ -358,6 +442,9 @@
 			html += '<div><div class="ace-chart" id="ace-exp-coverage"></div>';
 			html += '<p class="ace-card-sub" id="ace-exp-coverage-note" hidden></p></div>';
 			html += '</div>';
+			if ( ! byShopper ) {
+				html += '<p>' + esc( t( 'productSplitGroups', 'Products were put into the two groups at random when the test was set up, so there is no shopper split to check. Every shopper sees the same content on a given product.' ) ) + '</p>';
+			}
 			if ( d.split && d.split.unattributedVisitors > 0 ) {
 				html += '<p>' + esc( core.num( d.split.unattributedVisitors ) + ' ' +
 					t( 'unattributed', 'shoppers could not be tied to this test because another split was running at the same time, so they are left out rather than guessed at.' ) ) + '</p>';
@@ -389,10 +476,10 @@
 					}
 				}
 				html += '<div class="ace-chart" id="ace-exp-money"></div>';
-				html += '<table class="ace-table"><thead><tr><th>' + esc( t( 'version', 'Version' ) ) +
-					'</th><th>' + esc( t( 'shoppers', 'Shoppers' ) ) +
-					'</th><th>' + esc( t( 'revenue', 'Revenue' ) ) +
-					'</th><th>' + esc( t( 'perShopper', 'Per shopper' ) ) + '</th></tr></thead><tbody>' +
+				html += '<table class="ace-table"><thead><tr><th scope="col">' + esc( t( 'version', 'Version' ) ) +
+					'</th><th scope="col">' + esc( t( 'shoppers', 'Shoppers' ) ) +
+					'</th><th scope="col">' + esc( t( 'revenue', 'Revenue' ) ) +
+					'</th><th scope="col">' + esc( t( 'perShopper', 'Per shopper' ) ) + '</th></tr></thead><tbody>' +
 					d.money.arms.map( function ( a ) {
 						return '<tr><td>' + esc( a.armLabel || ( 'Version ' + String( a.arm ).toUpperCase() ) ) +
 							'</td><td>' + core.num( a.visitors ) +
@@ -425,14 +512,16 @@
 						html += '<p class="ace-muted">' + esc( d.trust.detail ) + '</p>';
 					}
 				}
-				html += '<table class="ace-table"><tbody>' + checks.map( function ( c ) {
+				html += '<table class="ace-table"><caption class="screen-reader-text">' + esc( t( 'checksCaption', 'Measurement checks' ) ) + '</caption>' +
+					'<thead><tr><th scope="col">' + esc( t( 'colCheck', 'Check' ) ) + '</th><th scope="col">' + esc( t( 'colState', 'State' ) ) +
+					'</th><th scope="col">' + esc( t( 'colDetail', 'Detail' ) ) + '</th></tr></thead><tbody>' + checks.map( function ( c ) {
 					// `broken` is the platform's word (assessHealth). `fail` is not
 					// a state it can ever emit, and `critical` is not a chip tone --
 					// together they put a BROKEN check in neutral grey, which is the
 					// one rendering this file's header forbids.
 					var tone = HEALTH_TONE[ c.state ] || 'neutral';
 					var label = HEALTH_WORD[ c.state ] || c.state;
-					return '<tr><td>' + esc( c.label ) + '</td><td>' + core.chip( tone, label ) +
+					return '<tr><th scope="row">' + esc( c.label ) + '</th><td>' + core.chip( tone, label ) +
 						'</td><td>' + esc( c.detail ) + '</td></tr>';
 				} ).join( '' ) + '</tbody></table>';
 			}
@@ -440,7 +529,7 @@
 			var exposures = d.exposures || [];
 			if ( exposures.length ) {
 				html += '<h3>' + esc( 'What each version was shown to' ) + '</h3>';
-				html += '<table class="ace-table"><thead><tr><th>Version</th><th>Shoppers</th><th>Bought</th><th>Rate</th></tr></thead><tbody>' +
+				html += '<table class="ace-table"><thead><tr><th scope="col">Version</th><th scope="col">Shoppers</th><th scope="col">Bought</th><th scope="col">Rate</th></tr></thead><tbody>' +
 					exposures.map( function ( x ) {
 						return '<tr><td>' + esc( x.armLabel || ( 'Version ' + String( x.arm ).toUpperCase() ) ) +
 							'</td><td>' + core.num( x.visitors ) + '</td><td>' + core.num( x.converters ) +
@@ -456,10 +545,10 @@
 				/* Plotted separately from the table: a result with no interval
 				   cannot be a whisker. It still appears below, with its reason. */
 				html += '<div class="ace-chart" id="ace-exp-forest"></div>';
-				html += '<table class="ace-table"><thead><tr><th>' + esc( t( 'version', 'Version' ) ) +
-					'</th><th>' + esc( t( 'change', 'Change' ) ) +
-					'</th><th>' + esc( t( 'range', 'Range' ) ) +
-					'</th><th>' + esc( t( 'reading', 'Reading' ) ) + '</th></tr></thead><tbody>' +
+				html += '<table class="ace-table"><thead><tr><th scope="col">' + esc( t( 'version', 'Version' ) ) +
+					'</th><th scope="col">' + esc( t( 'change', 'Change' ) ) +
+					'</th><th scope="col">' + esc( t( 'range', 'Range' ) ) +
+					'</th><th scope="col">' + esc( t( 'reading', 'Reading' ) ) + '</th></tr></thead><tbody>' +
 					results.map( function ( r ) {
 						var range = interval( r.lo, r.hi );
 						return '<tr><td>' + esc( rowLabel( r ) ) +
@@ -467,6 +556,34 @@
 							'</td><td>' + esc( lift( r.point ) ) +
 							'</td><td>' + esc( range || 'n/a' ) +
 							'</td><td>' + esc( r.refusal || r.claimChip || '' ) + '</td></tr>';
+					} ).join( '' ) + '</tbody></table>';
+			}
+
+			/*
+			 * The secondary goals: cart adds or orders beside a split read on
+			 * visits. Context for the result above, never a result of its own.
+			 * Absent from an older platform, so nothing is drawn; null when the
+			 * platform could not read them, which is said rather than drawn as
+			 * an empty table that would read as "nothing moved".
+			 */
+			if ( d.alsoMeasured === null ) {
+				html += '<h3>' + esc( t( 'alsoMeasured', 'Also measured' ) ) + '</h3>' +
+					'<p>' + esc( t( 'alsoMeasuredUnread', 'These could not be read just now. Reload the page to try again.' ) ) + '</p>';
+			} else if ( d.alsoMeasured && d.alsoMeasured.length ) {
+				html += '<h3>' + esc( t( 'alsoMeasured', 'Also measured' ) ) + '</h3>' +
+					'<p class="description">' + esc( t( 'alsoMeasuredIntro', 'The other goals you asked to watch, on the same products and the same days. They do not decide the result above.' ) ) + '</p>';
+				html += '<table class="ace-table"><thead><tr><th scope="col">' + esc( t( 'colGoal', 'Goal' ) ) +
+					'</th><th scope="col">' + esc( t( 'change', 'Change' ) ) +
+					'</th><th scope="col">' + esc( t( 'rangeOrReason', 'Range or reason' ) ) + '</th></tr></thead><tbody>' +
+					d.alsoMeasured.map( function ( m ) {
+						// A line without a number shows its reason, never a 0%.
+						var measured = typeof m.point === 'number' && isFinite( m.point );
+						var reading = measured
+							? [ interval( m.lo, m.hi ), m.claimChip ].filter( Boolean ).join( '. ' )
+							: ( m.refusal || '' );
+						return '<tr><th scope="row">' + esc( m.goalLabel || m.goal ) +
+							'</th><td>' + esc( measured ? lift( m.point ) : t( 'noFigure', 'No figure' ) ) +
+							'</td><td>' + esc( reading ) + '</td></tr>';
 					} ).join( '' ) + '</tbody></table>';
 			}
 
@@ -483,8 +600,10 @@
 			if ( glossary.length ) {
 				html += '<details class="ace-card"><summary class="ace-card-title">' +
 					esc( t( 'whatWordsMean', 'What these words mean' ) ) + '</summary>';
-				html += '<table class="ace-table"><tbody>' + glossary.map( function ( g ) {
-					return '<tr><td>' + esc( g.term ) + '</td><td>' + esc( g.plain ) + '</td></tr>';
+				html += '<table class="ace-table"><caption class="screen-reader-text">' + esc( t( 'whatWordsMean', 'What these words mean' ) ) + '</caption>' +
+					'<thead><tr><th scope="col">' + esc( t( 'colTerm', 'Term' ) ) + '</th><th scope="col">' + esc( t( 'colMeaning', 'Meaning' ) ) +
+					'</th></tr></thead><tbody>' + glossary.map( function ( g ) {
+					return '<tr><th scope="row">' + esc( g.term ) + '</th><td>' + esc( g.plain ) + '</td></tr>';
 				} ).join( '' ) + '</tbody></table></details>';
 			}
 
@@ -507,6 +626,61 @@
 		 * no line on it says the measurement came back as nothing, which is the
 		 * one thing this feature exists not to say.
 		 */
+		/* Split by shopper, against split by product. A payload naming no design
+		   keeps the shopper wording this screen has always used. */
+		function isByShopper( e ) {
+			var designs = e.designs || [];
+			return ! designs.length || designs.indexOf( 'visitor_split' ) !== -1;
+		}
+
+		/* "When will I know?" for a product split: the stage stepper's own
+		   countdown, since no shopper range is ever drawn for one. The same
+		   words as the platform's product-split-copy.ts. */
+		function productSplitReadinessTitle( e ) {
+			if ( e.status === 'complete' || e.status === 'released' || e.status === 'abandoned' ) {
+				return t( 'testClosed', 'This test is closed' );
+			}
+			if ( e.daysRunning === null || e.daysRunning === undefined ) {
+				return t( 'notCountingYet', 'Not counting yet' );
+			}
+			if ( e.daysRemaining === null || e.daysRemaining === undefined ) {
+				return t( 'nothingToEstimate', 'Nothing to estimate yet' );
+			}
+			if ( e.daysRemaining === 0 ) {
+				return t( 'plannedDaysDone', 'The planned days are done' );
+			}
+			return e.daysRemaining === 1
+				? t( 'aboutOneDayToGo', 'About 1 day to go' )
+				: t( 'aboutDaysToGo', 'About %s days to go' ).replace( '%s', core.num( e.daysRemaining ) );
+		}
+
+		/** "28 Oct" for a calendar day key. UTC, so a day key never shifts by a time zone. */
+		/* What a product split's chart counts: the goal the test is measured
+		   on, so the lines and the verdict agree. The label is the goal's,
+		   sent by the API like the goal list; an ACE without `metric` drew
+		   visits. */
+		function trendMetricLabel( holdout ) {
+			var metric = holdout && holdout.metric;
+			return ( metric && metric.label ) || t( 'trendVisits', 'Visits' );
+		}
+
+		function trendTitle( holdout ) {
+			var label = trendMetricLabel( holdout );
+			// "Shopping impressions" reads lower case mid-sentence; "AI crawler pulls" keeps its capitals.
+			var phrase = /^[A-Z]{2}/.test( label ) ? label : label.charAt( 0 ).toLowerCase() + label.slice( 1 );
+			return t( 'trendTitleFor', 'Average %s per product, in each group' ).replace( '%s', phrase );
+		}
+
+		function utcDay( key ) {
+			var dt = new Date( key + 'T00:00:00Z' );
+			if ( isNaN( dt.getTime() ) ) { return key; }
+			try {
+				return dt.toLocaleDateString( undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' } );
+			} catch ( e ) {
+				return key;
+			}
+		}
+
 		function drawDetailCharts( d ) {
 			if ( ! charts ) { return; }
 
@@ -545,19 +719,61 @@
 					} )
 				}, { height: 240, yFmt: pctFmt } );
 			} else if ( trendEl && holdout && holdout.hasTraffic ) {
+				/* Per product, with the start day on the axis (cockpit.ts). The
+				   window opens four weeks before the start and the rollup trails
+				   a day, so the morning after a start every point is baseline;
+				   and the groups differ in size, so totals drew the bigger one
+				   ahead. An older ACE without `perProduct` still gets totals. */
+				var view = holdout.perProduct || null;
+				var ex = d.experiment || {};
+				var groupName = function ( arm ) {
+					var label = arm === 'treated' ? t( 'newContent', 'New content' ) : t( 'leftUnchanged', 'Left unchanged' );
+					if ( ! view ) { return label; }
+					var n = arm === 'treated' ? ( ex.treatedUnits || 0 ) : ( ex.controlUnits || 0 );
+					var count = n === 1
+						? t( 'oneProduct', '1 product' )
+						: t( 'nProducts', '%s products' ).replace( '%s', core.num( n ) );
+					return label + ' (' + count + ')';
+				};
+				var dates = view ? view.dates : ( holdout.dates || [] );
+				var cut = view ? view.cutDate : null;
+				var metricLabel = trendMetricLabel( holdout );
+				var hintEl = byId( 'ace-exp-trend-hint' );
+				var titleEl = byId( 'ace-exp-trend-title' );
+				if ( titleEl && ! view ) {
+					titleEl.textContent = t( 'trendTotals', 'Total visits to each group' );
+				}
+				if ( hintEl ) {
+					hintEl.textContent = ! view
+						? ''
+						: ! cut
+						? t( 'trendNoStartFor', '%s in each group, averaged per product so the two groups compare fairly.' ).replace( '%s', metricLabel )
+						: view.daysSince === 0
+							? t( 'trendStartedOn', 'The test started on %s.' ).replace( '%s', utcDay( cut ) ) + ' ' +
+								t( 'trendBaselineOnly', 'Every day on this chart so far is from before it, when both groups still had the same content. That is the baseline the test is measured against. Days with the new content appear here as they are counted, about a day behind.' )
+							: t( 'trendShaded', 'Shaded days are from before the test, when both groups had the same content.' ) + ' ' +
+								t( 'trendFromDay', 'From %s, one group has the new content.' ).replace( '%s', utcDay( cut ) ) + ' ' +
+								t( 'trendHowToRead', 'Watch whether the gap between the lines changes after that day. A gap that was already there before the test is not a result.' );
+				}
 				charts.line( trendEl, {
-					series: ( holdout.series || [] ).map( function ( s, i ) {
+					series: ( view ? view.series : ( holdout.series || [] ) ).map( function ( s, i ) {
 						return {
-							name: s.arm === 'treated'
-								? t( 'newContent', 'New content' )
-								: t( 'leftUnchanged', 'Left unchanged' ),
+							name: groupName( s.arm ),
 							color: charts.palette[ i % charts.palette.length ],
-							points: ( holdout.dates || [] ).map( function ( x, di ) {
+							points: dates.map( function ( x, di ) {
 								return { x: x, y: s.values[ di ] };
 							} )
 						};
 					} )
-				}, { height: 240 } );
+				}, {
+					height: 240,
+					xFmt: utcDay,
+					baseline: cut ? {
+						until: cut,
+						label: t( 'trendBefore', 'Before the test' ),
+						afterLabel: t( 'trendRunning', 'Test running' )
+					} : null
+				} );
 			}
 
 			/* 2. When will I know. The band narrowing IS the argument: while it
@@ -612,7 +828,14 @@
 			/* 4. Is the split even, and how much of the test is actually live. */
 			var splitEl = byId( 'ace-exp-split' );
 			var split = d.split || { arms: [] };
-			if ( splitEl && split.arms.length ) {
+			var ex = d.experiment || {};
+			if ( splitEl && ! isByShopper( ex ) && ( ex.treatedUnits || ex.controlUnits ) ) {
+				/* A product split splits products, not shoppers: its two groups. */
+				charts.barsH( splitEl, [
+					{ label: t( 'newContent', 'New content' ), value: ex.treatedUnits || 0, color: charts.palette[ 0 ] },
+					{ label: t( 'leftUnchanged', 'Left unchanged' ), value: ex.controlUnits || 0, color: charts.palette[ 1 ] }
+				], { height: 120 } );
+			} else if ( splitEl && split.arms.length ) {
 				charts.barsH( splitEl, split.arms.map( function ( a, i ) {
 					return {
 						label: a.armLabel || ( 'Version ' + String( a.arm ).toUpperCase() ),
@@ -642,7 +865,9 @@
 				if ( covNote ) {
 					covNote.textContent = core.num( cov.liveProducts ) + ' ' +
 						t( 'ofProductsLive', 'of' ) + ' ' + core.num( cov.enrolledProducts ) + ' ' +
-						t( 'productsLive', 'products have a second version live' );
+						( isByShopper( d.experiment || {} )
+							? t( 'productsLive', 'products have a second version live' )
+							: t( 'productsNewContentLive', 'products have their new content live' ) );
 					covNote.hidden = false;
 				}
 			}
@@ -745,6 +970,66 @@
 			}
 			var picked = goals.filter( function ( g ) { return g.id === select.value; } )[ 0 ];
 			if ( detail ) { detail.textContent = picked ? picked.detail : ''; }
+			fillSecondaryGoals();
+		}
+
+		/**
+		 * The goals this split can watch beside the headline, as ticks.
+		 *
+		 * From the platform's `secondaryFor`, which only a platform that reads
+		 * them out sends, so an older one offers none. The headline is left
+		 * out: it is already measured. A tick survives a change of split or
+		 * headline wherever it is still offered.
+		 */
+		function fillSecondaryGoals() {
+			var el = byId( 'ace-exp-secondary' );
+			if ( ! el ) { return; }
+			var kept = checkedSecondaryGoals();
+			var headline = byId( 'ace-exp-goal' ).value;
+			var goals = ( ( OPTIONS && OPTIONS.goals ) || [] ).filter( function ( g ) {
+				return g.id !== headline && ( g.secondaryFor || [] ).indexOf( currentType() ) !== -1;
+			} );
+			if ( ! goals.length ) {
+				el.innerHTML = '';
+				return;
+			}
+			el.innerHTML = '<p><strong>' + esc( t( 'alsoMeasure', 'Also measure' ) ) + '</strong></p>' +
+				'<p class="description">' + esc( currentType() === 'product_holdout'
+					? t( 'alsoMeasureProduct', 'Read out beside the main goal, on the same products and the same days. Shown on the experiment page, and never what decides the result.' )
+					: t( 'alsoMeasureShopper', 'Shown for each version on the experiment page, and never what decides the result.' ) ) + '</p>' +
+				goals.map( function ( g ) {
+					return '<label class="ace-label">' +
+						'<input type="checkbox" name="guardrailGoals" value="' + esc( g.id ) + '"' +
+						( kept.indexOf( g.id ) !== -1 ? ' checked' : '' ) + ' /> ' +
+						'<span><strong>' + esc( g.label ) + '</strong><br />' +
+						'<span class="description">' + esc( g.detail || '' ) + '</span></span>' +
+						'</label>';
+				} ).join( '' );
+		}
+
+		function checkedSecondaryGoals() {
+			return Array.prototype.map.call(
+				form.querySelectorAll( 'input[name="guardrailGoals"]:checked' ),
+				function ( el ) { return el.value; }
+			);
+		}
+
+		/**
+		 * How many pieces of content one design may carry, from the platform.
+		 *
+		 * The number is enforced by the schema behind the power check and the
+		 * launch, so a form that does not know it lets a merchant tick past it
+		 * and get "Request body failed validation" back, which names neither
+		 * the limit nor the tick that crossed it. The fallback is for a plugin
+		 * running against a platform from before the cap was sent; a merchant
+		 * does not update a plugin because we shipped one.
+		 */
+		function factorCap() {
+			var max = ( OPTIONS && parseInt( OPTIONS.maxFactors, 10 ) ) || 4;
+			var reason = ( OPTIONS && OPTIONS.maxFactorsReason ) ||
+				'A test compares every combination, so one experiment covers at most ' + max +
+				' pieces of content. Take one out to test this instead.';
+			return { max: max, reason: reason };
 		}
 
 		/**
@@ -768,7 +1053,40 @@
 					'</label>';
 			} ).join( '' );
 			if ( note ) { note.hidden = currentType() !== 'product_holdout'; }
+			var hold = byId( 'ace-exp-holdout' );
+			if ( hold ) { hold.hidden = currentType() !== 'product_holdout'; }
+			syncContentCap();
 			syncVersions();
+		}
+
+		/**
+		 * Stop AT the cap rather than one past it.
+		 *
+		 * Updated in place on every tick rather than by redrawing the list,
+		 * which would move the box the merchant just clicked. A box already in
+		 * the design stays live so it can be taken out again, and the ones now
+		 * out of reach keep their label and swap their summary for the reason,
+		 * exactly as content this split cannot use does.
+		 */
+		function syncContentCap() {
+			var el = byId( 'ace-exp-content' );
+			if ( ! el ) { return; }
+			var cap = factorCap();
+			var chosen = checkedContent();
+			var summaries = {};
+			factorsForType().forEach( function ( f ) { summaries[ f.contentTypeId ] = f; } );
+			Array.prototype.forEach.call(
+				el.querySelectorAll( 'input[name="contentTypes"]' ),
+				function ( input ) {
+					var f = summaries[ input.value ];
+					// Content this split cannot use already says why. Leave it.
+					if ( ! f || ! f.available ) { return; }
+					var atCap = chosen.length >= cap.max && chosen.indexOf( input.value ) === -1;
+					input.disabled = atCap;
+					var note = input.parentNode.querySelector( '.description' );
+					if ( note ) { note.textContent = atCap ? cap.reason : ( f.summary || '' ); }
+				}
+			);
 		}
 
 		/**
@@ -820,37 +1138,400 @@
 				} );
 		}
 
-		function fillCategories() {
-			var select = byId( 'ace-exp-category' );
-			core.post( 'experiment_subjects', {} ).then( function ( payload ) {
-				var cats = ( payload && payload.categories ) || [];
+		/*
+		 * WHICH PRODUCTS: five filters, hand-picking, and a cohort described in
+		 * words, all producing ONE selection spec.
+		 *
+		 * THE IDS NEVER REACH THIS BROWSER. The spec is a couple of hundred bytes;
+		 * the platform resolves it for the count, again for the power check and
+		 * once more for the create. This screen runs on a merchant's own server,
+		 * often behind a slow link, and five thousand ids crossing admin-ajax on
+		 * every checkbox would be both the latency and a payload the page could
+		 * edit into a different test.
+		 *
+		 * EVERY HELPER BELOW IS LOCAL. A screen calling a `core` function that an
+		 * older cached ace-core.js lacks blanks the whole page, and CI never sees
+		 * it because none of this is bundled.
+		 */
+		var FACET_KEYS = [ 'categories', 'collections', 'productTypes', 'vendors', 'tags' ];
+		var FACET_LABELS = {
+			categories: t( 'facetCategories', 'Categories' ),
+			collections: t( 'facetCollections', 'Collections' ),
+			productTypes: t( 'facetProductTypes', 'Product type' ),
+			vendors: t( 'facetVendors', 'Brand' ),
+			tags: t( 'facetTags', 'Tags' )
+		};
+		/** Past this, a hand-picked list is really a filter nobody wrote down. */
+		var MAX_PICKED = 500;
+		/** The selection, as the merchant has built it so far. */
+		var SELECTION = { facets: {}, includeIds: [], excludeIds: [], everything: false, groupId: '' };
+		var FACETS = null;
+		var GROUPS = [];
+
+		/*
+		 * core.post is a bare fetch with NO timeout, so a cohort suggestion --
+		 * two model round trips behind a route that allows ninety seconds -- would
+		 * otherwise look hung forever with nothing on screen.
+		 */
+		function withTimeout( promise, ms ) {
+			return new Promise( function ( resolve, reject ) {
+				var done = false;
+				var timer = setTimeout( function () {
+					if ( done ) { return; }
+					done = true;
+					reject( new Error( t(
+						'suggestTimedOut',
+						'That took longer than expected. Try a shorter description, or pick by category instead.'
+					) ) );
+				}, ms );
+				promise.then( function ( value ) {
+					if ( done ) { return; }
+					done = true;
+					clearTimeout( timer );
+					resolve( value );
+				}, function ( error ) {
+					if ( done ) { return; }
+					done = true;
+					clearTimeout( timer );
+					reject( error );
+				} );
+			} );
+		}
+
+		/**
+		 * One filter as a <details> with a search box and checkboxes.
+		 *
+		 * <details>, not a popover: there is no CSS for one here, and it is the
+		 * native WP admin idiom. The change handler is delegated on the container
+		 * because the whole block is redrawn when the facets load.
+		 */
+		function facetBlock( key, list ) {
+			var label = FACET_LABELS[ key ] || key;
+			var options = ( list && list.options ) || [];
+			var picked = SELECTION.facets[ key ] || [];
+			var body;
+
+			if ( options.length === 0 ) {
+				// "Nothing stored yet" and "this store has none" are DIFFERENT facts,
+				// and rendering the first as the second is a failed read dressed up
+				// as one. `synced` is how the platform tells them apart.
+				body = '<p class="description">' + esc(
+					list && list.synced
+						? t( 'facetEmpty', 'This catalogue records none of these.' )
+						: t( 'facetUnsynced', 'Nothing stored yet. These appear once your catalogue has been read.' )
+				) + '</p>';
+			} else {
+				body = options.map( function ( option ) {
+					var on = picked.indexOf( option.name ) !== -1;
+					return '<label class="ace-label"><input type="checkbox" data-facet="' + attr( key ) +
+						'" value="' + attr( option.name ) + '"' + ( on ? ' checked' : '' ) + ' /> <span>' +
+						esc( option.name ) + ' (' + core.num( option.count ) + ')</span></label>';
+				} ).join( '' );
+			}
+
+			return '<details class="ace-exp-facet"><summary>' + esc( label ) +
+				( picked.length ? ' (' + core.num( picked.length ) + ')' : '' ) +
+				'</summary>' + body + '</details>';
+		}
+
+		function fillFacets() {
+			var host = byId( 'ace-exp-facets' );
+			if ( ! host ) { return; }
+			if ( ! FACETS ) {
+				host.innerHTML = '<p class="description">' +
+					esc( t( 'facetsFailed', 'Could not read your catalogue filters.' ) ) + '</p>';
+				return;
+			}
+			host.innerHTML = FACET_KEYS.map( function ( key ) {
+				return facetBlock( key, FACETS[ key ] );
+			} ).join( '' );
+			host.hidden = SELECTION.everything;
+		}
+
+		function loadFacets() {
+			core.post( 'experiment_facets', {} ).then( function ( payload ) {
+				FACETS = ( payload && payload.facets ) || null;
 				var total = ( payload && payload.ids ) ? payload.ids.length : 0;
-				select.innerHTML = '<option value="">' +
-					esc( 'Everything (' + core.num( total ) + ' products)' ) + '</option>' +
-					cats.map( function ( c ) {
-						return '<option value="' + esc( c.name ) + '">' +
-							esc( c.name + ' (' + core.num( c.count ) + ')' ) + '</option>';
+				var everythingLabel = byId( 'ace-exp-everything-label' );
+				if ( everythingLabel && total ) {
+					everythingLabel.textContent = t( 'everyProduct', 'Every product' ) +
+						' (' + core.num( total ) + ')';
+				}
+				fillFacets();
+			} ).catch( function () {
+				FACETS = null;
+				fillFacets();
+			} );
+		}
+
+		function loadGroups() {
+			core.post( 'experiment_groups', {} ).then( function ( payload ) {
+				GROUPS = ( payload && payload.groups ) || [];
+				var row = byId( 'ace-exp-groups-row' );
+				var select = byId( 'ace-exp-group' );
+				if ( ! row || ! select ) { return; }
+				if ( GROUPS.length === 0 ) {
+					row.hidden = true;
+					return;
+				}
+				row.hidden = false;
+				select.innerHTML = '<option value="">' + esc( t( 'groupNone', 'None' ) ) + '</option>' +
+					GROUPS.map( function ( group ) {
+						// The count is a CACHE, so it is shown with the day it was
+						// taken or not at all. A bare stale number is how a merchant
+						// starts a test over a cohort that no longer exists.
+						var note = ( group.lastCount !== null && group.lastCountedAt )
+							? ' (' + core.num( group.lastCount ) + ' ' +
+								t( 'groupAsOf', 'products as of' ) + ' ' +
+								core.fmtDate( group.lastCountedAt ) + ')'
+							: ' (' + t( 'groupUncounted', 'not counted yet' ) + ')';
+						return '<option value="' + attr( group.id ) + '">' +
+							esc( group.name ) + esc( note ) + '</option>';
 					} ).join( '' );
 			} ).catch( function () {
-				select.innerHTML = '<option value="">' + esc( 'Everything' ) + '</option>';
+				GROUPS = [];
+			} );
+		}
+
+		/** The selection, in the shape the platform's parser reads. */
+		function selectionPayload() {
+			var payload = {
+				selectionVersion: 1,
+				everything: SELECTION.everything ? 1 : '',
+				groupId: SELECTION.groupId || '',
+				includeIds: SELECTION.includeIds.slice( 0, MAX_PICKED ),
+				excludeIds: SELECTION.excludeIds.slice( 0, MAX_PICKED )
+			};
+			FACET_KEYS.forEach( function ( key ) {
+				payload[ 'facet_' + key ] = ( SELECTION.facets[ key ] || [] ).slice();
+			} );
+			return payload;
+		}
+
+		function selectionIsEmpty() {
+			if ( SELECTION.everything ) { return false; }
+			var any = SELECTION.includeIds.length > 0;
+			FACET_KEYS.forEach( function ( key ) {
+				if ( ( SELECTION.facets[ key ] || [] ).length > 0 ) { any = true; }
+			} );
+			return ! any;
+		}
+
+		/*
+		 * The count, from the platform.
+		 *
+		 * NEVER added up here. Filters overlap and narrow each other, so summing
+		 * "Boots (120)" and "Acme (80)" gives 200 for a selection that may come to
+		 * nine. The counts beside each box say how big that filter is; only the
+		 * platform can say how big the intersection is.
+		 */
+		var refreshCount = core.debounce( function () {
+			var summary = byId( 'ace-exp-subject-summary' );
+			if ( ! summary ) { return; }
+			if ( selectionIsEmpty() ) {
+				summary.textContent = t( 'noProductsChosen', 'No products chosen yet.' );
+				return;
+			}
+			var body = selectionPayload();
+			body.type = currentType();
+			core.post( 'experiment_resolve', body ).then( function ( answer ) {
+				var text = ( answer && answer.sentence ) || '';
+				var holdout = answer && answer.holdout;
+				if ( holdout && currentType() === 'product_holdout' ) {
+					text += ' ' + ( holdout.ok
+						? ( typeof holdout.half === 'number' && holdout.half !== holdout.approx
+							? t( 'holdoutBetween', 'Between about %1$s and %2$s of them will be held back unchanged as the control group, depending on how many you choose to hold back.' )
+								.replace( '%1$s', core.num( holdout.approx ) ).replace( '%2$s', core.num( holdout.half ) )
+							: t( 'holdoutAbout', 'About' ) + ' ' + core.num( holdout.approx ) + ' ' +
+								t( 'holdoutHeld', 'of them will be held back unchanged as the control group.' ) )
+						: t( 'holdoutTooFew', 'That is too few for a control group.' ) + ' ' +
+							t( 'holdoutNeed', 'A product split needs about' ) + ' ' +
+							core.num( holdout.minimum ) + ' ' + t( 'holdoutProducts', 'products.' ) );
+				}
+				// A filter is not a live segment: the products are frozen into the
+				// test when it starts. Without this a merchant reading "Categories:
+				// Boots" would reasonably assume the opposite.
+				text += ' ' + t(
+					'selectionFreezes',
+					'Fixed when you start the test. Products added to these filters later will not join it.'
+				);
+				summary.textContent = text;
+			} ).catch( function ( err ) {
+				// The previous number is REPLACED by an error here rather than by a
+				// zero: a failed read is not an empty catalogue.
+				summary.textContent = ( err && err.message ) ||
+					t( 'countFailed', 'Could not count these products.' );
+			} );
+		}, 400 );
+
+		/** Everything that changes the selection goes through here. */
+		function selectionChanged() {
+			refreshCount();
+			clearVerdict();
+		}
+
+		function suggestCohort() {
+			var input = byId( 'ace-exp-cohort' );
+			var out = byId( 'ace-exp-cohort-result' );
+			var btn = byId( 'ace-exp-cohort-go' );
+			if ( ! input || ! out ) { return; }
+			var brief = ( input.value || '' ).trim();
+			if ( ! brief ) { return; }
+
+			core.setBusy( btn, true );
+			out.innerHTML = '<p class="description">' +
+				esc( t( 'cohortWorking', 'Looking through your catalogue...' ) ) + '</p>';
+
+			withTimeout(
+				core.post( 'experiment_suggest', { brief: brief, type: currentType(), arms: 2 } ),
+				75000
+			).then( function ( result ) {
+				core.setBusy( btn, false );
+				if ( ! result || ! result.ok ) {
+					// The platform's own wording, unchanged. This is the screen where
+					// a merchant learns their catalogue has nothing matching what they
+					// described, and a surface that softened it would be believed.
+					out.innerHTML = '<p class="description">' +
+						esc( ( result && result.message ) || t( 'cohortNone', 'Nothing matched that.' ) ) +
+						'</p>';
+					return;
+				}
+				var products = result.products || [];
+				out.innerHTML = '<p>' + esc( result.reason || '' ) + '</p>' +
+					( result.underpowered
+						? '<p class="description">' + esc(
+							t( 'cohortSmall', 'That is smaller than a test usually needs. Take it, and the design check will have the last word.' )
+						) + '</p>'
+						: '' ) +
+					products.map( function ( product ) {
+						return '<label class="ace-label"><input type="checkbox" data-cohort="1" value="' +
+							attr( product.productId ) + '" checked /> <span>' +
+							esc( product.title || product.productId ) + '</span></label>';
+					} ).join( '' ) +
+					'<p><button type="button" class="button button-primary" id="ace-exp-cohort-use">' +
+					esc( t( 'cohortUse', 'Use these products' ) ) + '</button></p>';
+			} ).catch( function ( err ) {
+				core.setBusy( btn, false );
+				out.innerHTML = '<p class="description">' +
+					esc( ( err && err.message ) || t( 'cohortFailed', 'Could not suggest products just now.' ) ) +
+					'</p>';
+			} );
+		}
+
+		function acceptCohort() {
+			var out = byId( 'ace-exp-cohort-result' );
+			if ( ! out ) { return; }
+			var picked = Array.prototype.filter.call(
+				out.querySelectorAll( 'input[data-cohort]' ),
+				function ( el ) { return el.checked; }
+			).map( function ( el ) { return el.value; } );
+			if ( picked.length === 0 ) { return; }
+
+			// An accepted proposal REPLACES the filters. Layering it on top would
+			// produce a count that is neither the filter's nor the suggestion's,
+			// with nothing on screen saying which part came from where.
+			SELECTION.facets = {};
+			SELECTION.everything = false;
+			SELECTION.groupId = '';
+			SELECTION.includeIds = picked.slice( 0, MAX_PICKED );
+			SELECTION.excludeIds = [];
+			fillFacets();
+			selectionChanged();
+			core.toast( t( 'cohortApplied', 'Using the products you picked.' ) );
+		}
+
+		function saveGroup() {
+			var nameEl = byId( 'ace-exp-group-name' );
+			var btn = byId( 'ace-exp-group-save' );
+			if ( ! nameEl ) { return; }
+			var name = ( nameEl.value || '' ).trim();
+			if ( ! name || selectionIsEmpty() ) { return; }
+			var body = selectionPayload();
+			body.name = name;
+			core.setBusy( btn, true );
+			core.post( 'experiment_group_save', body ).then( function () {
+				core.setBusy( btn, false );
+				nameEl.value = '';
+				core.toast( t( 'groupSaved', 'Saved.' ) );
+				loadGroups();
+			} ).catch( function ( err ) {
+				core.setBusy( btn, false );
+				core.errorToast( ( err && err.message ) || t( 'groupSaveFailed', 'Could not save that group.' ) );
+			} );
+		}
+
+		/*
+		 * HAND-PICKING. Products come from the platform's own product page, in
+		 * `products.product_id` -- NOT a WordPress post id and not a WooCommerce
+		 * product id. The platform keys experiment units and review items by
+		 * that id, and a selection carrying anything else produces a test whose
+		 * units match no content at all, with nothing to say so.
+		 */
+		function togglePicked( productId, on ) {
+			var include = SELECTION.includeIds;
+			var exclude = SELECTION.excludeIds;
+			var atInclude = include.indexOf( productId );
+			var atExclude = exclude.indexOf( productId );
+			if ( on ) {
+				if ( atExclude !== -1 ) { exclude.splice( atExclude, 1 ); }
+				if ( atInclude === -1 && include.length < MAX_PICKED ) { include.push( productId ); }
+			} else if ( atInclude !== -1 ) {
+				// Only here because it was hand-picked: taking it out of the
+				// pick says what the merchant meant, rather than saying both
+				// "always this" and "never this" at once.
+				include.splice( atInclude, 1 );
+			} else if ( atExclude === -1 ) {
+				exclude.push( productId );
+			}
+			selectionChanged();
+		}
+
+		function searchProducts( term ) {
+			var host = byId( 'ace-exp-picker-list' );
+			if ( ! host ) { return; }
+			if ( ! term ) {
+				host.innerHTML = '<p class="description">' +
+					esc( t( 'pickerHint', 'Search to add a product the filters missed.' ) ) + '</p>';
+				return;
+			}
+			core.skeleton( host, 'table' );
+			core.post( 'experiment_products', { q: term, page: 0 } ).then( function ( payload ) {
+				var products = ( payload && payload.products ) || [];
+				if ( products.length === 0 ) {
+					host.innerHTML = '<p class="description">' +
+						esc( t( 'pickerNone', 'Nothing matched that search.' ) ) + '</p>';
+					return;
+				}
+				host.innerHTML = products.map( function ( product ) {
+					var on = SELECTION.includeIds.indexOf( product.productId ) !== -1;
+					return '<label class="ace-label"><input type="checkbox" data-pick="1" value="' +
+						attr( product.productId ) + '"' + ( on ? ' checked' : '' ) + ' /> <span>' +
+						esc( product.title || product.productId ) + '</span></label>';
+				} ).join( '' );
+			} ).catch( function ( err ) {
+				host.innerHTML = '<p class="description">' +
+					esc( ( err && err.message ) || t( 'pickerFailed', 'Could not search products.' ) ) +
+					'</p>';
 			} );
 		}
 
 		function designPayload() {
-			return {
-				type: currentType(),
-				category: byId( 'ace-exp-category' ).value,
-				contentTypes: checkedContent(),
-				// An empty array posts nothing at all, which the PHP would read as a
-				// script from before 4.19.0 and test the description. This says the
-				// choice was made, even when the choice was nothing.
-				contentChosen: 1,
-				levels: byId( 'ace-exp-levels' ).value,
-				// Sent to the power check too: a product split is sized against
-				// the goal it will measure, and orders are far rarer than visits.
-				goal: byId( 'ace-exp-goal' ).value,
-				days: byId( 'ace-exp-days' ).value
-			};
+			var payload = selectionPayload();
+			payload.type = currentType();
+			payload.contentTypes = checkedContent();
+			// An empty array posts nothing at all, which the PHP would read as a
+			// script from before 4.19.0 and test the description. This says the
+			// choice was made, even when the choice was nothing.
+			payload.contentChosen = 1;
+			payload.levels = byId( 'ace-exp-levels' ).value;
+			// Sent to the power check too: a product split is sized against
+			// the goal it will measure, and orders are far rarer than visits.
+			payload.goal = byId( 'ace-exp-goal' ).value;
+			payload.guardrailGoals = checkedSecondaryGoals();
+			payload.days = byId( 'ace-exp-days' ).value;
+			var share = form.querySelector( 'input[name="holdoutFraction"]:checked' );
+			if ( share && currentType() === 'product_holdout' ) { payload.holdoutFraction = share.value; }
+			return payload;
 		}
 
 		function showVerdict( report ) {
@@ -1134,7 +1815,8 @@
 				var note = '<details><summary>' +
 					esc( o && o.notes ? t( 'editNote', 'Edit what you learned' ) : t( 'addNote', 'Add what you learned' ) ) +
 					'</summary>' +
-					'<textarea class="ace-input ace-hist-note" id="' + noteId + '" rows="3" maxlength="2000">' +
+					'<textarea class="ace-input ace-hist-note" id="' + noteId + '" rows="3" maxlength="2000" aria-label="' +
+					attr( noteLabel( r.name ) ) + '">' +
 					esc( ( o && o.notes ) || '' ) + '</textarea>' +
 					'<button type="button" class="ace-btn ace-btn-sm ace-hist-save" data-id="' + esc( r.id ) +
 					'" data-note="' + noteId + '">' + esc( t( 'saveNote', 'Save' ) ) + '</button>' +
@@ -1152,12 +1834,12 @@
 					'</tr>';
 			} ).join( '' );
 
-			var html = '<table class="ace-table"><thead><tr>' +
-				'<th>' + esc( t( 'test', 'Test' ) ) + '</th>' +
-				'<th>' + esc( t( 'outcome', 'Outcome' ) ) + '</th>' +
-				'<th>' + esc( t( 'change', 'Change' ) ) + '</th>' +
-				'<th>' + esc( t( 'worth', 'Worth' ) ) + '</th>' +
-				'<th>' + esc( t( 'decided', 'Decided' ) ) + '</th>' +
+			var html = '<table class="ace-table"><caption class="screen-reader-text">' + esc( t( 'historyCaption', 'Finished tests' ) ) + '</caption><thead><tr>' +
+				'<th scope="col">' + esc( t( 'test', 'Test' ) ) + '</th>' +
+				'<th scope="col">' + esc( t( 'outcome', 'Outcome' ) ) + '</th>' +
+				'<th scope="col">' + esc( t( 'change', 'Change' ) ) + '</th>' +
+				'<th scope="col">' + esc( t( 'worth', 'Worth' ) ) + '</th>' +
+				'<th scope="col">' + esc( t( 'decided', 'Decided' ) ) + '</th>' +
 				'</tr></thead><tbody>' + body + '</tbody></table>';
 
 			var pages = Math.ceil( ( payload.total || 0 ) / ( payload.pageSize || 25 ) );
@@ -1353,6 +2035,7 @@
 		} );
 		// Delegated, because the checkboxes are redrawn on every split change.
 		byId( 'ace-exp-content' ).addEventListener( 'change', function () {
+			syncContentCap();
 			syncVersions();
 			clearVerdict();
 		} );
@@ -1360,6 +2043,109 @@
 			fillGoals();
 			clearVerdict();
 		} );
+
+		/*
+		 * The product selection.
+		 *
+		 * EVERY ONE OF THESE CLEARS THE VERDICT. A green tick left standing
+		 * against a different set of products is the exact failure
+		 * `clearVerdict` exists to prevent, and until this release the only
+		 * things that could change the products were a single dropdown.
+		 */
+		var everythingEl = byId( 'ace-exp-everything' );
+		if ( everythingEl ) {
+			everythingEl.addEventListener( 'change', function () {
+				SELECTION.everything = everythingEl.checked;
+				// Filtering is off under "every product", so the block is
+				// hidden rather than left as controls that do nothing.
+				fillFacets();
+				selectionChanged();
+			} );
+		}
+
+		// Delegated: the whole facet block is redrawn when the lists load.
+		var facetHost = byId( 'ace-exp-facets' );
+		if ( facetHost ) {
+			facetHost.addEventListener( 'change', function ( event ) {
+				var el = event.target;
+				if ( ! el || ! el.getAttribute || ! el.getAttribute( 'data-facet' ) ) { return; }
+				var key = el.getAttribute( 'data-facet' );
+				var list = SELECTION.facets[ key ] || [];
+				var at = list.indexOf( el.value );
+				if ( el.checked && at === -1 ) {
+					list.push( el.value );
+				} else if ( ! el.checked && at !== -1 ) {
+					list.splice( at, 1 );
+				}
+				SELECTION.facets[ key ] = list;
+				// Picking a filter by hand ends the claim that this selection
+				// is a saved group: it is the merchant's own copy now.
+				SELECTION.groupId = '';
+				var groupSelect = byId( 'ace-exp-group' );
+				if ( groupSelect ) { groupSelect.value = ''; }
+				selectionChanged();
+			} );
+		}
+
+		var groupSelectEl = byId( 'ace-exp-group' );
+		if ( groupSelectEl ) {
+			groupSelectEl.addEventListener( 'change', function () {
+				var chosen = null;
+				for ( var i = 0; i < GROUPS.length; i++ ) {
+					if ( GROUPS[ i ].id === groupSelectEl.value ) { chosen = GROUPS[ i ]; }
+				}
+				if ( ! chosen ) {
+					SELECTION.groupId = '';
+					selectionChanged();
+					return;
+				}
+				// COPIED into the selection, never pointed at. The merchant may
+				// edit it freely from here, and editing the group next month
+				// cannot change a test started today.
+				var spec = chosen.selection || {};
+				SELECTION.facets = {};
+				FACET_KEYS.forEach( function ( key ) {
+					SELECTION.facets[ key ] = ( ( spec.facets || {} )[ key ] || [] ).slice();
+				} );
+				SELECTION.everything = spec.mode === 'all';
+				SELECTION.includeIds = ( spec.includeIds || [] ).slice();
+				SELECTION.excludeIds = ( spec.excludeIds || [] ).slice();
+				SELECTION.groupId = chosen.id;
+				if ( everythingEl ) { everythingEl.checked = SELECTION.everything; }
+				fillFacets();
+				selectionChanged();
+			} );
+		}
+
+		var cohortGo = byId( 'ace-exp-cohort-go' );
+		if ( cohortGo ) { cohortGo.addEventListener( 'click', suggestCohort ); }
+
+		// Delegated: the Use button is drawn with the proposal.
+		var cohortOut = byId( 'ace-exp-cohort-result' );
+		if ( cohortOut ) {
+			cohortOut.addEventListener( 'click', function ( event ) {
+				if ( event.target && event.target.id === 'ace-exp-cohort-use' ) { acceptCohort(); }
+			} );
+		}
+
+		var groupSaveBtn = byId( 'ace-exp-group-save' );
+		if ( groupSaveBtn ) { groupSaveBtn.addEventListener( 'click', saveGroup ); }
+
+		var pickerSearch = byId( 'ace-exp-picker-search' );
+		if ( pickerSearch ) {
+			pickerSearch.addEventListener( 'input', core.debounce( function () {
+				searchProducts( pickerSearch.value || '' );
+			}, 350 ) );
+		}
+
+		var pickerList = byId( 'ace-exp-picker-list' );
+		if ( pickerList ) {
+			pickerList.addEventListener( 'change', function ( event ) {
+				var el = event.target;
+				if ( ! el || ! el.getAttribute || ! el.getAttribute( 'data-pick' ) ) { return; }
+				togglePicked( el.value, el.checked );
+			} );
+		}
 
 		/* Debounced through the shared helper rather than firing on every
 		   keystroke: each search is a round trip to the platform. */
@@ -1373,7 +2159,9 @@
 		}
 
 		loadOptions();
-		fillCategories();
+		loadFacets();
+		loadGroups();
+		refreshCount();
 		loadList( false );
 	}
 

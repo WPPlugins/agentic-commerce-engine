@@ -86,6 +86,11 @@ abstract class Ajax_Base {
 			'code'    => $code,
 		);
 
+		// A product split's control product (4.29.0): the line Review shows
+		// beside the row, so the screen can mark it without asking again.
+		if ( is_array( $data ) && isset( $data['heldBack'] ) && is_string( $data['heldBack'] ) ) {
+			$payload['heldBack'] = $data['heldBack'];
+		}
 		if ( 'INSUFFICIENT_CREDITS' === $code || 402 === $status ) {
 			$payload['insufficientCredits'] = true;
 			$payload['accountUrl']          = $this->plugin->settings()->get_base_url();

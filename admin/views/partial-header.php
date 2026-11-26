@@ -27,7 +27,8 @@ $agencoen_base = isset( $data['baseUrl'] ) ? (string) $data['baseUrl'] : '';
 			<span class="ace-brand-sep" aria-hidden="true"></span>
 			<div class="ace-brand-copy">
 				<span class="ace-brand-name">Rezolve Ai</span>
-				<span class="ace-brand-title"><?php echo esc_html( isset( $title ) ? $title : '' ); ?></span>
+				<?php // The screen's one top-level heading: what a screen reader announces first and jumps to. ?>
+				<h1 class="ace-brand-title"><?php echo esc_html( isset( $title ) ? $title : '' ); ?></h1>
 			</div>
 		</div>
 		<div class="ace-header-side">
@@ -49,3 +50,5 @@ $agencoen_base = isset( $data['baseUrl'] ) ? (string) $data['baseUrl'] : '';
 		</div>
 	</div>
 </div>
+<?php // WordPress moves admin notices to just after this line; without it they land after the first heading, inside the header card. ?>
+<hr class="wp-header-end" />

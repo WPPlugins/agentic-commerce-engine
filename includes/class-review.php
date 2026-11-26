@@ -122,6 +122,8 @@ class Review {
 			'attributes'     => array(),
 			'attributePairs' => isset( $content['product-attributes'] ) ? Edit_Values::attribute_pairs( $content['product-attributes'] ) : array(),
 			'imageAlt'       => array(),
+			'customFields'   => self::custom_field_rows( isset( $content['custom-fields'] ) ? $content['custom-fields'] : null ),
+			'layout'         => self::description_layout( isset( $content['product-description'] ) ? $content['product-description'] : null ),
 		);
 
 		if ( $live ) {
@@ -185,6 +187,72 @@ class Review {
 	}
 
 	/**
+	 * Rewritten custom fields for the Review screen (4.24.0): each field's
+	 * name, what it holds now and the rewrite, as readable lines
+	 * (Custom_Fields::display_text), so a multi-line or HTML field keeps its
+	 * line breaks and paragraphs.
+	 *
+	 * @param mixed $payload The `custom-fields` content: { fields: [...] } or the list.
+	 * @return array[] Each { label, current, proposed }.
+	 */
+	public static function custom_field_rows( $payload ) {
+		$fields = ( is_array( $payload ) && isset( $payload['fields'] ) && is_array( $payload['fields'] ) ) ? $payload['fields'] : ( is_array( $payload ) ? $payload : array() );
+		$rows   = array();
+		foreach ( $fields as $field ) {
+			if ( ! is_array( $field ) || empty( $field['value'] ) ) {
+				continue;
+			}
+			$rows[] = array(
+				'label'      => isset( $field['label'] ) ? (string) $field['label'] : ( isset( $field['key'] ) ? (string) $field['key'] : '' ),
+				'current'    => isset( $field['before'] ) ? Custom_Fields::display_text( (string) $field['before'] ) : '',
+				'proposed'   => Custom_Fields::display_text( (string) $field['value'] ),
+				// 4.28.0: written for a field the product did not have, and, for a
+				// story or a meaning, not a product fact, so checked first.
+				'isNew'      => ! empty( $field['fill'] ),
+				'checkFacts' => ! empty( $field['checkFacts'] ),
+			);
+		}
+		return $rows;
+	}
+
+	/**
+	 * A description written in the store's format or a preset (4.28.0), as it
+	 * will look: its layout, cleaned, and which format it follows with how
+	 * closely it matched. Null for Rezolve Ai's own layout, and when the
+	 * merchant edited the description, which then wins.
+	 *
+	 * @param mixed $payload The product-description payload.
+	 * @return array{html:string,note:string}|null
+	 */
+	public static function description_layout( $payload ) {
+		if ( ! is_array( $payload ) || ( isset( $payload['html'] ) && is_string( $payload['html'] ) && '' !== trim( $payload['html'] ) ) ) {
+			return null;
+		}
+		$formatted = isset( $payload['formatted'] ) && is_array( $payload['formatted'] ) ? $payload['formatted'] : array();
+		$source    = isset( $formatted['source'] ) ? (string) $formatted['source'] : '';
+		$html      = isset( $formatted['html'] ) && is_string( $formatted['html'] ) ? wp_kses_post( $formatted['html'] ) : '';
+		// A store that writes its descriptions as plain text gets its paragraphs
+		// from wpautop on the page, so the preview shows them the same way.
+		if ( '' !== $html && ! preg_match( '/<(p|ul|ol|li|h[1-6]|div|table|blockquote)\b/i', $html ) ) {
+			$html = wpautop( $html );
+		}
+		if ( '' === trim( $html ) || ! in_array( $source, array( 'store', 'preset', 'custom' ), true ) ) {
+			return null;
+		}
+		$note = 'store' === $source
+			? __( 'Written in your store\'s format.', 'agentic-commerce-engine' )
+			: __( 'Written in the format you chose.', 'agentic-commerce-engine' );
+		if ( isset( $formatted['match']['score'] ) && is_numeric( $formatted['match']['score'] ) ) {
+			/* translators: %d: how closely the description follows the format, 0 to 100 */
+			$note .= ' ' . sprintf( __( 'Format match %d%%.', 'agentic-commerce-engine' ), (int) $formatted['match']['score'] );
+		}
+		return array(
+			'html' => $html,
+			'note' => $note,
+		);
+	}
+
+	/**
 	 * How the Review screen may edit a product: `draft` for a proposal still
 	 * waiting, `live` for one already applied, '' for anything else. Dismissed,
 	 * failed and queued products have nothing a merchant can usefully edit.
@@ -226,11 +294,26 @@ class Review {
 		if ( $image_id > 0 ) {
 			$media['thumb'] = self::safe_url( wp_get_attachment_image_url( $image_id, 'thumbnail' ) );
 		}
-		$id = (int) $product->get_id();
-		if ( $id > 0 && 'publish' === get_post_status( $id ) ) {
-			$media['liveUrl'] = self::safe_url( get_permalink( $id ) );
-		}
+		$media['liveUrl'] = self::live_url( (int) $product->get_id() );
 		return $media;
+	}
+
+	/**
+	 * The product's live page, or '' when a shopper cannot open one.
+	 *
+	 * One rule for the link on this screen and for the page this site reports
+	 * to Rezolve Ai when content goes live (4.20.1): a published product only,
+	 * password-protected and catalog-hidden ones included, as row_media() says.
+	 *
+	 * @param int $product_id Product id.
+	 * @return string
+	 */
+	public static function live_url( $product_id ) {
+		$product_id = (int) $product_id;
+		if ( $product_id <= 0 || 'publish' !== get_post_status( $product_id ) ) {
+			return '';
+		}
+		return self::safe_url( get_permalink( $product_id ) );
 	}
 
 	/**
@@ -239,8 +322,7 @@ class Review {
 	 *
 	 * Order and membership come from Native_Fields::image_candidates(), the
 	 * list alt text suggestions are matched against, so the strip shows the
-	 * images an approval would write to. Alt text is read as stored and never
-	 * falls back to the product name the way the sync serializer does, so an
+	 * images an approval would write to. Alt text is read as stored, so an
 	 * empty one reads as empty.
 	 *
 	 * @param \WC_Product|mixed $product Product.

@@ -257,7 +257,21 @@ class Poller {
 		$pd = isset( $per_type['product-description'] ) && is_array( $per_type['product-description'] )
 			? $per_type['product-description']
 			: array();
-		if ( isset( $pd['description'] ) && is_string( $pd['description'] ) && '' !== $pd['description'] ) {
+		// The layout the store receives (4.28.0): a merchant's own edit first,
+		// then the description written in the store's format or a preset
+		// (`formatted.html`), and only then the plain description, which is the
+		// text alone: its call to action and details are not in it.
+		$layout = '';
+		foreach ( array( isset( $pd['html'] ) ? $pd['html'] : null, isset( $pd['formatted']['html'] ) ? $pd['formatted']['html'] : null ) as $candidate ) {
+			if ( is_string( $candidate ) && '' !== trim( $candidate ) ) {
+				$layout = wp_kses_post( $candidate );
+				break;
+			}
+		}
+		if ( '' !== $layout ) {
+			$flat['description']       = $layout;
+			$flat['short_description'] = self::short_description_for( $layout );
+		} elseif ( isset( $pd['description'] ) && is_string( $pd['description'] ) && '' !== $pd['description'] ) {
 			$flat['description']       = $pd['description'];
 			$flat['short_description'] = self::short_description_for( $pd['description'] );
 		}

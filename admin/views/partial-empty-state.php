@@ -18,16 +18,16 @@ $agencoen_base = isset( $data['baseUrl'] ) ? (string) $data['baseUrl'] : '';
 	<div class="ace-card ace-connect-card">
 		<div class="ace-connect-grid">
 			<div class="ace-connect-form">
-				<h1 class="ace-h1"><?php esc_html_e( 'Connect your site to Rezolve Ai', 'agentic-commerce-engine' ); ?></h1>
+				<h2 class="ace-h1"><?php esc_html_e( 'Connect your site to Rezolve Ai', 'agentic-commerce-engine' ); ?></h2>
 				<p class="ace-muted">
-					<?php esc_html_e( 'Paste your API key from the Rezolve Ai platform to add AI writing and AI search research. The crawler analytics and publishing tools on this site do not use it.', 'agentic-commerce-engine' ); ?>
+					<?php esc_html_e( 'Paste your API key from the Rezolve Ai platform to add content writing and AI search research. The crawler analytics and publishing tools on this site do not use it.', 'agentic-commerce-engine' ); ?>
 				</p>
 
-				<div id="ace-connect-error" class="ace-banner ace-banner-error" style="display:none;"></div>
+				<div id="ace-connect-error" class="ace-banner ace-banner-error" role="alert" style="display:none;"></div>
 
 				<div class="ace-field">
 					<label class="ace-label" for="ace-api-key"><?php esc_html_e( 'API key', 'agentic-commerce-engine' ); ?></label>
-					<input type="password" id="ace-api-key" class="ace-input" placeholder="ace_" autocomplete="off" spellcheck="false" />
+					<input type="password" id="ace-api-key" class="ace-input" placeholder="ace_" autocomplete="off" spellcheck="false" aria-required="true" />
 				</div>
 
 				<button type="button" class="ace-btn ace-btn-primary" id="ace-connect-btn"><?php esc_html_e( 'Connect site', 'agentic-commerce-engine' ); ?></button>
@@ -52,15 +52,15 @@ $agencoen_base = isset( $data['baseUrl'] ) ? (string) $data['baseUrl'] : '';
 				<h2 class="ace-h3"><?php esc_html_e( 'What the Rezolve Ai service adds', 'agentic-commerce-engine' ); ?></h2>
 				<?php if ( $has_woo ) : ?>
 					<ul class="ace-checklist">
-						<li><?php esc_html_e( 'AI-written product titles, descriptions, and SEO meta, with a before/after review queue', 'agentic-commerce-engine' ); ?></li>
-						<li><?php esc_html_e( 'AI-drafted articles published straight into WordPress', 'agentic-commerce-engine' ); ?></li>
+						<li><?php esc_html_e( 'Product titles, descriptions, and SEO meta written for you, with a before/after review queue', 'agentic-commerce-engine' ); ?></li>
+						<li><?php esc_html_e( 'Articles drafted for you and published straight into WordPress', 'agentic-commerce-engine' ); ?></li>
 						<li><?php esc_html_e( 'AI search visibility research for your brand and market', 'agentic-commerce-engine' ); ?></li>
 					</ul>
 				<?php else : ?>
 					<ul class="ace-checklist">
-						<li><?php esc_html_e( 'AI-drafted articles published straight into WordPress', 'agentic-commerce-engine' ); ?></li>
+						<li><?php esc_html_e( 'Articles drafted for you and published straight into WordPress', 'agentic-commerce-engine' ); ?></li>
 						<li><?php esc_html_e( 'AI search visibility research for your brand and market', 'agentic-commerce-engine' ); ?></li>
-						<li class="is-muted"><?php esc_html_e( 'AI product content is available when WooCommerce is active', 'agentic-commerce-engine' ); ?></li>
+						<li class="is-muted"><?php esc_html_e( 'Product content is available when WooCommerce is active', 'agentic-commerce-engine' ); ?></li>
 					</ul>
 				<?php endif; ?>
 				<p class="ace-help">

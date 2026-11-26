@@ -166,10 +166,16 @@ class Review_Sync {
 	 * is the later of the edit and the decision, so an edit to live content
 	 * reads as `applied` at the moment it was republished.
 	 *
+	 * LIVE PAGE (4.20.1). An `applied` decision carries `productUrl`, the
+	 * product's page when it is published: what the web review queue's "View
+	 * live" opens, and what Rezolve Ai registers for traffic attribution. No
+	 * report carried one before, so content applied here never had a live link
+	 * on the web.
+	 *
 	 * @param int      $product_id Product id.
 	 * @param string   $reason     Dirty reason.
 	 * @param string[] $known      Fields captured before the meta was destroyed.
-	 * @return array List of { productId, field, status, decidedAt, value? }.
+	 * @return array List of { productId, field, status, decidedAt, value?, productUrl? }.
 	 */
 	public function build_decisions( $product_id, $reason, array $known = array() ) {
 		$product_id = (int) $product_id;
@@ -178,6 +184,7 @@ class Review_Sync {
 		if ( null === $remote ) {
 			return array();
 		}
+		$live_url = 'applied' === $remote ? Review::live_url( $product_id ) : '';
 
 		// Fields the caller captured before deleting the meta they live in win
 		// outright: re-deriving from an emptied `Meta::PENDING` would report
@@ -185,12 +192,16 @@ class Review_Sync {
 		if ( ! empty( $known ) ) {
 			$decisions = array();
 			foreach ( $known as $field ) {
-				$decisions[] = array(
+				$decision = array(
 					'productId' => (string) $product_id,
 					'field'     => (string) $field,
 					'status'    => $remote,
 					'decidedAt' => gmdate( 'c' ),
 				);
+				if ( '' !== $live_url ) {
+					$decision['productUrl'] = $live_url;
+				}
+				$decisions[] = $decision;
 			}
 			return $decisions;
 		}
@@ -237,6 +248,9 @@ class Review_Sync {
 			}
 			if ( '' !== $at ) {
 				$decision['decidedAt'] = $at;
+			}
+			if ( '' !== $live_url ) {
+				$decision['productUrl'] = $live_url;
 			}
 			$decisions[] = $decision;
 		}
@@ -308,6 +322,7 @@ class Review_Sync {
 			'product_qa'         => array( 'product-qa' ),
 			'product_attributes' => array( 'product-attributes' ),
 			'image_alt'          => array( 'image-alt' ),
+			'custom_fields'      => array( 'custom-fields' ),
 		);
 		foreach ( $from_content as $field => $keys ) {
 			foreach ( $keys as $key ) {
@@ -334,6 +349,7 @@ class Review_Sync {
 				'product-qa'         => array( 'product_qa' ),
 				'product-attributes' => array( 'product_attributes' ),
 				'image-alt'          => array( 'image_alt' ),
+				'custom-fields'      => array( 'custom_fields' ),
 			);
 			// A plain LIST of type ids (Apply stores `array_keys( $applied_types )`).
 			// This used to loop over `array_keys( $applied )`, i.e. 0, 1, 2, so
@@ -363,6 +379,8 @@ class Review_Sync {
 	public function run() {
 		$counts = $this->drain();
 		$this->refresh_quality();
+		// Released products come back to Approve all and the sweep (4.29.0).
+		$this->plugin->held_back()->refresh_stored();
 		return $counts;
 	}
 

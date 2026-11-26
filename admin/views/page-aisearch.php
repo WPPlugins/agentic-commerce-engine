@@ -33,7 +33,7 @@ $agencoen_tab_order = array( 'overview', 'prompts', 'competitors', 'crawlers', '
 ?>
 <div id="agencoen-aisearch" class="agencoen-aisearch" data-default-tab="<?php echo esc_attr( $agencoen_default_tab ); ?>">
 
-	<div class="ace-tabs" role="tablist">
+	<div class="ace-tabs" role="tablist" aria-label="<?php esc_attr_e( 'AI Search sections', 'agentic-commerce-engine' ); ?>">
 		<?php foreach ( $agencoen_tab_order as $agencoen_tab_key ) : ?>
 			<button
 				type="button"
@@ -181,15 +181,39 @@ $agencoen_tab_order = array( 'overview', 'prompts', 'competitors', 'crawlers', '
 						<button type="button" class="ace-btn ace-btn-secondary ace-btn-sm" id="agencoen-aeo-suggest"><?php esc_html_e( 'Suggest prompts', 'agentic-commerce-engine' ); ?></button>
 					</div>
 
+					<?php
+					/*
+					 * Scope suggestions to part of the catalog. Both lists are filled
+					 * from the platform's facets call; a hidden wrapper means the
+					 * store has nothing to offer, which is not the same as the call
+					 * having failed, so the help text says which it is.
+					 */
+					?>
+					<div class="ace-grid-2" id="agencoen-aeo-scope" hidden>
+						<div class="ace-field" id="agencoen-aeo-scope-categories" hidden>
+							<label class="ace-label" for="agencoen-aeo-categories"><?php esc_html_e( 'Product categories', 'agentic-commerce-engine' ); ?></label>
+							<select class="ace-select" id="agencoen-aeo-categories" multiple size="6"></select>
+							<p class="ace-help"><?php esc_html_e( 'Hold Ctrl or Cmd to pick more than one. Leave empty to draw from your whole catalog.', 'agentic-commerce-engine' ); ?></p>
+						</div>
+						<div class="ace-field" id="agencoen-aeo-scope-collections" hidden>
+							<label class="ace-label" for="agencoen-aeo-collections"><?php esc_html_e( 'Collections', 'agentic-commerce-engine' ); ?></label>
+							<select class="ace-select" id="agencoen-aeo-collections" multiple size="6"></select>
+							<p class="ace-help" id="agencoen-aeo-collections-help"></p>
+						</div>
+					</div>
+
 					<div class="ace-toolbar">
-						<label class="ace-label">
-							<input type="radio" name="agencoen_aeo_prompt_mode" value="append" checked />
-							<?php esc_html_e( 'Append to saved prompts', 'agentic-commerce-engine' ); ?>
-						</label>
-						<label class="ace-label">
-							<input type="radio" name="agencoen_aeo_prompt_mode" value="replace" />
-							<?php esc_html_e( 'Replace saved prompts', 'agentic-commerce-engine' ); ?>
-						</label>
+						<fieldset class="ace-radio-group">
+							<legend class="ace-label"><?php esc_html_e( 'When saving these prompts', 'agentic-commerce-engine' ); ?></legend>
+							<label class="ace-label">
+								<input type="radio" name="agencoen_aeo_prompt_mode" value="append" checked />
+								<?php esc_html_e( 'Append to saved prompts', 'agentic-commerce-engine' ); ?>
+							</label>
+							<label class="ace-label">
+								<input type="radio" name="agencoen_aeo_prompt_mode" value="replace" />
+								<?php esc_html_e( 'Replace saved prompts', 'agentic-commerce-engine' ); ?>
+							</label>
+						</fieldset>
 						<button type="button" class="ace-btn ace-btn-secondary ace-btn-sm" id="agencoen-aeo-prompts-save"><?php esc_html_e( 'Save prompts', 'agentic-commerce-engine' ); ?></button>
 					</div>
 
@@ -210,9 +234,9 @@ $agencoen_tab_order = array( 'overview', 'prompts', 'competitors', 'crawlers', '
 					</div>
 
 					<div class="ace-toolbar">
-						<button type="button" class="ace-btn ace-btn-secondary" id="agencoen-aeo-estimate"><?php esc_html_e( 'Estimate credits', 'agentic-commerce-engine' ); ?></button>
 						<button type="button" class="ace-btn ace-btn-primary" id="agencoen-aeo-launch"><?php esc_html_e( 'Launch run', 'agentic-commerce-engine' ); ?></button>
 					</div>
+					<p class="ace-help"><?php esc_html_e( 'Runs do not use your credits.', 'agentic-commerce-engine' ); ?></p>
 				</div>
 			</div>
 

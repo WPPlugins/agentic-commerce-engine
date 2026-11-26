@@ -2,13 +2,13 @@
 Contributors: authoritas
 Tags: ai, seo, woocommerce, ai search, content
 Requires at least: 6.5
-Tested up to: 7.0
+Tested up to: 7.2
 Requires PHP: 8.0
-Stable tag: 4.20.0
+Stable tag: 4.34.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Bring Rezolve Ai to WordPress: AI content generation, AI search visibility research, native AI crawler analytics, and full WooCommerce product optimization.
+Bring Rezolve Ai to WordPress: content writing, AI search visibility research, native AI crawler analytics, and full WooCommerce product optimization.
 
 == Description ==
 
@@ -22,7 +22,7 @@ Rezolve Ai connects your WordPress site to the Rezolve Ai platform and puts the 
 
 **AI Search research (any WordPress site)**
 
-* **Launch research runs** against the AI answer engines (ChatGPT, Perplexity, Gemini, and more) straight from wp-admin: manage your prompt set, get AI-suggested prompts from your own catalog, pick engines and markets, estimate, and launch.
+* **Launch research runs** against the AI answer engines (ChatGPT, Perplexity, Gemini, and more) straight from wp-admin: manage your prompt set, get AI-suggested prompts from your own catalog, pick engines and markets, and launch.
 * **Rich dashboards:** share of brand mentions, share of answers, competitor comparison, top cited domains, per-prompt results with citations, and trends across runs.
 
 **AI crawler analytics (any WordPress site, works before you even connect)**
@@ -63,13 +63,16 @@ Article generation, product enrichment, AI search research runs, credit balances
 
 * **What is sent on connect:** your site URL and title, the WordPress version, the WooCommerce version when present, and the plugin version. This registers your site and returns a store ID and a webhook secret.
 * **What is sent on sync and enrich (WooCommerce):** product data including title, description, short description, SKU, price, stock status, image URLs, categories, tags, and variation IDs, plus the content types you selected.
+* **Custom fields sent on sync (WooCommerce, from 4.24.0):** the product content you keep outside the main fields, so Rezolve Ai can write from it: ACF field values, public custom fields (post meta), product attributes, custom product tabs, and custom product taxonomies such as brand. Fields that look private are never sent: protected meta (keys beginning with an underscore), and anything named like a cost, margin, supplier detail, key, token, password, email address, phone number or bank detail. Fields you leave out in Settings, under Custom fields, are never sent either. Developers can change what is sent with the `agencoen_custom_fields` and `agencoen_custom_field_is_private` filters.
 * **What is sent for visitor pageviews (optional, off by default):** one row per published page per day: the page id, the date, the number of views, and the referring site's domain for visits arriving from search engines and AI assistants. No IP addresses, no cookies, no session identifiers, and nothing that could identify an individual visitor. Because nothing identifies a visitor, this reports pageviews and cannot report unique visitors.
 * **What is sent for WooCommerce sales (optional, off by default, same setting):** one row per product per day: the product id, units sold, and net revenue. No orders, no customers, no names, no email addresses, no postal addresses.
+* **What is sent for orders from AI shopping agents (from 4.31.0, same setting):** when a shopping agent sends a shopper with a buy link from Rezolve Ai, the link carries a short reference that Rezolve Ai issued and that names no product, agent or person. The plugin keeps it with the cart and on the order, and the daily report sends, per day and per reference: the number of visits the link opened, the number of orders, and each product's id, units and net revenue. No order numbers, customers, names, email addresses or postal addresses are sent.
 * **What is sent for A/B testing (optional, off by default):** which version of a product description a visitor was shown, which test that version belonged to, and whether that visitor reached checkout, against a scrambled visitor id. This is the ONLY feature in the plugin that stores a cookie: to show a visitor the same version twice, a random id is kept in their browser. It does nothing at all without the visitor's consent, read through the WordPress Consent API, so your cookie banner decides; with no consent plugin installed nothing is stored and every visitor sees your normal copy. The id is scrambled with a secret unique to your site before anything is sent, so it cannot be linked back to a person, and the same visitor on another site produces a completely different value. No IP addresses, user agents, names, email addresses, order details or customer records are sent. Search engines and AI crawlers are never put into a test, because they carry no cookie and give no consent.
 * **What is sent for article generation:** the title, topic, keywords, locale, and options you enter, and optionally the products you link. The platform uses your project's brand voice and identity to write the article.
 * **What is sent for AI search research:** the research prompts you save, the engines and markets you pick, and, when you use prompt suggestions, catalog snippets (product titles, categories, tags). Research runs are executed by the Authoritas AI search platform.
-* **What is sent on heartbeat:** a periodic health ping containing your site URL, product counts, and version numbers.
-* **Optional crawler report:** if you opt in, a daily summary of AI crawler hits (date, crawler name, page paths, counts) is sent to Rezolve Ai. This is off by default and never includes IP addresses or user agents.
+* **What is sent on heartbeat:** a periodic health ping containing your site URL, product counts, and version numbers, and from 4.33.0 your store's country as set in WooCommerce (Settings, General, Store Address). The country lets Rezolve Ai state where you sell from in your OpenAI product file. Nothing is sent for it when no country is set.
+* **Policy pages (WooCommerce, from 4.34.0):** with the heartbeat, at most once a day unless one changes, the public addresses of your privacy policy page (Settings, Privacy), your terms and conditions page and your refund and returns page (both under WooCommerce, Settings, Advanced). Rezolve Ai states them in the seller columns of your ChatGPT product file. Only the page addresses are sent, never their text, and only for pages that are published, not password protected, and not empty. Nothing is said about whether you accept returns, because WooCommerce has no setting that states it.
+* **Optional crawler report:** if you opt in, a daily summary of AI crawler hits (date, crawler name, page paths, counts) is sent to Rezolve Ai. This is off by default and never includes IP addresses or user agents. With the report on, requests from AI agents that sign them (Web Bot Auth, used by agents such as ChatGPT's) are also sent so Rezolve Ai can check each signature against the keys the agent publishes: the time, method, host, path and query, and the signature headers the agent sent with any other header its signature covers. At most 200 a day. Never IP addresses, user agents, cookies or authorization headers.
 * **AI processing:** the platform generates content using large language models, including models provided by OpenAI. Data you send is processed by these models to produce the results.
 * **Rezolve Ai terms of service:** https://ace.authoritas.com/terms
 * **Rezolve Ai privacy policy:** https://ace.authoritas.com/privacy
@@ -119,7 +122,11 @@ Yes. SEO titles and meta descriptions are written to the active SEO plugin's fie
 
 = Where are my product feeds? =
 
-With WooCommerce active, the Settings screen lists the public feed URLs for Google, Microsoft, and Agentic Commerce. Each one streams your enriched products so it stays fast on large catalogs.
+With WooCommerce active, the Settings screen lists the public feed URLs for Google, Microsoft, and Agentic Commerce. Each one streams your enriched products so it stays fast on large catalogs. The Agentic Commerce feed is for other AI shopping agents; ChatGPT reads the ChatGPT product file instead (see the next question).
+
+= How do I get my products into ChatGPT? =
+
+Connect your site to Rezolve Ai and sync your catalog. Rezolve Ai then builds a ChatGPT product file from it, in the format OpenAI asks for, and keeps it up to date. Open **Rezolve Ai, Settings** and copy the URL under ChatGPT product file. In ChatGPT Business Hub, claim your business and verify your identity, then add that URL as a hosted URL for your products. ChatGPT reads the whole file from that address, so there is nothing to upload again.
 
 = Will it handle thousands of products? =
 
@@ -137,6 +144,126 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 8. The Settings screen with publishing, automation, and crawler tracking options.
 
 == Changelog ==
+
+= 4.34.3 =
+* Changed: tested with WooCommerce 11.3, so WooCommerce no longer lists the plugin as untested on current versions.
+
+= 4.34.2 =
+* Fixed: the four Rezolve Ai blocks (IRL scenario cards, Internal links, Highlights, Product Q&A) use the current block API, so the block editor no longer warns that they are deprecated. In the editor each block can now be selected like any other, and its preview uses the same styles as your storefront.
+
+= 4.34.1 =
+* Fixed: three screen messages that include a number or a name (products left out of enrichment, the brand voice you are writing as, and an article's word count) now tell translators what fills them in, so translated screens read correctly.
+* Changed: tested with WordPress 7.2, and the plugin passes WordPress Plugin Check with no errors.
+
+= 4.34.0 =
+* New: Settings shows your ChatGPT product file URL, with a Copy button and the steps to add it in ChatGPT Business Hub. Rezolve Ai builds the file from your synced catalog in the format OpenAI asks for, so ChatGPT shopping can list your products. The Agentic Commerce feed under Channel feeds is now labelled as being for other AI agents, because ChatGPT does not read it.
+* New: your ChatGPT product file names your privacy policy, terms and conditions, and refund and returns pages. The plugin sends their public addresses with the heartbeat, only for pages that are published and have text in them. Whether you accept returns is never guessed from a page.
+
+= 4.33.0 =
+* Added: the hourly heartbeat sends your store's country, as set in WooCommerce under Settings, General, Store Address, so your OpenAI product file can say where you sell from. Nothing is sent for it when no country is set.
+* Changed: some Dashboard and Settings wording describes the content Rezolve Ai writes plainly, for example "Auto-apply suggestions without review".
+* Changed: a product split's chart draws what the test is measured on. A test read on Shopping impressions, clicks, orders, revenue or AI crawler pulls used to show a visits chart above its result; the chart, its title and the text above it now name the test's own goal. A test read on visits looks the same as before.
+
+= 4.32.1 =
+* Fixed: a product's structured data no longer claims a price is valid for another year. That date was made up, not read from the store. A running sale with an end date now states the day it ends, and any other price states no end date.
+* Fixed: a stock status the plugin does not recognise, such as one added by another extension, was reported to search engines as in stock. Availability is now left out instead.
+
+= 4.32.0 =
+* New: AI agents that sign their requests are checked. Some agents, such as ChatGPT's agent and part of Google's, sign every request with Web Bot Auth, so they can be told apart from anything that copies their name. With the daily crawler report on, the plugin keeps such requests as they arrived, at most 200 a day, and sends them with the report; Rezolve Ai checks each signature against the keys the agent publishes and shows the verified agents under Signed agents in AI crawler activity. No IP addresses, user agents, cookies or authorization headers are kept or sent.
+
+= 4.31.1 =
+* Changed: a product split's visits chart shows each group's average visits per product, so the bigger group no longer looks ahead before the test has started. The days before the test are shaded and labelled, the day it started is marked, and the text above the chart says which days are the baseline and what to watch once the test is running. The legend says how many products are in each group, and dates read as short days that no longer crowd on a narrow screen.
+
+= 4.31.0 =
+* New: orders sent by AI shopping agents are counted. A buy link Rezolve Ai hands a shopping agent carries a short reference. When a shopper opens it, the plugin keeps the reference with the cart and saves it on the order, in both the classic and the block checkout. With daily sales totals turned on, the report adds the visits those links opened and the orders and revenue they produced, so Rezolve Ai can show what agents sold apart from people clicking through from AI assistants. No order numbers, customers or email addresses are sent.
+* New: when you create a product split, choose how many products to hold back unchanged: Choose for me, Half, or About a fifth. The products step says how many that will be.
+* Changed: a running product split says how long is left (for example, "About 48 days to go") and shows how many products are in each group, instead of the shopper panels it never uses.
+* Fixed: a product split whose new content is already on your store no longer reads as having no version live, and the screen now says the new content is live.
+
+= 4.30.1 =
+* Changed: Edit live on a product in the control group of a product split is refused while the experiment runs, with the same Held back line Review shows for Approve. A live edit writes to the product at once, so it would change the products the experiment compares against. Edits to suggestions still waiting in Review are saved as usual. If Rezolve Ai cannot be asked, the edit is not saved and you are asked to try again.
+
+= 4.30.0 =
+* Changed: a product in the control group of a product split is no longer applied while the experiment runs. Approve, Approve all and auto-apply leave it waiting in Review, and the product says which experiment holds it back and until when. Once the experiment releases it, it can be approved as usual.
+* Changed: Approve all says how many products it left waiting because an experiment holds them back. If Rezolve Ai cannot be asked, nothing is applied and you are asked to try again.
+
+= 4.29.0 =
+* New: an experiment can watch other goals beside its main one. When you split products, tick Added to cart, Orders, Revenue or Visits under Also measure on the New experiment form. The main goal still decides the result.
+* New: the experiment page shows an Also measured table after What it found, with each goal's change and its range, or a sentence saying why there is no figure yet (for example, no orders on those products before the test began).
+
+= 4.28.0 =
+* New: content is written in your store's own format. Rezolve Ai learns how your product descriptions and custom fields are written from your own products (the parts, their order, the formatting and the length) and writes new descriptions and rewrites the same way, keeping your details lists and links exactly as they are.
+* New: Settings, Field formats shows what was learned for each field. Pick a preset or Rezolve Ai's own layout instead, choose which parts stay exactly as they are, and preview a format on one of your products for free.
+* New: Your own template on the Field formats card. Build a field's format from parts (a details list, paragraphs, bullet points, a heading, questions and answers, your closing sentence) in the order you want, each with its own counts and style. It starts like your store's current format, and the free preview follows every change.
+* New: fill a custom field where a product has none. Turn on Fill when empty for an ACF field or a custom field, see how many products and about how many credits first, and review every fill before it is published. A field with a list of choices is filled with one of its choices, and Revert removes a fill again.
+* Changed: an enriched description is published with its layout (details lists, paragraphs and links) instead of as plain text.
+* Changed: Review shows how a description in your store's format will look, and labels a filled field as new, with Check the facts on stories and meanings.
+* Changed: after the update your catalog is synced once in the background, so Rezolve Ai can see the choices of your select, radio and button group fields. This does not enrich or charge for anything.
+
+= 4.27.0 =
+* Changed: the admin screens work from the keyboard and with a screen reader throughout, following WCAG 2.2 Level A and AA.
+* Changed: the content type picker keeps focus inside it while it is open, closes with Escape, and puts you back on the button that opened it.
+* Changed: help tooltips open on focus and on a click or tap as well as on hover, stay open while you move onto them, and close with Escape. Each help button is named after the chart it explains.
+* Changed: tabs move with the arrow keys, Home and End, and each tab is tied to the panel it shows. The Products status filters work the same way.
+* New: every chart has a short spoken summary and a Show data table button that lists all of its numbers, so no value is only in a hover tooltip.
+* Fixed: every search box, filter and field has a label, each screen has one main heading, tables have column headers and captions, and the Review expand buttons name their product and say whether they are open.
+* Fixed: connection errors, batch progress and loading placeholders are announced, a button you press keeps keyboard focus while it works, and a message that carries a link stays on screen until you close it.
+* Fixed: field edges, focus rings, chart labels and small text meet the contrast minimums, the help and expand buttons are larger, and animations stop when your system asks for reduced motion.
+* Fixed: on the storefront, related product links and product questions show a visible focus ring, and the link outline follows your theme's text colour.
+
+= 4.26.0 =
+* Changed: products that a running experiment is measuring are left out of an enrichment run, so their content does not change in the middle of a test. The confirmation says how many were left out, and those products go back to Not enriched instead of waiting at Queued.
+
+= 4.25.2 =
+* Changed: AI Search no longer shows an Estimate credits button. Research runs do not use your Rezolve Ai credits, so there was no cost to estimate, and the screen now says so.
+
+= 4.25.1 =
+* Fixed: content sent to a field your theme shows as plain text, such as the short description in a block theme, keeps a space between its items instead of running them together.
+
+= 4.25.0 =
+* New: choose where each kind of generated content goes. Product Q&A, highlights, IRL scenario cards, internal links and product specifications can stay in the Rezolve Ai block, go into one of your own fields (an ACF text area or editor, a custom field, or the short description), or be added as a section at the start or end of the product description. Set it in Settings, Where content goes; the same choice is shared with the Rezolve Ai web app.
+* New: the Rezolve Ai block can sit in a product tab of its own, next to Description and Additional information.
+* Changed: a field you send content to is replaced when that content is published, and Revert on the Review screen puts back what it held. Rezolve Ai stops reading that field as product information, so it never feeds its own output back in.
+* Changed: a new or reverted product description keeps the Rezolve Ai sections you chose to put in it.
+
+= 4.24.4 =
+* Fixed: on Review, a rewritten custom field keeps its lines. Care instructions and other fields written on several lines no longer run together, and a field that holds formatted text reads as paragraphs.
+
+= 4.24.3 =
+* Fixed: after an update, Rezolve Ai learns the new version straight away, so features that need it (such as rewriting your custom fields) are offered at once instead of up to an hour later.
+* Fixed: turning Rewrite on for a custom field now offers "Your custom fields" in the enrichment picker right away.
+* Fixed: the quality scores on Review name the custom fields group properly.
+
+= 4.24.2 =
+* Fixed: the Rewrite switches in the Custom fields table now draw as switches. WordPress's own checkbox styles had turned them into small squares.
+
+= 4.24.1 =
+* Changed: the Custom fields card in Settings is now a table you can search and filter by status (used, rewriting, left out, not used), 25 fields to a page, with a switch to turn rewriting on or off for each field that can be rewritten.
+* Added: select several custom fields and leave them out, or use them again, in one step.
+* Changed: bringing a field back now says your catalog is resyncing, so you know when it reaches every product.
+* Fixed: an empty selection bar no longer shows when nothing is selected.
+
+= 4.24.0 =
+* Added: Rezolve Ai now writes from the content you keep outside the main product fields: ACF fields, custom fields, product attributes, custom product tabs and custom taxonomies such as brand. Fields that look private (costs, supplier details, keys, passwords, email addresses, phone numbers) are never sent.
+* Added: a Custom fields card in Settings lists every field found on your products, what each is used for, and lets you leave any of them out.
+* Added: let Rezolve Ai rewrite a custom field you choose, such as care instructions, and write it back after you approve it. A field you change after the suggestion is written is left as it is, and Revert restores the original.
+* Changed: the product's short description is now sent alongside its description instead of only when the description is empty.
+* Upgrading sends your catalog once more in the background so its custom fields reach Rezolve Ai. This does not generate or charge for anything by itself.
+
+= 4.23.0 =
+* Added: choose the products a test runs over by category, collection, product type, brand or tag, instead of one category at a time. Picking values inside one filter means any of them; picking across two filters means both.
+* Added: describe the products you want to test in your own words and Rezolve Ai suggests a set from your own catalog, which you can edit before you use it.
+* Added: search your catalog to add a product the filters missed, or take one out, and the count updates as you go.
+* Added: save a selection under a name and reuse it on the next test. A saved group re-reads your catalog each time, so products added since you saved it are included.
+* Changed: the product count and the size of the control group now come from Rezolve Ai rather than being worked out in your browser, so the number you see is the number the test will use. A selection too small for a control group now says so before you start, not after.
+
+= 4.21.0 =
+* Added: the Experiments list shows where each test is: its new versions being written, waiting for your review, on their way to your store, or the day of its planned run, with a progress bar wherever the count is known.
+* Added: a test's own page draws that progress inside its current step. A step that is waiting on you says so in amber, with what to do.
+
+= 4.20.1 =
+* Fixed: an image with no alt text now reaches Rezolve Ai with none. It used to be sent with the product name in its place, so Rezolve Ai treated every such image as already described. After this update your catalog syncs once in the background to correct what was sent before.
+* Added: when content goes live on your store, Rezolve Ai now receives the product's page, so its review queue can open the live product.
 
 = 4.20.0 =
 * Added: a View live page link on every product on the Review screen, waiting or applied. It opens the product's page on your store in a new tab, and appears once the product is published.
@@ -337,6 +464,81 @@ Yes. Syncing, enrichment, review, the served feeds, and the auto-apply sweep all
 * Product enrichment now runs on the platform's durable jobs API with webhook-accelerated polling.
 
 == Upgrade Notice ==
+
+= 4.34.3 =
+Tested with WooCommerce 11.3.
+
+= 4.34.2 =
+The Rezolve Ai blocks are updated for the current block editor: no deprecation warnings, and previews styled like your storefront.
+
+= 4.34.1 =
+Tested with WordPress 7.2, and translated screens now describe counts and names correctly.
+
+= 4.34.0 =
+Copy your ChatGPT product file URL from Settings into ChatGPT Business Hub, and your file now names your privacy, terms, and returns pages.
+
+= 4.33.0 =
+Your store's country now reaches your OpenAI product file, and a product split's chart draws the goal the test is measured on, such as Shopping impressions, instead of always drawing visits.
+
+= 4.32.1 =
+Structured data now states only what your store says: a sale's real end date, and no availability for a stock status the plugin does not recognise.
+
+= 4.32.0 =
+With the daily crawler report on, AI agents that sign their requests are checked, so you can see which agents really visited.
+
+= 4.31.1 =
+A product split's visits chart marks the day the test started and compares the two groups per product.
+
+= 4.31.0 =
+Counts orders that AI shopping agents send through Rezolve Ai buy links, and lets you choose how many products a product split holds back.
+
+= 4.30.1 =
+Edit live is refused for products an experiment holds in its control group, with the reason shown.
+
+= 4.30.0 =
+Products an experiment holds in its control group stay waiting in Review until it releases them, with the reason shown.
+
+= 4.29.0 =
+Experiments can also measure cart adds, orders, revenue and visits beside the main goal, shown in a new Also measured table.
+
+= 4.28.0 =
+New content follows your store's own format, with presets, a free preview, and filling empty custom fields.
+
+= 4.27.0 =
+Keyboard and screen reader access across every admin screen, data tables for every chart, and higher contrast.
+
+= 4.26.0 =
+Products in a running experiment are left out of enrichment, and the screen tells you how many.
+
+= 4.25.2 =
+AI Search no longer offers a credit estimate for a run. Research runs do not use your credits.
+
+= 4.25.1 =
+Highlights and other lists sent to the short description no longer run together in block themes.
+
+= 4.25.0 =
+Choose where Q&A, highlights, IRL cards, links and specifications go: the Rezolve Ai block, your own fields, a section of the description, or a product tab.
+
+= 4.24.4 =
+Rewritten custom fields keep their lines on Review.
+
+= 4.24.3 =
+New features are offered as soon as you update, and custom field rewrites appear in the picker as soon as you turn them on.
+
+= 4.24.2 =
+Fixes how the Rewrite switches look in the Custom fields table.
+
+= 4.24.1 =
+The Custom fields card becomes a searchable table with bulk actions and a rewrite switch for each field.
+
+= 4.24.0 =
+Rezolve Ai now writes from your custom fields, ACF fields, attributes, tabs and brand, never sends fields that look private, and can rewrite the custom fields you choose.
+
+= 4.21.0 =
+See where each experiment is on the Experiments screen, from writing its new versions to the day of its run.
+
+= 4.20.1 =
+Images with no alt text now reach Rezolve Ai as undescribed instead of carrying the product name, and content that goes live now sends its product page.
 
 = 4.20.0 =
 See every product image and its current alt text on the Review screen, and open any product's live page from its row.

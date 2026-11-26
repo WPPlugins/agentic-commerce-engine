@@ -86,10 +86,33 @@ class Assets {
 			true
 		);
 
+		$screen_deps = array( 'agencoen-core', 'agencoen-charts' );
+		// The Custom fields table's ordering, filtering and paging rules, a port
+		// of the platform's (see the file header). Settings only.
+		if ( 'settings' === $screen ) {
+			wp_enqueue_script(
+				'agencoen-custom-field-listing',
+				AGENCOEN_PLUGIN_URL . 'assets/js/custom-field-listing.js',
+				array( 'agencoen-core' ),
+				AGENCOEN_VERSION,
+				true
+			);
+			$screen_deps[] = 'agencoen-custom-field-listing';
+			// The Field formats card's words, a port of the platform's (4.28.0).
+			wp_enqueue_script(
+				'agencoen-field-format-listing',
+				AGENCOEN_PLUGIN_URL . 'assets/js/field-format-listing.js',
+				array( 'agencoen-core' ),
+				AGENCOEN_VERSION,
+				true
+			);
+			$screen_deps[] = 'agencoen-field-format-listing';
+		}
+
 		wp_enqueue_script(
 			'agencoen-screen-' . $screen,
 			AGENCOEN_PLUGIN_URL . 'assets/js/screens/' . $screen . '.js',
-			array( 'agencoen-core', 'agencoen-charts' ),
+			$screen_deps,
 			AGENCOEN_VERSION,
 			true
 		);
@@ -251,6 +274,10 @@ class Assets {
 			'syncDone'          => __( 'Sync complete.', 'agentic-commerce-engine' ),
 			'enriching'         => __( 'Sending to AI…', 'agentic-commerce-engine' ),
 			'enrichQueued'      => __( 'Queued for enrichment. Results appear as they finish.', 'agentic-commerce-engine' ),
+			// Products a running experiment is measuring are left out, because
+			// their content must not change mid-test.
+			/* translators: %s: number of products left out of enrichment. */
+			'enrichQueuedSomeInTest' => __( 'Queued for enrichment. %s left out: an experiment is measuring them.', 'agentic-commerce-engine' ),
 			'chooseTypes'       => __( 'Choose what to enrich', 'agentic-commerce-engine' ),
 			'enrichNow'         => __( 'Enrich now', 'agentic-commerce-engine' ),
 			'pickAtLeastOne'    => __( 'Pick at least one content type.', 'agentic-commerce-engine' ),
@@ -281,6 +308,10 @@ class Assets {
 			'confirmApproveAll' => __( 'Apply every pending suggestion to your live products?', 'agentic-commerce-engine' ),
 			'applying'          => __( 'Applying…', 'agentic-commerce-engine' ),
 			'applied'           => __( 'Applied to your product.', 'agentic-commerce-engine' ),
+			'heldBackChip'      => __( 'Held back', 'agentic-commerce-engine' ),
+			'heldBackOne'       => __( 'One product was left waiting: an experiment is holding it back. Its row says until when.', 'agentic-commerce-engine' ),
+			/* translators: %s: number of products. */
+			'heldBackMany'      => __( '%s products were left waiting: an experiment is holding them back. Each row says until when.', 'agentic-commerce-engine' ),
 			'dismissed'         => __( 'Dismissed.', 'agentic-commerce-engine' ),
 			'reverted'          => __( 'Reverted to the original.', 'agentic-commerce-engine' ),
 			'approve'           => __( 'Approve', 'agentic-commerce-engine' ),
@@ -288,7 +319,7 @@ class Assets {
 			'revertToOriginal'  => __( 'Revert to original', 'agentic-commerce-engine' ),
 			'edit'              => __( 'Edit', 'agentic-commerce-engine' ),
 			'current'           => __( 'Current', 'agentic-commerce-engine' ),
-			'aiSuggestion'      => __( 'AI suggestion', 'agentic-commerce-engine' ),
+			'proposed'          => __( 'Proposed', 'agentic-commerce-engine' ),
 			'noChange'          => __( 'no change', 'agentic-commerce-engine' ),
 			'emptyValue'        => __( '(empty)', 'agentic-commerce-engine' ),
 			/* translators: %s: measured quality score for a product, 0 to 100. */
@@ -420,7 +451,6 @@ class Assets {
 
 			/* AI Search */
 			'aeoNotConfigured'  => __( 'AI Search research is not set up for this Rezolve Ai account yet. Finish setup in the Rezolve Ai app, then reload this page. The Crawlers tab works either way.', 'agentic-commerce-engine' ),
-			'estimatePrefix'    => __( 'Estimated cost:', 'agentic-commerce-engine' ),
 
 			/*
 			 * Experiments
@@ -440,6 +470,15 @@ class Assets {
 			'howEachVersion'    => __( 'How each version is doing', 'agentic-commerce-engine' ),
 			'whenWillIKnow'     => __( 'When will I know?', 'agentic-commerce-engine' ),
 			'projectionPending' => __( 'Once both versions have been seen by enough shoppers, this shows the range narrowing and projects the day it becomes readable.', 'agentic-commerce-engine' ),
+			'productSplitReadiness' => __( 'This test compares the products with new content against the held-back products, so it is read once its planned days are done rather than as shoppers arrive. There is no range to draw while it runs.', 'agentic-commerce-engine' ),
+			'productSplitGroups'    => __( 'Products were put into the two groups at random when the test was set up, so there is no shopper split to check. Every shopper sees the same content on a given product.', 'agentic-commerce-engine' ),
+			'testClosed'            => __( 'This test is closed', 'agentic-commerce-engine' ),
+			'notCountingYet'        => __( 'Not counting yet', 'agentic-commerce-engine' ),
+			'nothingToEstimate'     => __( 'Nothing to estimate yet', 'agentic-commerce-engine' ),
+			'plannedDaysDone'       => __( 'The planned days are done', 'agentic-commerce-engine' ),
+			'aboutOneDayToGo'       => __( 'About 1 day to go', 'agentic-commerce-engine' ),
+			/* translators: %s: number of days left in the test. */
+			'aboutDaysToGo'         => __( 'About %s days to go', 'agentic-commerce-engine' ),
 			'whereDropOff'      => __( 'Where shoppers drop off', 'agentic-commerce-engine' ),
 			'basketNotCounted'  => __( 'The basket step is not shown because this site does not report it. Rezolve Ai 4.14.0 and later count it, and it appears here on its own once every version has been seen adding to a basket.', 'agentic-commerce-engine' ),
 			'measuredProperly'  => __( 'Is this being measured properly?', 'agentic-commerce-engine' ),
@@ -447,6 +486,15 @@ class Assets {
 			'whatItFound'       => __( 'What it found', 'agentic-commerce-engine' ),
 			'nothingComputed'   => __( 'Nothing has been computed yet. Results are worked out overnight, once there is enough traffic for a comparison to mean anything.', 'agentic-commerce-engine' ),
 			'whatWordsMean'     => __( 'What these words mean', 'agentic-commerce-engine' ),
+			'alsoMeasure'       => __( 'Also measure', 'agentic-commerce-engine' ),
+			'alsoMeasureProduct' => __( 'Read out beside the main goal, on the same products and the same days. Shown on the experiment page, and never what decides the result.', 'agentic-commerce-engine' ),
+			'alsoMeasureShopper' => __( 'Shown for each version on the experiment page, and never what decides the result.', 'agentic-commerce-engine' ),
+			'alsoMeasured'      => __( 'Also measured', 'agentic-commerce-engine' ),
+			'alsoMeasuredIntro' => __( 'The other goals you asked to watch, on the same products and the same days. They do not decide the result above.', 'agentic-commerce-engine' ),
+			'alsoMeasuredUnread' => __( 'These could not be read just now. Reload the page to try again.', 'agentic-commerce-engine' ),
+			'colGoal'           => __( 'Goal', 'agentic-commerce-engine' ),
+			'rangeOrReason'     => __( 'Range or reason', 'agentic-commerce-engine' ),
+			'noFigure'          => __( 'No figure', 'agentic-commerce-engine' ),
 			'version'           => __( 'Version', 'agentic-commerce-engine' ),
 			'versions'          => __( 'versions', 'agentic-commerce-engine' ),
 			'change'            => __( 'Change', 'agentic-commerce-engine' ),
@@ -456,6 +504,24 @@ class Assets {
 			'likelyBetween'     => __( 'likely between', 'agentic-commerce-engine' ),
 			'newContent'        => __( 'New content', 'agentic-commerce-engine' ),
 			'leftUnchanged'     => __( 'Left unchanged', 'agentic-commerce-engine' ),
+			/* translators: %s: what the chart counts, mid-sentence, e.g. "visits" or "shopping impressions". */
+			'trendTitleFor'     => __( 'Average %s per product, in each group', 'agentic-commerce-engine' ),
+			'trendVisits'       => __( 'Visits', 'agentic-commerce-engine' ),
+			'trendTotals'       => __( 'Total visits to each group', 'agentic-commerce-engine' ),
+			/* translators: %s: what the chart counts, e.g. "Visits" or "Shopping impressions". */
+			'trendNoStartFor'   => __( '%s in each group, averaged per product so the two groups compare fairly.', 'agentic-commerce-engine' ),
+			/* translators: %s: the day the test started, e.g. "28 Oct". */
+			'trendStartedOn'    => __( 'The test started on %s.', 'agentic-commerce-engine' ),
+			'trendBaselineOnly' => __( 'Every day on this chart so far is from before it, when both groups still had the same content. That is the baseline the test is measured against. Days with the new content appear here as they are counted, about a day behind.', 'agentic-commerce-engine' ),
+			'trendShaded'       => __( 'Shaded days are from before the test, when both groups had the same content.', 'agentic-commerce-engine' ),
+			/* translators: %s: the day the test started, e.g. "28 Oct". */
+			'trendFromDay'      => __( 'From %s, one group has the new content.', 'agentic-commerce-engine' ),
+			'trendHowToRead'    => __( 'Watch whether the gap between the lines changes after that day. A gap that was already there before the test is not a result.', 'agentic-commerce-engine' ),
+			'trendBefore'       => __( 'Before the test', 'agentic-commerce-engine' ),
+			'trendRunning'      => __( 'Test running', 'agentic-commerce-engine' ),
+			'oneProduct'        => __( '1 product', 'agentic-commerce-engine' ),
+			/* translators: %s: a number of products. */
+			'nProducts'         => __( '%s products', 'agentic-commerce-engine' ),
 			'percentLive'       => __( '% live', 'agentic-commerce-engine' ),
 			'applyWinnerConfirm' => __( 'This finishes the test and makes the winning version the copy every shopper sees. It cannot be resumed afterwards.', 'agentic-commerce-engine' ),
 			'applyWinnerDone'   => __( 'The winning version is on its way to your store.', 'agentic-commerce-engine' ),
@@ -514,14 +580,14 @@ class Assets {
 			'flowDefault'           => __( 'Flow default', 'agentic-commerce-engine' ),
 			'noSuggestions'         => __( 'No suggestions came back. Try adding a topic.', 'agentic-commerce-engine' ),
 			'suggestionsAdded'      => __( 'suggested prompts added to the editor.', 'agentic-commerce-engine' ),
+			'facetHelp'             => __( 'Hold Ctrl or Cmd to pick more than one. Leave empty to draw from your whole catalog.', 'agentic-commerce-engine' ),
+			'collectionsNotSynced'  => __( 'Sync your catalog to filter by collection.', 'agentic-commerce-engine' ),
 			'promptsRequired'       => __( 'Add at least one prompt (three characters or more, one per line).', 'agentic-commerce-engine' ),
 			'confirmReplacePrompts' => __( 'Replace all saved prompts with the lines in the editor?', 'agentic-commerce-engine' ),
 			'promptsSaved'          => __( 'Prompts saved.', 'agentic-commerce-engine' ),
 			'runLaunched'           => __( 'Run launched. Results usually arrive within a few minutes.', 'agentic-commerce-engine' ),
 			'flowFieldsRequired'    => __( 'Enter a flow name and your brand name.', 'agentic-commerce-engine' ),
 			'flowCreated'           => __( 'Research flow created.', 'agentic-commerce-engine' ),
-			'estimateReady'         => __( 'Estimate:', 'agentic-commerce-engine' ),
-			'estimateEmpty'         => __( 'The estimate came back empty. You can launch the run directly.', 'agentic-commerce-engine' ),
 			'statusCompleted'       => __( 'Completed', 'agentic-commerce-engine' ),
 			'statusUnknown'         => __( 'Unknown', 'agentic-commerce-engine' ),
 			'snapshotReady'         => __( 'Ready', 'agentic-commerce-engine' ),
@@ -560,6 +626,7 @@ class Assets {
 			'statPublished'    => __( 'Published', 'agentic-commerce-engine' ),
 			'statPublishedSub' => __( 'Live on this site', 'agentic-commerce-engine' ),
 			'addVoice'         => __( 'Add a brand voice in Rezolve Ai', 'agentic-commerce-engine' ),
+			/* translators: %s: brand voice name. */
 			'writingAs'        => __( 'Writing as %s.', 'agentic-commerce-engine' ),
 			'typesBuiltin'     => __( 'Built in', 'agentic-commerce-engine' ),
 			'typesPresets'     => __( 'Presets', 'agentic-commerce-engine' ),
@@ -567,6 +634,7 @@ class Assets {
 			'typeDefault'      => __( 'Standard article', 'agentic-commerce-engine' ),
 			'phaseQueued'      => __( 'Queued', 'agentic-commerce-engine' ),
 			'phaseWorking'     => __( 'Working', 'agentic-commerce-engine' ),
+			/* translators: %s: number of words in the article. */
 			'wordCountLabel'   => __( '%s words', 'agentic-commerce-engine' ),
 			'none'             => __( 'None', 'agentic-commerce-engine' ),
 			'phaseDone'        => __( 'Article ready', 'agentic-commerce-engine' ),
@@ -604,6 +672,7 @@ class Assets {
 			'andBetween'     => __( 'and', 'agentic-commerce-engine' ),
 			'ofProductsLive' => __( 'of', 'agentic-commerce-engine' ),
 			'productsLive'   => __( 'products have a second version live', 'agentic-commerce-engine' ),
+			'productsNewContentLive' => __( 'products have their new content live', 'agentic-commerce-engine' ),
 
 			'whatItIsWorth'    => __( 'What each version is worth', 'agentic-commerce-engine' ),
 			'whatItIsWorthSub' => __( 'Revenue divided by shoppers, counted from your own store. Only shown because real order values were reported.', 'agentic-commerce-engine' ),
@@ -615,6 +684,48 @@ class Assets {
 			'preflightFailed'  => __( 'Could not check that design.', 'agentic-commerce-engine' ),
 			'preflightRefused' => __( 'This design cannot be checked yet', 'agentic-commerce-engine' ),
 			'optionsFailed'    => __( 'Could not load what can be tested', 'agentic-commerce-engine' ),
+
+			/* Experiments: which products a test runs over */
+			'facetCategories'   => __( 'Categories', 'agentic-commerce-engine' ),
+			'facetCollections'  => __( 'Collections', 'agentic-commerce-engine' ),
+			'facetProductTypes' => __( 'Product type', 'agentic-commerce-engine' ),
+			'facetVendors'      => __( 'Brand', 'agentic-commerce-engine' ),
+			'facetTags'         => __( 'Tags', 'agentic-commerce-engine' ),
+			/*
+			 * These two are NOT interchangeable. "Nothing stored yet" is a read
+			 * that has not happened; "this catalogue records none" is a read
+			 * that found nothing. Showing the second for the first tells the
+			 * merchant a fact about their shop that nothing established.
+			 */
+			'facetEmpty'        => __( 'This catalogue records none of these.', 'agentic-commerce-engine' ),
+			'facetUnsynced'     => __( 'Nothing stored yet. These appear once your catalogue has been read.', 'agentic-commerce-engine' ),
+			'facetsFailed'      => __( 'Could not read your catalogue filters.', 'agentic-commerce-engine' ),
+			'everyProduct'      => __( 'Every product', 'agentic-commerce-engine' ),
+			'groupNone'         => __( 'None', 'agentic-commerce-engine' ),
+			'groupAsOf'         => __( 'products as of', 'agentic-commerce-engine' ),
+			'groupUncounted'    => __( 'not counted yet', 'agentic-commerce-engine' ),
+			'groupSaved'        => __( 'Saved.', 'agentic-commerce-engine' ),
+			'groupSaveFailed'   => __( 'Could not save that group.', 'agentic-commerce-engine' ),
+			'noProductsChosen'  => __( 'No products chosen yet.', 'agentic-commerce-engine' ),
+			'countFailed'       => __( 'Could not count these products.', 'agentic-commerce-engine' ),
+			'selectionFreezes'  => __( 'Fixed when you start the test. Products added to these filters later will not join it.', 'agentic-commerce-engine' ),
+			'holdoutAbout'      => __( 'About', 'agentic-commerce-engine' ),
+			/* translators: 1: products held back at a fifth, 2: products held back at half. */
+			'holdoutBetween'    => __( 'Between about %1$s and %2$s of them will be held back unchanged as the control group, depending on how many you choose to hold back.', 'agentic-commerce-engine' ),
+			'holdoutHeld'       => __( 'of them will be held back unchanged as the control group.', 'agentic-commerce-engine' ),
+			'holdoutTooFew'     => __( 'That is too few for a control group.', 'agentic-commerce-engine' ),
+			'holdoutNeed'       => __( 'A product split needs about', 'agentic-commerce-engine' ),
+			'holdoutProducts'   => __( 'products.', 'agentic-commerce-engine' ),
+			'cohortWorking'     => __( 'Looking through your catalogue...', 'agentic-commerce-engine' ),
+			'cohortNone'        => __( 'Nothing matched that.', 'agentic-commerce-engine' ),
+			'cohortSmall'       => __( 'That is smaller than a test usually needs. Take it, and the design check will have the last word.', 'agentic-commerce-engine' ),
+			'cohortUse'         => __( 'Use these products', 'agentic-commerce-engine' ),
+			'cohortApplied'     => __( 'Using the products you picked.', 'agentic-commerce-engine' ),
+			'cohortFailed'      => __( 'Could not suggest products just now.', 'agentic-commerce-engine' ),
+			'suggestTimedOut'   => __( 'That took longer than expected. Try a shorter description, or pick by category instead.', 'agentic-commerce-engine' ),
+			'pickerHint'        => __( 'Search to add a product the filters missed.', 'agentic-commerce-engine' ),
+			'pickerNone'        => __( 'Nothing matched that search.', 'agentic-commerce-engine' ),
+			'pickerFailed'      => __( 'Could not search products.', 'agentic-commerce-engine' ),
 
 			/* Experiments: history and what testing has been worth */
 			'worthHeading'      => __( 'What testing has been worth', 'agentic-commerce-engine' ),
@@ -649,13 +760,280 @@ class Assets {
 			'previous'          => __( 'Previous', 'agentic-commerce-engine' ),
 			'page'              => __( 'Page', 'agentic-commerce-engine' ),
 
+			/* Settings screen: ChatGPT product file (4.34.0) */
+			'openaiFeedLoading' => __( 'Reading the URL from Rezolve Ai…', 'agentic-commerce-engine' ),
+			'openaiFeedReady'   => __( 'Copy this URL into ChatGPT Business Hub. The file lists the products you have synced to Rezolve Ai.', 'agentic-commerce-engine' ),
+			'openaiFeedNone'    => __( 'Rezolve Ai does not serve a ChatGPT product file for this store.', 'agentic-commerce-engine' ),
+			'openaiFeedFailed'  => __( 'Could not read your ChatGPT product file URL from Rezolve Ai.', 'agentic-commerce-engine' ),
+			'openaiFeedRetry'   => __( 'Try again', 'agentic-commerce-engine' ),
+			'openaiFeedCopied'  => __( 'ChatGPT product file URL copied.', 'agentic-commerce-engine' ),
+			'copyManually'      => __( 'The URL is selected. Press Ctrl+C, or Cmd+C on a Mac, to copy it.', 'agentic-commerce-engine' ),
+
 			/* Settings screen */
 			'feedUrlsRegenerated' => __( 'Feed URLs regenerated. Update them wherever they are configured.', 'agentic-commerce-engine' ),
 
 			/* Settings */
 			'settingsSaved'     => __( 'Settings saved.', 'agentic-commerce-engine' ),
+			'customFieldsEmpty'        => __( 'No custom fields found on your products yet. They appear here after your next catalog sync.', 'agentic-commerce-engine' ),
+			'customFieldsLoading'      => __( 'Loading your custom fields…', 'agentic-commerce-engine' ),
+			'customFieldsTabsLabel'    => __( 'Custom field status', 'agentic-commerce-engine' ),
+			'customFieldsTabAll'       => __( 'All', 'agentic-commerce-engine' ),
+			'customFieldsTabUsed'      => __( 'Used', 'agentic-commerce-engine' ),
+			'customFieldsTabRewriting' => __( 'Rewriting', 'agentic-commerce-engine' ),
+			'customFieldsExcluded'     => __( 'Left out', 'agentic-commerce-engine' ),
+			'customFieldsSkipped'      => __( 'Not used', 'agentic-commerce-engine' ),
+			'customFieldsSearch'       => __( 'Search by field name or content', 'agentic-commerce-engine' ),
+			'customFieldsSearchLabel'  => __( 'Search custom fields', 'agentic-commerce-engine' ),
+			/* translators: %s: number of selected custom fields. */
+			'customFieldsSelected'     => __( '%s selected', 'agentic-commerce-engine' ),
+			/* translators: %s: number of selected custom fields to leave out. */
+			'customFieldsBulkLeaveOut' => __( 'Leave out %s', 'agentic-commerce-engine' ),
+			/* translators: %s: number of selected custom fields to use again. */
+			'customFieldsBulkUseAgain' => __( 'Use %s again', 'agentic-commerce-engine' ),
+			'customFieldsClear'        => __( 'Clear selection', 'agentic-commerce-engine' ),
+			'customFieldsColField'     => __( 'Field', 'agentic-commerce-engine' ),
+			'customFieldsColProducts'  => __( 'Products', 'agentic-commerce-engine' ),
+			'customFieldsColExample'   => __( 'Example', 'agentic-commerce-engine' ),
+			'customFieldsColStatus'    => __( 'Status', 'agentic-commerce-engine' ),
+			'customFieldsColRewrite'   => __( 'Rewrite', 'agentic-commerce-engine' ),
+			'customFieldsColAction'    => __( 'Action', 'agentic-commerce-engine' ),
+			'customFieldsSelectPage'   => __( 'Select every field on this page', 'agentic-commerce-engine' ),
+			/* translators: %s: a custom field's name. */
+			'customFieldsSelectRow'    => __( 'Select %s', 'agentic-commerce-engine' ),
+			/* translators: %s: a custom field's name. */
+			'customFieldsRewriteRow'   => __( 'Rewrite %s', 'agentic-commerce-engine' ),
+			'customFieldsReadOnly'     => __( 'Read only', 'agentic-commerce-engine' ),
+			'customFieldsNoPreview'    => __( 'No preview', 'agentic-commerce-engine' ),
+			/* translators: %s: the search text. */
+			'customFieldsNoMatch'      => __( 'No fields match "%s".', 'agentic-commerce-engine' ),
+			'customFieldsNoneHere'     => __( 'No fields here yet.', 'agentic-commerce-engine' ),
+			/* translators: 1: first row shown, 2: last row shown, 3: number of fields. */
+			'customFieldsShowing'      => __( 'Showing %1$s to %2$s of %3$s fields', 'agentic-commerce-engine' ),
+			'customFieldsShowingOne'   => __( 'Showing 1 field', 'agentic-commerce-engine' ),
+			'customFieldsLeaveOut'     => __( 'Leave out', 'agentic-commerce-engine' ),
+			'customFieldsUseAgain'     => __( 'Use again', 'agentic-commerce-engine' ),
+			/* translators: %s: a custom field's name. */
+			'customFieldsLeftOutOne'   => __( '%s is left out. Rezolve Ai stops using it straight away.', 'agentic-commerce-engine' ),
+			/* translators: %s: number of custom fields. */
+			'customFieldsLeftOutMany'  => __( '%s fields are left out. Rezolve Ai stops using them straight away.', 'agentic-commerce-engine' ),
+			/* translators: %s: a custom field's name. */
+			'customFieldsUsedAgainOne' => __( '%s is used again.', 'agentic-commerce-engine' ),
+			/* translators: %s: number of custom fields. */
+			'customFieldsUsedAgainMany' => __( '%s fields are used again.', 'agentic-commerce-engine' ),
+			/* translators: %s: a custom field's name. */
+			'customFieldsSyncingOne'   => __( '%s is used again. Your catalog is resyncing, so it is back on every product once that finishes.', 'agentic-commerce-engine' ),
+			/* translators: %s: number of custom fields. */
+			'customFieldsSyncingMany'  => __( '%s fields are used again. Your catalog is resyncing, so they are back on every product once that finishes.', 'agentic-commerce-engine' ),
+			/* translators: %s: a custom field's name. */
+			'customFieldsLaterOne'     => __( '%s is used again. It comes back with your next catalog sync.', 'agentic-commerce-engine' ),
+			/* translators: %s: number of custom fields. */
+			'customFieldsLaterMany'    => __( '%s fields are used again. They come back with your next catalog sync.', 'agentic-commerce-engine' ),
+			/* translators: %s: a custom field's name, or a number of fields. */
+			'customFieldsRewriteOn'    => __( 'Rezolve Ai can now suggest rewrites for %s.', 'agentic-commerce-engine' ),
+			/* translators: %s: a custom field's name, or a number of fields. */
+			'customFieldsRewriteOff'   => __( '%s will no longer be rewritten.', 'agentic-commerce-engine' ),
+			'customFieldsLoadError'    => __( 'Your custom fields could not be loaded. Try again in a moment.', 'agentic-commerce-engine' ),
+			'customFieldsTitle'        => __( 'Your custom fields', 'agentic-commerce-engine' ),
+			'customFieldNew'           => __( 'New: this field was empty', 'agentic-commerce-engine' ),
+			'customFieldCheckFacts'    => __( 'Check the facts', 'agentic-commerce-engine' ),
+			'layoutTitle'              => __( 'How the description will look', 'agentic-commerce-engine' ),
+			// Field formats card (4.28.0).
+			'ffModeOwn' => __( 'Your own template', 'agentic-commerce-engine' ),
+			'ffModeOwnHint' => __( 'Choose the parts and their order yourself.', 'agentic-commerce-engine' ),
+			'ffPartBullets' => __( 'Bullet points', 'agentic-commerce-engine' ),
+			'ffPartHeading' => __( 'Heading', 'agentic-commerce-engine' ),
+			'ffPartKept' => __( 'Closing sentence', 'agentic-commerce-engine' ),
+			'ffPartNumbered' => __( 'Numbered points', 'agentic-commerce-engine' ),
+			'ffPartParagraphs' => __( 'Paragraphs', 'agentic-commerce-engine' ),
+			'ffPartQa' => __( 'Questions and answers', 'agentic-commerce-engine' ),
+			'ffPartSpecs' => __( 'Details list', 'agentic-commerce-engine' ),
+			'ffTplAdd' => __( 'Add', 'agentic-commerce-engine' ),
+			'ffTplAddPart' => __( 'Add a part', 'agentic-commerce-engine' ),
+			'ffTplBold' => __( 'In bold', 'agentic-commerce-engine' ),
+			'ffTplBullets' => __( 'Bullets', 'agentic-commerce-engine' ),
+			'ffTplDown' => __( 'Down', 'agentic-commerce-engine' ),
+			'ffTplFewest' => __( 'Fewest', 'agentic-commerce-engine' ),
+			/* translators: %1$s: a setting, e.g. "Fewest"; %2$s: a part of a template, e.g. "Paragraphs" */
+			'ffTplFieldFor' => __( '%1$s, %2$s', 'agentic-commerce-engine' ),
+			'ffTplHeadingText' => __( 'Heading text, or leave empty for Rezolve Ai to write one', 'agentic-commerce-engine' ),
+			'ffTplHeadings' => __( 'As headings', 'agentic-commerce-engine' ),
+			'ffTplKeptNote' => __( 'The sentence your values end with, kept as your store writes it.', 'agentic-commerce-engine' ),
+			'ffTplLarge' => __( 'Large', 'agentic-commerce-engine' ),
+			'ffTplLines' => __( 'As Q and A lines', 'agentic-commerce-engine' ),
+			'ffTplList' => __( 'A list', 'agentic-commerce-engine' ),
+			'ffTplMarked' => __( 'Marked with', 'agentic-commerce-engine' ),
+			'ffTplMost' => __( 'Most', 'agentic-commerce-engine' ),
+			/* translators: %s: a part of a template */
+			'ffTplMoveDown' => __( 'Move %s down', 'agentic-commerce-engine' ),
+			/* translators: %s: a part of a template */
+			'ffTplMoveUp' => __( 'Move %s up', 'agentic-commerce-engine' ),
+			'ffTplNumbers' => __( 'Numbers', 'agentic-commerce-engine' ),
+			'ffTplQuestions' => __( 'Questions shown', 'agentic-commerce-engine' ),
+			'ffTplRemove' => __( 'Remove', 'agentic-commerce-engine' ),
+			/* translators: %s: a part of a template */
+			'ffTplRemoveRow' => __( 'Remove %s', 'agentic-commerce-engine' ),
+			'ffTplShownAs' => __( 'Shown as', 'agentic-commerce-engine' ),
+			'ffTplSize' => __( 'Size', 'agentic-commerce-engine' ),
+			'ffTplSmall' => __( 'Small', 'agentic-commerce-engine' ),
+			'ffTplTable' => __( 'A table', 'agentic-commerce-engine' ),
+			'ffTplTitle' => __( 'Your template', 'agentic-commerce-engine' ),
+			'ffTplUp' => __( 'Up', 'agentic-commerce-engine' ),
+			/* translators: %1$s: how many products, e.g. "812 products"; %2$s: a percentage, e.g. "97%" */
+			'ffAlike' => __( '%1$s, %2$s alike', 'agentic-commerce-engine' ),
+			'ffCaption' => __( 'How Rezolve Ai writes into each field', 'agentic-commerce-engine' ),
+			'ffChange' => __( 'Change', 'agentic-commerce-engine' ),
+			/* translators: %s: a field name */
+			'ffChangeRow' => __( 'Change the format of %s', 'agentic-commerce-engine' ),
+			'ffCheckAgain' => __( 'Check again', 'agentic-commerce-engine' ),
+			'ffColAction' => __( 'Action', 'agentic-commerce-engine' ),
+			'ffColField' => __( 'Field', 'agentic-commerce-engine' ),
+			'ffColFill' => __( 'Fill when empty', 'agentic-commerce-engine' ),
+			'ffColFormat' => __( 'Format', 'agentic-commerce-engine' ),
+			'ffColLearned' => __( 'Learned from', 'agentic-commerce-engine' ),
+			/* translators: %s: a number of credits */
+			'ffCredits' => __( '%s credits', 'agentic-commerce-engine' ),
+			/* translators: %1$s and %2$s: numbers of credits */
+			'ffCreditsRange' => __( '%1$s to %2$s credits', 'agentic-commerce-engine' ),
+			'ffEmpty' => __( 'Nothing learned yet. Formats are learned after your catalog sync, from your own products.', 'agentic-commerce-engine' ),
+			'ffFillCheckFacts' => __( 'Because this field tells a story or a meaning, its fills are marked Check the facts in Review.', 'agentic-commerce-engine' ),
+			'ffFillDraft' => __( 'Write this field for products that do not have it', 'agentic-commerce-engine' ),
+			'ffFillReview' => __( 'Each fill is written in this field\'s format, only from what your product data says, and goes to Review first. Nothing reaches your store until you approve it.', 'agentic-commerce-engine' ),
+			/* translators: %s: a field name */
+			'ffFillRow' => __( 'Fill %s when empty', 'agentic-commerce-engine' ),
+			/* translators: %1$s: a field name; %2$s: how many products, e.g. "271 products"; %3$s: credits, e.g. "1,355 to 2,710 credits" */
+			'ffFillSentence' => __( '%1$s is missing on about %2$s of the types that usually have it. Filling them costs about %3$s, charged only as content is generated.', 'agentic-commerce-engine' ),
+			/* translators: %s: a field name */
+			'ffFillTitle' => __( 'Fill %s when it is empty?', 'agentic-commerce-engine' ),
+			'ffFixedList' => __( 'Always one of the values in this field\'s own list, spelled as the list spells it.', 'agentic-commerce-engine' ),
+			'ffHowTitle' => __( 'How Rezolve Ai writes this field', 'agentic-commerce-engine' ),
+			'ffInFormat' => __( 'In this format', 'agentic-commerce-engine' ),
+			'ffKeepTitle' => __( 'Keep exactly as they are', 'agentic-commerce-engine' ),
+			'ffKindDescription' => __( 'Product description', 'agentic-commerce-engine' ),
+			'ffKindDestination' => __( 'Holds content Rezolve Ai places there', 'agentic-commerce-engine' ),
+			'ffKindField' => __( 'Custom field', 'agentic-commerce-engine' ),
+			'ffKindList' => __( 'Custom field with a list of values', 'agentic-commerce-engine' ),
+			'ffLabelsTitle' => __( 'Labels by product type', 'agentic-commerce-engine' ),
+			/* translators: %s: a date */
+			'ffLearnedOn' => __( 'Learned %s', 'agentic-commerce-engine' ),
+			/* translators: %s: names of parts of a format, comma separated */
+			'ffLeftOut' => __( 'Left out in this format: %s.', 'agentic-commerce-engine' ),
+			'ffLoadError' => __( 'Your field formats could not be loaded. Try again in a moment.', 'agentic-commerce-engine' ),
+			'ffLoading' => __( 'Loading your field formats…', 'agentic-commerce-engine' ),
+			'ffLockKept' => __( 'Closing sentence', 'agentic-commerce-engine' ),
+			'ffLockKeptHint' => __( 'The sentence your values end with stays as it is.', 'agentic-commerce-engine' ),
+			'ffLockLinks' => __( 'Links', 'agentic-commerce-engine' ),
+			'ffLockLinksHint' => __( 'Every link in the current text stays, word for word.', 'agentic-commerce-engine' ),
+			'ffLockSpecs' => __( 'Details list', 'agentic-commerce-engine' ),
+			'ffLockSpecsHint' => __( 'The current list of details stays row for row.', 'agentic-commerce-engine' ),
+			'ffModeCustom' => __( 'Your own template', 'agentic-commerce-engine' ),
+			'ffModeDefault' => __( 'Rezolve Ai default', 'agentic-commerce-engine' ),
+			'ffModeDefaultHint' => __( 'The layout Rezolve Ai writes when no format is chosen.', 'agentic-commerce-engine' ),
+			'ffModeList' => __( 'From its list', 'agentic-commerce-engine' ),
+			'ffModeMatch' => __( 'Match my store', 'agentic-commerce-engine' ),
+			'ffModeMatchHint' => __( 'Written the way your products already are.', 'agentic-commerce-engine' ),
+			'ffModePreset' => __( 'Preset', 'agentic-commerce-engine' ),
+			'ffNoLayout' => __( 'Rezolve Ai default has no fixed layout to preview: it follows the content type.', 'agentic-commerce-engine' ),
+			'ffNotAlike' => __( 'Not alike enough to copy', 'agentic-commerce-engine' ),
+			'ffNotLearned' => __( 'Not learned yet', 'agentic-commerce-engine' ),
+			'ffNotOn' => __( 'Field formats are not switched on for this site yet, so content is written in Rezolve Ai\'s own layout for now. What is learned here, and the choices you make, are used as soon as they are.', 'agentic-commerce-engine' ),
+			'ffNow' => __( 'Now', 'agentic-commerce-engine' ),
+			'ffOwnLayout' => __( 'Rezolve Ai\'s own layout, sized for the content type it writes.', 'agentic-commerce-engine' ),
+			'ffPartsTitle' => __( 'Parts, in order', 'agentic-commerce-engine' ),
+			'ffPreviewError' => __( 'This format could not be previewed.', 'agentic-commerce-engine' ),
+			'ffPreviewNote' => __( 'Your product\'s own words, laid out in this format. Free: nothing is written or charged.', 'agentic-commerce-engine' ),
+			'ffPreviewTitle' => __( 'Preview', 'agentic-commerce-engine' ),
+			'ffPreviewing' => __( 'Laying out the preview…', 'agentic-commerce-engine' ),
+			/* translators: %s: a number of products */
+			'ffProductsMany' => __( '%s products', 'agentic-commerce-engine' ),
+			/* translators: %s: the number 1 */
+			'ffProductsOne' => __( '%s product', 'agentic-commerce-engine' ),
+			'ffRelearn' => __( 'Learn again', 'agentic-commerce-engine' ),
+			'ffRelearnSent' => __( 'Learning your formats again. This takes a minute or two.', 'agentic-commerce-engine' ),
+			'ffSave' => __( 'Save', 'agentic-commerce-engine' ),
+			'ffSaveAndFill' => __( 'Save and turn on filling', 'agentic-commerce-engine' ),
+			/* translators: %s: a field name */
+			'ffSaved' => __( '%s saved.', 'agentic-commerce-engine' ),
+			/* translators: %s: names of parts of a format, comma separated */
+			'ffWrittenLater' => __( 'Written when content is generated: %s.', 'agentic-commerce-engine' ),
+			'currentValue'             => __( 'Now', 'agentic-commerce-engine' ),
+			'proposedValue'            => __( 'Rewrite', 'agentic-commerce-engine' ),
+			'product'                  => __( 'product', 'agentic-commerce-engine' ),
+			'products'                 => __( 'products', 'agentic-commerce-engine' ),
 			/* translators: %s: credit balance. */
 			'healthOk'          => __( 'Connection healthy. %s credits available.', 'agentic-commerce-engine' ),
+
+			/* Accessibility (4.27.0): control names, table headers and captions */
+			'loading'            => __( 'Loading', 'agentic-commerce-engine' ),
+			'dismissMessage'     => __( 'Dismiss message', 'agentic-commerce-engine' ),
+			/* translators: %s: product name. */
+			'selectProduct'      => __( 'Select %s', 'agentic-commerce-engine' ),
+			/* translators: %s: product name. */
+			'showDetailsFor'     => __( 'Show details for %s', 'agentic-commerce-engine' ),
+			'colAttribute'       => __( 'Attribute', 'agentic-commerce-engine' ),
+			'colValues'          => __( 'Values', 'agentic-commerce-engine' ),
+			'colOutcome'         => __( 'What happens', 'agentic-commerce-engine' ),
+			'colImage'           => __( 'Image', 'agentic-commerce-engine' ),
+			'colField'           => __( 'Field', 'agentic-commerce-engine' ),
+			'colActions'         => __( 'Actions', 'agentic-commerce-engine' ),
+			'briefsCaption'      => __( 'Project briefs', 'agentic-commerce-engine' ),
+			'postsCaption'       => __( 'Articles in WordPress', 'agentic-commerce-engine' ),
+			'botsPagesCaption'   => __( 'Most crawled pages', 'agentic-commerce-engine' ),
+			'promptsCaption'     => __( 'Research prompts', 'agentic-commerce-engine' ),
+			'competitorsCaption' => __( 'Share of answers by brand', 'agentic-commerce-engine' ),
+			'runsCaption'        => __( 'Research runs', 'agentic-commerce-engine' ),
+			'runResultsCaption'  => __( 'Results by prompt', 'agentic-commerce-engine' ),
+			'colStep'            => __( 'Step', 'agentic-commerce-engine' ),
+			'colState'           => __( 'State', 'agentic-commerce-engine' ),
+			'colDetail'          => __( 'Detail', 'agentic-commerce-engine' ),
+			'colCheck'           => __( 'Check', 'agentic-commerce-engine' ),
+			'colTerm'            => __( 'Term', 'agentic-commerce-engine' ),
+			'colMeaning'         => __( 'Meaning', 'agentic-commerce-engine' ),
+			'checksCaption'      => __( 'Measurement checks', 'agentic-commerce-engine' ),
+			'yourTests'          => __( 'Your tests', 'agentic-commerce-engine' ),
+			'historyCaption'     => __( 'Finished tests', 'agentic-commerce-engine' ),
+			/* translators: %s: the name of an experiment. */
+			'noteLabel'          => __( 'What you learned from %s', 'agentic-commerce-engine' ),
+
+			/* Charts: each one's spoken summary and its data table */
+			'chart'                  => __( 'Chart', 'agentic-commerce-engine' ),
+			'showDataTable'          => __( 'Show data table', 'agentic-commerce-engine' ),
+			'hideDataTable'          => __( 'Hide data table', 'agentic-commerce-engine' ),
+			'chartNoValue'           => __( 'No data', 'agentic-commerce-engine' ),
+			'chartKindLine'          => __( 'Line chart', 'agentic-commerce-engine' ),
+			'chartKindArea'          => __( 'Area chart', 'agentic-commerce-engine' ),
+			'chartColDate'           => __( 'Date', 'agentic-commerce-engine' ),
+			'chartColValue'          => __( 'Value', 'agentic-commerce-engine' ),
+			'chartColName'           => __( 'Name', 'agentic-commerce-engine' ),
+			'chartColShare'          => __( 'Share', 'agentic-commerce-engine' ),
+			'chartColRange'          => __( 'Range', 'agentic-commerce-engine' ),
+			'chartColStep'           => __( 'Step', 'agentic-commerce-engine' ),
+			'scoreRange'             => __( 'Score range', 'agentic-commerce-engine' ),
+			'productsCol'            => __( 'Products', 'agentic-commerce-engine' ),
+			'crawlerCol'             => __( 'Crawler', 'agentic-commerce-engine' ),
+			'domainCol'              => __( 'Domain', 'agentic-commerce-engine' ),
+			'difference'             => __( 'Difference', 'agentic-commerce-engine' ),
+			/* translators: 1: low end of a range, 2: high end. */
+			'chartRange'             => __( '%1$s to %2$s', 'agentic-commerce-engine' ),
+			/* translators: 1: chart title, 2: chart kind such as "Line chart", 3: first date, 4: last date. */
+			'chartSummarySeries'     => __( '%1$s. %2$s from %3$s to %4$s.', 'agentic-commerce-engine' ),
+			/* translators: 1: series name, 2: lowest value, 3: highest value, 4: latest value. */
+			'chartSummarySeriesLine' => __( '%1$s: lowest %2$s, highest %3$s, latest %4$s.', 'agentic-commerce-engine' ),
+			/* translators: 1: chart title, 2: first date, 3: last date, 4: lowest value, 5: highest value, 6: latest value. */
+			'chartSummarySpark'      => __( '%1$s. Trend from %2$s to %3$s: lowest %4$s, highest %5$s, latest %6$s.', 'agentic-commerce-engine' ),
+			/* translators: 1: chart title, 2: number of bars, 3: label of the highest bar, 4: its value. */
+			'chartSummaryBars'       => __( '%1$s. Bar chart of %2$s values. Highest: %3$s, %4$s.', 'agentic-commerce-engine' ),
+			/* translators: 1: chart title, 2: each slice with its value and share. */
+			'chartSummaryDonut'      => __( '%1$s. Donut chart: %2$s.', 'agentic-commerce-engine' ),
+			/* translators: 1: what is measured, 2: value, 3: maximum, 4: percentage. */
+			'chartSummaryGauge'      => __( '%1$s. %2$s of %3$s, %4$s.', 'agentic-commerce-engine' ),
+			/* translators: 1: chart title, 2: a score from 0 to 100. */
+			'chartSummaryRing'       => __( '%1$s. %2$s out of 100.', 'agentic-commerce-engine' ),
+			/* translators: 1: chart title, 2: first date, 3: last date, 4: latest estimate, 5: its range. */
+			'chartSummaryBand'       => __( '%1$s. Estimate from %2$s to %3$s. Latest %4$s, range %5$s.', 'agentic-commerce-engine' ),
+			/* translators: 1: chart title, 2: each row with its estimate and range. */
+			'chartSummaryForest'     => __( '%1$s. %2$s.', 'agentic-commerce-engine' ),
+			/* translators: 1: chart title, 2: each version with its count at every step. */
+			'chartSummaryFunnel'     => __( '%1$s. %2$s.', 'agentic-commerce-engine' ),
 		);
 	}
 

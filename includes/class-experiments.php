@@ -151,8 +151,121 @@ class Experiments {
 	 * @param string|null $category Optional category.
 	 * @return array|\WP_Error
 	 */
-	public function subjects( $category = null ) {
-		return $this->plugin->api()->experiment_subjects( $this->store_id(), $category );
+	public function subjects( $category = null, $include_facets = false ) {
+		return $this->plugin->api()->experiment_subjects( $this->store_id(), $category, $include_facets );
+	}
+
+	/**
+	 * Every catalogue filter the selection control offers, in one call.
+	 *
+	 * CACHED for five minutes. Facet lists move when a catalogue syncs, not
+	 * when a merchant ticks a box, and this screen sits on a merchant's own
+	 * server: re-reading them per keystroke would be latency they pay for
+	 * nothing.
+	 *
+	 * @param bool $fresh Skip the cache.
+	 * @return array|\WP_Error
+	 */
+	public function facets( $fresh = false ) {
+		if ( $fresh ) {
+			$this->plugin->cache()->forget( self::GROUP, 'facets' );
+		}
+		return $this->plugin->cache()->remember(
+			self::GROUP,
+			'facets',
+			5 * MINUTE_IN_SECONDS,
+			function () {
+				return $this->plugin->api()->experiment_subjects( $this->store_id(), null, true );
+			},
+			30
+		);
+	}
+
+	/**
+	 * What a selection resolves to. NEVER cached: its whole value is that it
+	 * describes the selection in front of the merchant right now.
+	 *
+	 * @param array $body { selection, type?, countOnly?, page?, pageSize? }.
+	 * @return array|\WP_Error
+	 */
+	public function resolve_subjects( array $body ) {
+		$body['storeId'] = $this->store_id();
+		return $this->plugin->api()->experiment_resolve_subjects( $body );
+	}
+
+	/**
+	 * A page of products for hand-picking, in the platform's own id space.
+	 *
+	 * @param string $query Optional search term.
+	 * @param int    $page  Zero-based page.
+	 * @return array|\WP_Error
+	 */
+	public function products( $query = '', $page = 0 ) {
+		return $this->plugin->api()->experiment_products( $this->store_id(), $query, $page );
+	}
+
+	/**
+	 * A model proposes a cohort from a sentence. Never cached: two merchants
+	 * describing different things must not share an answer, and the same
+	 * merchant asking twice means they want another go.
+	 *
+	 * @param array $body { brief, arms?, holdoutFraction? }.
+	 * @return array|\WP_Error
+	 */
+	public function suggest_subjects( array $body ) {
+		$body['storeId'] = $this->store_id();
+		return $this->plugin->api()->experiment_suggest_subjects( $body );
+	}
+
+	/**
+	 * Saved product selections. Cached like the facets, and busted on write.
+	 *
+	 * @param bool $fresh Skip the cache.
+	 * @return array|\WP_Error
+	 */
+	public function groups( $fresh = false ) {
+		if ( $fresh ) {
+			$this->plugin->cache()->forget( self::GROUP, 'groups' );
+		}
+		return $this->plugin->cache()->remember(
+			self::GROUP,
+			'groups',
+			5 * MINUTE_IN_SECONDS,
+			function () {
+				return $this->plugin->api()->product_groups( $this->store_id() );
+			},
+			30
+		);
+	}
+
+	/**
+	 * Save a selection as a named group.
+	 *
+	 * @param array $body { name, description?, selection }.
+	 * @return array|\WP_Error
+	 */
+	public function save_group( array $body ) {
+		$body['storeId'] = $this->store_id();
+		$result          = $this->plugin->api()->save_product_group( $body );
+		if ( ! is_wp_error( $result ) ) {
+			$this->plugin->cache()->forget( self::GROUP, 'groups' );
+		}
+		return $result;
+	}
+
+	/**
+	 * Delete a saved group. Running experiments are unaffected: their products
+	 * were frozen when they started and nothing re-resolves them.
+	 *
+	 * @param string $group_id Group id.
+	 * @return array|\WP_Error
+	 */
+	public function delete_group( $group_id ) {
+		$result = $this->plugin->api()->delete_product_group( $this->store_id(), $group_id );
+		if ( ! is_wp_error( $result ) ) {
+			$this->plugin->cache()->forget( self::GROUP, 'groups' );
+		}
+		return $result;
 	}
 
 	/**

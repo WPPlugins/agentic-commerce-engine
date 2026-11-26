@@ -76,7 +76,8 @@
 			if ( ! items.length ) {
 				return '';
 			}
-			return '<div class="ace-types-group"><div class="ace-types-grouptitle">' + core.esc( title ) + '</div>' + items.map( function ( type ) {
+			// A named group, so each checkbox is read with the heading it sits under.
+			return '<div class="ace-types-group" role="group" aria-labelledby="ace-types-' + g + '"><div class="ace-types-grouptitle" id="ace-types-' + g + '">' + core.esc( title ) + '</div>' + items.map( function ( type ) {
 				var rec = type.recommended ? ' <span class="ace-type-rec">' + core.esc( t( 'recommended', 'Recommended' ) ) + '</span>' : '';
 				return '<label class="ace-type-item"><input type="checkbox" class="ace-type-cb" value="' + core.esc( type.key ) + '" data-requires="' + ( type.requires || [] ).join( ',' ) + '"' + ( selected[ type.key ] ? ' checked' : '' ) + '>' +
 					'<span class="ace-type-main"><span class="ace-type-label">' + core.esc( type.label ) + rec + '</span>' +
@@ -89,7 +90,9 @@
 		if ( errBox ) {
 			errBox.style.display = 'none';
 		}
-		modal.hidden = false;
+		// Focus moves into the picker, stays there, and Escape, Cancel or the
+		// backdrop put it back on the button that opened it.
+		var dlg = core.dialog( modal );
 
 		$all( '.ace-type-cb', list ).forEach( function ( cb ) {
 			cb.addEventListener( 'change', function () {
@@ -104,11 +107,7 @@
 			} );
 		} );
 
-		function close() {
-			modal.hidden = true;
-		}
-		$( '#ace-modal-cancel' ).onclick = close;
-		$( '#ace-modal-backdrop' ).onclick = close;
+		$( '#ace-modal-cancel' ).onclick = dlg.dismiss;
 		$( '#ace-modal-confirm' ).onclick = function () {
 			var chosen = $all( '.ace-type-cb:checked', list ).map( function ( cb ) {
 				return cb.value;
@@ -121,7 +120,7 @@
 				return;
 			}
 			cfg.selectedTypes = chosen;
-			close();
+			dlg.close();
 			onConfirm( chosen );
 		};
 	}
@@ -140,11 +139,10 @@
 
 	function batchProgress( ui, done, total ) {
 		var pctDone = total > 0 ? Math.round( ( done / total ) * 100 ) : 100;
-		if ( ui.fill ) {
-			ui.fill.style.width = pctDone + '%';
-		}
+		var said = fmt( t( 'processing', 'Processing %1$s of %2$s…' ), core.num( done ), core.num( total ) );
+		core.setProgress( ui.fill, pctDone, said );
 		if ( ui.text ) {
-			ui.text.textContent = fmt( t( 'processing', 'Processing %1$s of %2$s…' ), core.num( done ), core.num( total ) );
+			ui.text.textContent = said;
 		}
 	}
 
@@ -156,9 +154,7 @@
 			if ( ui.box ) {
 				ui.box.hidden = true;
 			}
-			if ( ui.fill ) {
-				ui.fill.style.width = '0%';
-			}
+			core.setProgress( ui.fill, 0 );
 		}, 1400 );
 	}
 
@@ -244,9 +240,16 @@
 				var key = span.getAttribute( 'data-count' );
 				span.textContent = 'all' === key ? core.num( total ) : core.num( counts[ key ] || 0 );
 			} );
+			var panel = $( '#ace-products-panel' );
 			$all( '#ace-status-tabs .ace-tab', root ).forEach( function ( tab ) {
-				tab.classList.toggle( 'is-active', tab.getAttribute( 'data-status' ) === state.status );
+				var active = tab.getAttribute( 'data-status' ) === state.status;
+				tab.classList.toggle( 'is-active', active );
+				tab.setAttribute( 'aria-selected', active ? 'true' : 'false' );
+				if ( active && panel ) {
+					panel.setAttribute( 'aria-labelledby', tab.id );
+				}
 			} );
+			core.tabKeys( $( '#ace-status-tabs' ) );
 		}
 
 		/**
@@ -260,11 +263,25 @@
 				: '<span class="ace-muted">' + core.esc( t( 'notScored', 'Not scored' ) ) + '</span>';
 		}
 
+		/**
+		 * "Select <product>" for a row's checkbox. A function replacer, so a
+		 * "$&" in a product name stays literal.
+		 */
+		function selectLabel( name ) {
+			var value = String( name == null ? '' : name );
+			return t( 'selectProduct', 'Select %s' ).replace( '%s', function () {
+				return value;
+			} );
+		}
+
 		function rowHtml( row ) {
 			return '<tr data-id="' + row.id + '" data-status="' + core.esc( row.status ) + '">' +
-				'<td class="ace-col-check"><input type="checkbox" class="ace-row-check" data-id="' + row.id + '"></td>' +
+				'<td class="ace-col-check"><input type="checkbox" class="ace-row-check" data-id="' + row.id + '" aria-label="' +
+					core.esc( selectLabel( row.name ) ).replace( /"/g, '&quot;' ) + '"></td>' +
 				'<td class="ace-col-img"><img class="ace-thumb" src="' + encodeURI( row.image || '' ) + '" alt="" loading="lazy"></td>' +
-				'<td class="ace-prod-name">' + core.esc( row.name ) + '</td>' +
+				// The product name heads its row, so a screen reader moving
+				// across a row hears which product each cell belongs to.
+				'<th scope="row" class="ace-prod-name">' + core.esc( row.name ) + '</th>' +
 				'<td>' + core.esc( row.sku || '' ) + '</td>' +
 				'<td class="ace-status-cell">' + statusChip( row.status ) + '</td>' +
 				'<td class="ace-col-score">' + scoreCellHtml( row.score ) + '</td></tr>';
@@ -455,13 +472,34 @@
 						ui.box.hidden = false;
 					}
 					core.setBusy( enrichSel, true, t( 'enriching', 'Sending to AI…' ) );
+					/*
+					 * Products a running experiment is measuring are left out of
+					 * the run. Counted across every chunk, because "Queued 200"
+					 * when 40 were dropped is a number the merchant will later
+					 * try to reconcile against a review queue that never holds
+					 * them.
+					 */
+					var skipped = 0;
 					core.runBatch( ids, 20, function ( chunk ) {
-						return core.post( 'enrich', { ids: chunk, content_types: types } );
+						return core.post( 'enrich', { ids: chunk, content_types: types } ).then( function ( res ) {
+							if ( res && res.skipped ) {
+								skipped += Number( res.skipped ) || 0;
+							}
+							return res;
+						} );
 					}, function ( done, total ) {
 						batchProgress( ui, done, total );
 					} ).then( function () {
 						batchFinish( ui );
-						core.toast( t( 'enrichQueued', 'Queued for enrichment. Results appear as they finish.' ), 'success' );
+						core.toast(
+							skipped
+								? fmt(
+									t( 'enrichQueuedSomeInTest', 'Queued for enrichment. %s left out: an experiment is measuring them.' ),
+									core.num( skipped )
+								)
+								: t( 'enrichQueued', 'Queued for enrichment. Results appear as they finish.' ),
+							'success'
+						);
 						core.setBusy( enrichSel, false );
 						load();
 					} ).catch( function ( err ) {

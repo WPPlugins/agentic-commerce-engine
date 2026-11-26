@@ -126,6 +126,19 @@ final class Content_Types {
 				'requires'    => array(),
 				'gated'       => true,
 			),
+			/*
+			 * GATED (4.24.0) like the five above: Rezolve Ai lists it only once
+			 * a field is opted in under Settings, Custom fields, so it is never
+			 * offered when there is nothing it could rewrite.
+			 */
+			'custom-fields'       => array(
+				'label'       => __( 'Your custom fields', 'agentic-commerce-engine' ),
+				'description' => __( 'Rewrites the custom fields you chose in Settings, such as care instructions, in place. A field you change after the suggestion is written is left as it is.', 'agentic-commerce-engine' ),
+				'group'       => self::GROUP_ONPAGE,
+				'recommended' => false,
+				'requires'    => array(),
+				'gated'       => true,
+			),
 			'google-shopping'     => array(
 				'label'       => __( 'Google Merchant feed', 'agentic-commerce-engine' ),
 				'description' => __( 'Google Shopping feed records, served at a feed URL.', 'agentic-commerce-engine' ),

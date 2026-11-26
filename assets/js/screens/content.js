@@ -509,12 +509,14 @@
 		}
 
 		var sendLabel = 'publish' === state.defaultStatus ? t( 'rowPublish', 'Publish' ) : t( 'rowCreateDraft', 'Create draft' );
-		var html = '<table class="ace-table"><thead><tr>' +
-			'<th>' + core.esc( t( 'colTitle', 'Title' ) ) + '</th>' +
-			'<th>' + core.esc( t( 'colType', 'Type' ) ) + '</th>' +
-			'<th>' + core.esc( t( 'colStatus', 'Status' ) ) + '</th>' +
-			'<th>' + core.esc( t( 'colUpdated', 'Updated' ) ) + '</th>' +
-			'<th></th>' +
+		var html = '<table class="ace-table">' +
+			'<caption class="screen-reader-text">' + core.esc( t( 'briefsCaption', 'Project briefs' ) ) + '</caption>' +
+			'<thead><tr>' +
+			'<th scope="col">' + core.esc( t( 'colTitle', 'Title' ) ) + '</th>' +
+			'<th scope="col">' + core.esc( t( 'colType', 'Type' ) ) + '</th>' +
+			'<th scope="col">' + core.esc( t( 'colStatus', 'Status' ) ) + '</th>' +
+			'<th scope="col">' + core.esc( t( 'colUpdated', 'Updated' ) ) + '</th>' +
+			'<th scope="col"><span class="screen-reader-text">' + core.esc( t( 'colActions', 'Actions' ) ) + '</span></th>' +
 			'</tr></thead><tbody>';
 
 		items.forEach( function ( row ) {
@@ -613,11 +615,13 @@
 			return;
 		}
 
-		var html = '<table class="ace-table"><thead><tr>' +
-			'<th>' + core.esc( t( 'colTitle', 'Title' ) ) + '</th>' +
-			'<th>' + core.esc( t( 'colStatus', 'Status' ) ) + '</th>' +
-			'<th>' + core.esc( t( 'colDate', 'Date' ) ) + '</th>' +
-			'<th></th>' +
+		var html = '<table class="ace-table">' +
+			'<caption class="screen-reader-text">' + core.esc( t( 'postsCaption', 'Articles in WordPress' ) ) + '</caption>' +
+			'<thead><tr>' +
+			'<th scope="col">' + core.esc( t( 'colTitle', 'Title' ) ) + '</th>' +
+			'<th scope="col">' + core.esc( t( 'colStatus', 'Status' ) ) + '</th>' +
+			'<th scope="col">' + core.esc( t( 'colDate', 'Date' ) ) + '</th>' +
+			'<th scope="col"><span class="screen-reader-text">' + core.esc( t( 'colActions', 'Actions' ) ) + '</span></th>' +
 			'</tr></thead><tbody>';
 
 		items.forEach( function ( row ) {

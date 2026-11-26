@@ -77,6 +77,10 @@ class Apply_Queue {
 	 * A DEFERRED entry is left out of the ack altogether, so it stays queued and
 	 * comes back on a later pull. See {@see deferred_by_edit()}.
 	 *
+	 * An applied entry is acked with `productUrl`, the product's live page, when
+	 * it has one (4.20.1): what the web review queue's "View live" opens for
+	 * content approved there. An older Rezolve Ai ignores the key.
+	 *
 	 * @return array{applied:int,failed:int,skipped:int,deferred:int}
 	 */
 	public function drain() {
@@ -99,6 +103,14 @@ class Apply_Queue {
 			return $empty;
 		}
 
+		// Where each content type is written, as of this pull (4.25.0). The
+		// heartbeat also delivers it, hourly; taking it here means content
+		// approved minutes after the merchant changed a destination goes to
+		// the new one. An older Rezolve Ai omits the key, which changes nothing.
+		if ( isset( $response['contentDestinations'] ) && is_array( $response['contentDestinations'] ) ) {
+			Content_Destinations::save( $response['contentDestinations'] );
+		}
+
 		$items = isset( $response['items'] ) && is_array( $response['items'] ) ? $response['items'] : array();
 		if ( empty( $items ) ) {
 			return $empty;
@@ -114,7 +126,8 @@ class Apply_Queue {
 				continue;
 			}
 
-			$outcome = $this->apply_entry( $item );
+			$post_id = 0;
+			$outcome = $this->apply_entry( $item, $post_id );
 			if ( self::DEFERRED === $outcome ) {
 				// Not in the ack: an entry reported neither applied nor failed
 				// keeps its place in the queue and is delivered again, by then
@@ -123,10 +136,15 @@ class Apply_Queue {
 				continue;
 			}
 			if ( true === $outcome ) {
-				$results[] = array(
+				$result   = array(
 					'id'     => $id,
 					'status' => 'applied',
 				);
+				$live_url = Review::live_url( $post_id );
+				if ( '' !== $live_url ) {
+					$result['productUrl'] = $live_url;
+				}
+				$results[] = $result;
 				$counts['applied']++;
 				continue;
 			}
@@ -169,10 +187,11 @@ class Apply_Queue {
 	/**
 	 * Apply one entry.
 	 *
-	 * @param array $item Queue entry.
+	 * @param array $item    Queue entry.
+	 * @param int   $post_id Set to the product the entry resolved to, 0 when none.
 	 * @return true|string True, self::DEFERRED, or a reason.
 	 */
-	private function apply_entry( array $item ) {
+	private function apply_entry( array $item, &$post_id = 0 ) {
 		$product_ref = isset( $item['productId'] ) ? (string) $item['productId'] : '';
 		$field       = isset( $item['field'] ) ? (string) $item['field'] : '';
 		$value       = isset( $item['value'] ) ? $item['value'] : null;
@@ -186,7 +205,7 @@ class Apply_Queue {
 		// a second SKU-to-post resolver here would drift from the one the A/B
 		// config already uses, so a test could be configured on one post and
 		// its content written to another.
-		$post_id = $this->plugin->ab_test()->post_id_for_product( $product_ref );
+		$post_id = (int) $this->plugin->ab_test()->post_id_for_product( $product_ref );
 		if ( ! $post_id ) {
 			return 'no product matches ' . $product_ref;
 		}
@@ -237,7 +256,9 @@ class Apply_Queue {
 				if ( 'title' === $field ) {
 					$product->set_name( sanitize_text_field( $value ) );
 				} else {
-					$product->set_description( wp_kses_post( $value ) );
+					// Sections the merchant sends into the description (4.25.0)
+					// were approved on their own and stay.
+					$product->set_description( wp_kses_post( Content_Destinations::description_for( $product, $value ) ) );
 				}
 				$product->save();
 				return true;
@@ -310,6 +331,11 @@ class Apply_Queue {
 
 			case 'irlCards':
 				$decoded   = json_decode( $value, true );
+				// Where the merchant sends it (4.25.0); null keeps the block.
+				$routed = Content_Destinations::route( $this->plugin, $post_id, 'irl-cards', $decoded );
+				if ( null !== $routed ) {
+					return $routed;
+				}
 				// `{ cards, selectedIndex }` is the wire shape; a bare array is
 				// accepted too, matching apply_content_types' tolerance.
 				$scenarios = ( is_array( $decoded ) && isset( $decoded['cards'] ) && is_array( $decoded['cards'] ) )
@@ -323,6 +349,10 @@ class Apply_Queue {
 
 			case 'internalLinks':
 				$decoded = json_decode( $value, true );
+				$routed  = Content_Destinations::route( $this->plugin, $post_id, 'internal-links', $decoded );
+				if ( null !== $routed ) {
+					return $routed;
+				}
 				$links   = ( is_array( $decoded ) && isset( $decoded['links'] ) && is_array( $decoded['links'] ) )
 					? $decoded['links']
 					: $decoded;
@@ -340,6 +370,10 @@ class Apply_Queue {
 			 * they arrive as `productAttributes`, above.
 			 */
 			case 'highlights':
+				$routed = Content_Destinations::route( $this->plugin, $post_id, 'highlights', $value );
+				if ( null !== $routed ) {
+					return $routed;
+				}
 				$highlights = Pdp_Content::highlights( $value );
 				if ( empty( $highlights ) ) {
 					return 'no usable highlights in payload';
@@ -348,12 +382,47 @@ class Apply_Queue {
 				return true;
 
 			case 'productQa':
+				$routed = Content_Destinations::route( $this->plugin, $post_id, 'product-qa', $value );
+				if ( null !== $routed ) {
+					return $routed;
+				}
 				$qa = Pdp_Content::qa( $value );
 				if ( empty( $qa ) ) {
 					return 'no usable questions and answers in payload';
 				}
 				update_post_meta( $post_id, Meta::QA, $qa );
 				return true;
+
+			/*
+			 * Generated specifications (4.25.0). Rezolve Ai sends them apart from
+			 * the feed's `productAttributes` to a plugin that routes content, so
+			 * specs can go where the merchant chose without feed attributes
+			 * following them. Their default home is unchanged: native
+			 * attributes, through the same owned-attribute writer.
+			 */
+			case 'productSpecs':
+				$routed = Content_Destinations::route( $this->plugin, $post_id, 'product-attributes', $value );
+				if ( null !== $routed ) {
+					return $routed;
+				}
+				$decoded    = json_decode( $value, true );
+				$attributes = Edit_Values::attributes_for_write( Edit_Values::attribute_pairs( is_array( $decoded ) ? $decoded : array() ) );
+				if ( empty( $attributes ) ) {
+					return 'no usable specifications in payload';
+				}
+				$product = wc_get_product( $post_id );
+				if ( ! $product ) {
+					return 'product not loadable';
+				}
+				$written = Native_Fields::write_owned_attributes( $product, $attributes );
+				if ( ! empty( $written['added'] ) || ! empty( $written['replaced'] ) ) {
+					$product->save();
+					return true;
+				}
+				if ( ! empty( $written['unchanged'] ) ) {
+					return true;
+				}
+				return 'product already carries every attribute in the payload';
 
 			case 'imageAlt':
 				$entries = Pdp_Content::image_alts( $value );
@@ -372,6 +441,21 @@ class Apply_Queue {
 				// success, not a failure: the product says what was approved.
 				Native_Fields::write_image_alts( $post_id, $match['matches'] );
 				return true;
+
+			case 'customFields':
+				// The merchant's own custom fields, rewritten (4.24.0). A field
+				// changed on this site since the suggestion was written is left
+				// alone; the entry is applied when at least one field landed.
+				$fields = is_string( $value ) ? json_decode( $value, true ) : $value;
+				if ( ! is_array( $fields ) || empty( $fields ) ) {
+					return 'no usable custom fields in payload';
+				}
+				$result = Custom_Fields::write_rewrites( $post_id, $fields );
+				if ( $result['written'] > 0 ) {
+					update_post_meta( $post_id, Meta::APPLIED_AT, gmdate( 'c' ) );
+					return true;
+				}
+				return implode( ' ', $result['skipped'] );
 		}
 
 		// An unknown field is not a failure to retry forever. A newer Rezolve Ai may

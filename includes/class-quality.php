@@ -583,11 +583,14 @@ class Quality {
 			'product-qa'          => 'product-qa',
 			'product-attributes'  => 'product-attributes',
 			'image-alt'           => 'image-alt',
+			'custom-fields'       => 'custom-fields',
 		);
 		if ( is_string( $content_type ) && isset( $picker[ $content_type ] ) ) {
 			return Content_Types::label( $picker[ $content_type ] );
 		}
-		return implode( ', ', $fields );
+		// Never a raw field key such as `custom_fields`: a type added on the
+		// platform before this map knows it still reads as words.
+		return ucfirst( str_replace( array( '_', '-' ), ' ', implode( ', ', $fields ) ) );
 	}
 
 	/**

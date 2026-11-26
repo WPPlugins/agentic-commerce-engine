@@ -177,7 +177,12 @@
 				charts.barsV( scoresEl, {
 					labels: ch.scores.labels || [],
 					values: buckets
-				}, { height: 200, colors: SCORE_COLORS } );
+				}, {
+					height: 200,
+					colors: SCORE_COLORS,
+					labelHeader: t( 'scoreRange', 'Score range' ),
+					valueLabel: t( 'productsCol', 'Products' )
+				} );
 			} else {
 				scoresEl.innerHTML = '<div class="ace-chart-empty">' + core.esc( t( 'noData', 'No data yet' ) ) + '</div>';
 			}
@@ -299,7 +304,8 @@
 			if ( ! items.length ) {
 				return '';
 			}
-			return '<div class="ace-types-group"><div class="ace-types-grouptitle">' + core.esc( title ) + '</div>' + items.map( function ( type ) {
+			// A named group, so each checkbox is read with the heading it sits under.
+			return '<div class="ace-types-group" role="group" aria-labelledby="ace-types-' + g + '"><div class="ace-types-grouptitle" id="ace-types-' + g + '">' + core.esc( title ) + '</div>' + items.map( function ( type ) {
 				var rec = type.recommended ? ' <span class="ace-type-rec">' + core.esc( t( 'recommended', 'Recommended' ) ) + '</span>' : '';
 				return '<label class="ace-type-item"><input type="checkbox" class="ace-type-cb" value="' + core.esc( type.key ) + '" data-requires="' + ( type.requires || [] ).join( ',' ) + '"' + ( selected[ type.key ] ? ' checked' : '' ) + '>' +
 					'<span class="ace-type-main"><span class="ace-type-label">' + core.esc( type.label ) + rec + '</span>' +
@@ -312,7 +318,9 @@
 		if ( errBox ) {
 			errBox.style.display = 'none';
 		}
-		modal.hidden = false;
+		// Focus moves into the picker, stays there, and Escape, Cancel or the
+		// backdrop put it back on the button that opened it.
+		var dlg = core.dialog( modal );
 
 		$all( '.ace-type-cb', list ).forEach( function ( cb ) {
 			cb.addEventListener( 'change', function () {
@@ -327,11 +335,7 @@
 			} );
 		} );
 
-		function close() {
-			modal.hidden = true;
-		}
-		$( '#ace-modal-cancel' ).onclick = close;
-		$( '#ace-modal-backdrop' ).onclick = close;
+		$( '#ace-modal-cancel' ).onclick = dlg.dismiss;
 		$( '#ace-modal-confirm' ).onclick = function () {
 			var chosen = $all( '.ace-type-cb:checked', list ).map( function ( cb ) {
 				return cb.value;
@@ -344,7 +348,7 @@
 				return;
 			}
 			cfg.selectedTypes = chosen;
-			close();
+			dlg.close();
 			onConfirm( chosen );
 		};
 	}
@@ -364,11 +368,10 @@
 				var remaining = d.remaining || 0;
 				var total = done + remaining;
 				var pctDone = total > 0 ? Math.round( ( done / total ) * 100 ) : 100;
-				if ( fill ) {
-					fill.style.width = pctDone + '%';
-				}
+				var said = fmt( t( 'processing', 'Processing %1$s of %2$s…' ), core.num( done ), core.num( total ) );
+				core.setProgress( fill, pctDone, said );
 				if ( text ) {
-					text.textContent = fmt( t( 'processing', 'Processing %1$s of %2$s…' ), core.num( done ), core.num( total ) );
+					text.textContent = said;
 				}
 				if ( d.done || 0 === d.processed ) {
 					if ( text ) {
@@ -378,9 +381,7 @@
 						if ( box ) {
 							box.hidden = true;
 						}
-						if ( fill ) {
-							fill.style.width = '0%';
-						}
+						core.setProgress( fill, 0 );
 					}, 1400 );
 					if ( onDone ) {
 						onDone( done );

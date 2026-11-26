@@ -219,9 +219,31 @@ class Aeo {
 	}
 
 	/**
+	 * Category + collection facets for the prompt-generation scope pickers.
+	 *
+	 * Cached for 15 minutes like the configurator: the catalog's shape moves at
+	 * sync speed, not at click speed. The response carries `collectionsSynced`,
+	 * which the screen needs to tell "this store has no collections" apart from
+	 * "this store has not synced them yet".
+	 *
+	 * @return array|\WP_Error
+	 */
+	public function prompt_facets() {
+		return $this->plugin->cache()->remember(
+			self::GROUP,
+			'prompt_facets',
+			15 * MINUTE_IN_SECONDS,
+			function () {
+				return $this->plugin->api()->aeo_prompt_facets( $this->store_id() );
+			},
+			3 * MINUTE_IN_SECONDS
+		);
+	}
+
+	/**
 	 * AI prompt suggestions grounded in the synced catalog (billed; uncached).
 	 *
-	 * @param array $args { topic?, branded?, regionLabel?, languageLabel? }.
+	 * @param array $args { topic?, branded?, regionLabel?, languageLabel?, categories?, collections? }.
 	 * @return array|\WP_Error
 	 */
 	public function suggest( array $args = array() ) {
@@ -242,18 +264,6 @@ class Aeo {
 			$this->plugin->cache()->bust( self::GROUP );
 		}
 		return $result;
-	}
-
-	/**
-	 * Credit estimate for a run configuration (no launch, no cache bust).
-	 *
-	 * @param array $args Same shape as start_run().
-	 * @return array|\WP_Error
-	 */
-	public function estimate( array $args = array() ) {
-		$args['storeId']      = $this->store_id();
-		$args['estimateOnly'] = true;
-		return $this->plugin->api()->aeo_start_run( $args );
 	}
 
 	/**

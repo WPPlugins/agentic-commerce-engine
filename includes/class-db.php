@@ -176,6 +176,40 @@ class Db {
 			delete_transient( 'agencoen_score_dist' );
 		}
 
+		// 4.20.1: images with no alt text were synced carrying the product name,
+		// so Rezolve Ai showed every one of them as described. One full sync
+		// sends what this site really holds. In the background, five minutes
+		// out, so the admin request that ran this upgrade does not wait on the
+		// catalog. Only an existing install: a fresh one has sent nothing yet.
+		if ( '' !== $installed && version_compare( $installed, '4.20.1', '<' ) && ! wp_next_scheduled( Cron::CATALOG_RESYNC ) ) {
+			wp_schedule_single_event( time() + 5 * MINUTE_IN_SECONDS, Cron::CATALOG_RESYNC );
+		}
+
+		// 4.24.0: products now carry their custom fields (ACF, custom fields,
+		// attributes, tabs, taxonomies). One full sync sends them, in the
+		// background and five minutes out, like 4.20.1 above. The platform
+		// re-baselines Autopilot on the new extraction, so this re-sync does
+		// not re-enrich (or charge for) anything by itself.
+		if ( '' !== $installed && version_compare( $installed, '4.24.0', '<' ) && ! wp_next_scheduled( Cron::CATALOG_RESYNC ) ) {
+			wp_schedule_single_event( time() + 5 * MINUTE_IN_SECONDS, Cron::CATALOG_RESYNC );
+		}
+
+		// 4.28.0: single-choice ACF fields now send their choices, so an empty
+		// one can be filled from its list. One background sync sends them; the
+		// platform's hashes cover a field's text only, so it re-enriches nothing.
+		if ( '' !== $installed && version_compare( $installed, '4.28.0', '<' ) && ! wp_next_scheduled( Cron::CATALOG_RESYNC ) ) {
+			wp_schedule_single_event( time() + 5 * MINUTE_IN_SECONDS, Cron::CATALOG_RESYNC );
+		}
+
+		// 4.24.3: tell Rezolve Ai the new version, and refresh the content-type
+		// catalog the enrichment picker reads, NOW rather than at the next hourly
+		// heartbeat. Until then the platform offered the old version's features
+		// (no custom field rewrites after updating to 4.24.x). Its own args, so
+		// WordPress does not drop it as a duplicate of the recurring event.
+		if ( '' !== $installed && ! wp_next_scheduled( Cron::HEARTBEAT, array( 'upgrade' ) ) ) {
+			wp_schedule_single_event( time(), Cron::HEARTBEAT, array( 'upgrade' ) );
+		}
+
 		// Self-heal the daily crawler maintenance event on upgrades.
 		if ( ! wp_next_scheduled( 'agencoen_bot_prune' ) ) {
 			wp_schedule_event( time() + DAY_IN_SECONDS, 'daily', 'agencoen_bot_prune' );

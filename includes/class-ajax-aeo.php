@@ -30,10 +30,10 @@ class Ajax_Aeo extends Ajax_Base {
 			'aeo_prompts'         => 'prompts',
 			'aeo_prompts_save'    => 'prompts_save',
 			'aeo_prompts_suggest' => 'prompts_suggest',
+			'aeo_prompt_facets'   => 'prompt_facets',
 			'aeo_runs'            => 'runs',
 			'aeo_run_get'         => 'run_get',
 			'aeo_run_start'       => 'run_start',
-			'aeo_estimate'        => 'estimate',
 			'aeo_flow_create'     => 'flow_create',
 		);
 		foreach ( $actions as $action => $method ) {
@@ -132,7 +132,56 @@ class Ajax_Aeo extends Ajax_Base {
 			$args['branded'] = true;
 		}
 
+		// This method is the only gate on the suggest body: a field not named
+		// here never reaches the API client, whatever the screen posts.
+		$categories = $this->facet_list( 'categories' );
+		if ( ! empty( $categories ) ) {
+			$args['categories'] = $categories;
+		}
+		$collections = $this->facet_list( 'collections' );
+		if ( ! empty( $collections ) ) {
+			$args['collections'] = $collections;
+		}
+
 		$this->respond( $this->plugin->aeo()->suggest( $args ) );
+	}
+
+	/**
+	 * Read one facet selection from the POST body.
+	 *
+	 * Values are merchant-chosen labels echoed back from the platform's facet
+	 * list, so they are sanitized as text, clipped, de-duplicated and capped at
+	 * the 20 the API accepts.
+	 *
+	 * @param string $key POST key holding the array.
+	 * @return string[]
+	 */
+	private function facet_list( $key ) {
+		if ( empty( $_POST[ $key ] ) || ! is_array( $_POST[ $key ] ) ) {
+			return array();
+		}
+		$raw  = array_map( 'sanitize_text_field', wp_unslash( $_POST[ $key ] ) );
+		$out  = array();
+		foreach ( $raw as $value ) {
+			$value = $this->clip( trim( $value ), 200 );
+			if ( '' === $value || in_array( $value, $out, true ) ) {
+				continue;
+			}
+			$out[] = $value;
+			if ( count( $out ) >= 20 ) {
+				break;
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * Category + collection facets for the prompt-generation scope pickers.
+	 */
+	public function prompt_facets() {
+		check_ajax_referer( self::NONCE_ACTION, 'nonce' );
+		$this->require_manage();
+		$this->respond( $this->plugin->aeo()->prompt_facets() );
 	}
 
 	/**
@@ -168,19 +217,6 @@ class Ajax_Aeo extends Ajax_Base {
 		$language     = isset( $_POST['language_code'] ) ? sanitize_text_field( wp_unslash( $_POST['language_code'] ) ) : '';
 		$use_defaults = ! empty( $_POST['use_defaults'] );
 		$this->respond( $this->plugin->aeo()->start_run( $this->build_run_args( $models, $region, $language, $use_defaults ) ) );
-	}
-
-	/**
-	 * Credit estimate for the current run configuration.
-	 */
-	public function estimate() {
-		check_ajax_referer( self::NONCE_ACTION, 'nonce' );
-		$this->require_manage();
-		$models       = isset( $_POST['models'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['models'] ) ) : array();
-		$region       = isset( $_POST['region_code'] ) ? sanitize_text_field( wp_unslash( $_POST['region_code'] ) ) : '';
-		$language     = isset( $_POST['language_code'] ) ? sanitize_text_field( wp_unslash( $_POST['language_code'] ) ) : '';
-		$use_defaults = ! empty( $_POST['use_defaults'] );
-		$this->respond( $this->plugin->aeo()->estimate( $this->build_run_args( $models, $region, $language, $use_defaults ) ) );
 	}
 
 	/**

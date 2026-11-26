@@ -36,12 +36,12 @@ defined( 'ABSPATH' ) || exit;
 			<p class="ace-card-sub"><?php esc_html_e( 'This site is linked to your Rezolve Ai project. The key is stored server-side and never shown again.', 'agentic-commerce-engine' ); ?></p>
 			<div class="ace-form-row">
 				<div class="ace-field">
-					<label class="ace-label"><?php esc_html_e( 'API key', 'agentic-commerce-engine' ); ?></label>
-					<input type="text" class="ace-input" value="ace_&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" disabled />
+					<label class="ace-label" for="ace-connected-key"><?php esc_html_e( 'API key', 'agentic-commerce-engine' ); ?></label>
+					<input type="text" id="ace-connected-key" class="ace-input" value="ace_&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" disabled />
 				</div>
 				<div class="ace-field">
-					<label class="ace-label"><?php esc_html_e( 'Store ID', 'agentic-commerce-engine' ); ?></label>
-					<input type="text" class="ace-input ace-select-on-click" value="<?php echo esc_attr( $data['storeId'] ); ?>" readonly />
+					<label class="ace-label" for="ace-store-id"><?php esc_html_e( 'Store ID', 'agentic-commerce-engine' ); ?></label>
+					<input type="text" id="ace-store-id" class="ace-input ace-select-on-click" value="<?php echo esc_attr( $data['storeId'] ); ?>" readonly />
 				</div>
 			</div>
 			<button type="button" class="ace-btn ace-btn-secondary ace-btn-sm" id="ace-health-check"><?php esc_html_e( 'Run health check', 'agentic-commerce-engine' ); ?></button>

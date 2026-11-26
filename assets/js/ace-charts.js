@@ -132,6 +132,173 @@
 			esc( label ) + '<span class="ace-tip-val">' + esc( value ) + '</span></span>';
 	}
 
+	// Escape dismisses a tooltip without moving the pointer.
+	document.addEventListener( 'keydown', function ( e ) {
+		if ( 'Escape' === e.key || 'Esc' === e.key ) {
+			var tip = document.getElementById( 'ace-chart-tip' );
+			if ( tip ) {
+				tip.style.display = 'none';
+			}
+		}
+	} );
+
+	/* ------------------------------------------------------------------ */
+	/* Accessibility: a summary and the numbers, for every chart           */
+	/* ------------------------------------------------------------------ */
+
+	/*
+	 * A chart is a picture. To a screen reader each one is an image whose
+	 * name is a one-line summary of what it shows, and every number it draws
+	 * is also in a table that a "Show data table" button opens. The tooltip
+	 * is a convenience for a pointer, never the only way to read a value.
+	 */
+
+	/**
+	 * Fill a %1$s-style template in one pass with a function replacer, so a
+	 * "$&" or a "%2$s" inside a label is printed as it is.
+	 */
+	function fmtStr( template ) {
+		var args = Array.prototype.slice.call( arguments, 1 );
+		return String( template ).replace( /%(\d+)\$s/g, function ( match, n ) {
+			var arg = args[ Number( n ) - 1 ];
+			return arg === undefined ? match : String( arg == null ? '' : arg );
+		} );
+	}
+
+	/**
+	 * What the chart is called: opts.title, else the heading just above it
+	 * or the heading of the card it sits in (without any button inside it).
+	 */
+	function chartTitle( target, opts ) {
+		if ( opts && opts.title ) {
+			return String( opts.title );
+		}
+		function headingText( h ) {
+			var copy = h.cloneNode( true );
+			Array.prototype.slice.call( copy.querySelectorAll( 'button, [hidden], .screen-reader-text' ) ).forEach( function ( node ) {
+				node.parentNode.removeChild( node );
+			} );
+			return copy.textContent.replace( /\s+/g, ' ' ).trim();
+		}
+		var node = target.previousElementSibling;
+		for ( var hops = 0; node && hops < 3; hops++ ) {
+			if ( /^H[2-6]$/.test( node.tagName ) || ( node.classList && node.classList.contains( 'ace-chart-head' ) ) ) {
+				var h = /^H/.test( node.tagName ) ? node : node.querySelector( 'h2, h3, h4' );
+				if ( h && headingText( h ) ) {
+					return headingText( h );
+				}
+			}
+			node = node.previousElementSibling;
+		}
+		var card = target.closest ? target.closest( '.ace-card' ) : null;
+		var heading = card ? card.querySelector( 'h2, h3, .ace-card-title' ) : null;
+		if ( heading && headingText( heading ) ) {
+			return headingText( heading );
+		}
+		return i18nStr( 'chart', 'Chart' );
+	}
+
+	var dataSeq = 0;
+
+	/**
+	 * Name the SVG and add the data table after it.
+	 * spec: { summary, caption, columns: [ header... ], rows: [ [ rowHeader, cell... ] ] }
+	 */
+	function accessible( target, svg, spec ) {
+		svg.setAttribute( 'role', 'img' );
+		svg.setAttribute( 'aria-label', spec.summary );
+		svg.setAttribute( 'focusable', 'false' );
+		if ( ! spec.rows || ! spec.rows.length ) {
+			return;
+		}
+		if ( ! target._aceTableId ) {
+			target._aceTableId = 'ace-chart-data-' + ( ++dataSeq );
+		}
+		var open = !! target._aceTableOpen;
+
+		var box = document.createElement( 'div' );
+		box.className = 'ace-chart-data';
+		var btn = document.createElement( 'button' );
+		btn.type = 'button';
+		btn.className = 'ace-link-sm ace-chart-data-toggle';
+		btn.setAttribute( 'aria-controls', target._aceTableId );
+
+		var wrap = document.createElement( 'div' );
+		wrap.id = target._aceTableId;
+		wrap.className = 'ace-chart-data-table';
+		wrap.innerHTML = '<table class="ace-table"><caption>' + esc( spec.caption ) + '</caption><thead><tr>' +
+			spec.columns.map( function ( c ) {
+				return '<th scope="col">' + esc( c ) + '</th>';
+			} ).join( '' ) + '</tr></thead><tbody>' +
+			spec.rows.map( function ( r ) {
+				return '<tr><th scope="row">' + esc( r[ 0 ] ) + '</th>' + r.slice( 1 ).map( function ( cell ) {
+					return '<td>' + esc( cell ) + '</td>';
+				} ).join( '' ) + '</tr>';
+			} ).join( '' ) + '</tbody></table>';
+
+		function sync() {
+			wrap.hidden = ! target._aceTableOpen;
+			btn.setAttribute( 'aria-expanded', target._aceTableOpen ? 'true' : 'false' );
+			btn.textContent = target._aceTableOpen
+				? i18nStr( 'hideDataTable', 'Hide data table' )
+				: i18nStr( 'showDataTable', 'Show data table' );
+		}
+		target._aceTableOpen = open;
+		sync();
+		btn.addEventListener( 'click', function () {
+			target._aceTableOpen = ! target._aceTableOpen;
+			sync();
+		} );
+		box.appendChild( btn );
+		box.appendChild( wrap );
+		target.appendChild( box );
+	}
+
+	/** "Low to high" range text for a set of values, formatted. */
+	function extremes( values, fmt ) {
+		var lo = null;
+		var hi = null;
+		values.forEach( function ( v ) {
+			if ( v === null || v === undefined || ! isFinite( v ) ) {
+				return;
+			}
+			lo = lo === null ? v : Math.min( lo, v );
+			hi = hi === null ? v : Math.max( hi, v );
+		} );
+		return { lo: lo === null ? '' : fmt( lo ), hi: hi === null ? '' : fmt( hi ) };
+	}
+
+	/** A summary of named series over shared x keys (line, area). */
+	function seriesSummary( title, kind, keys, series, fmt ) {
+		var text = fmtStr( i18nStr( 'chartSummarySeries', '%1$s. %2$s from %3$s to %4$s.' ),
+			title, kind, keys[ 0 ], keys[ keys.length - 1 ] );
+		series.forEach( function ( s ) {
+			var values = s.points.map( function ( p ) {
+				return p.y;
+			} );
+			var measured = values.filter( function ( v ) {
+				return v !== null && v !== undefined && isFinite( v );
+			} );
+			if ( ! measured.length ) {
+				return;
+			}
+			var range = extremes( values, fmt );
+			text += ' ' + fmtStr( i18nStr( 'chartSummarySeriesLine', '%1$s: lowest %2$s, highest %3$s, latest %4$s.' ),
+				s.name || title, range.lo, range.hi, fmt( measured[ measured.length - 1 ] ) );
+		} );
+		return text;
+	}
+
+	/** A table of named series over shared x keys; a gap reads "No data". */
+	function seriesRows( keys, series, valueAt, xFmt ) {
+		return keys.map( function ( k ) {
+			return [ xFmt ? xFmt( k ) : k ].concat( series.map( function ( s, si ) {
+				var v = valueAt( si, k );
+				return ( v === null || v === undefined ) ? i18nStr( 'chartNoValue', 'No data' ) : v;
+			} ) );
+		} );
+	}
+
 	/* ------------------------------------------------------------------ */
 	/* Scale math (ported from src/components/charts/scales.ts)            */
 	/* ------------------------------------------------------------------ */
@@ -244,14 +411,14 @@
 		} );
 	}
 
-	function xLabels( svg, keys, positions, y, maxLabels ) {
+	function xLabels( svg, keys, positions, y, maxLabels, xFmt ) {
 		var step = Math.max( 1, Math.ceil( keys.length / ( maxLabels || 8 ) ) );
 		keys.forEach( function ( k, i ) {
 			if ( i % step !== 0 && i !== keys.length - 1 ) {
 				return;
 			}
 			var label = el( 'text', { x: positions[ i ], y: y, 'text-anchor': 'middle', 'class': 'ace-axis-label' } );
-			label.textContent = k;
+			label.textContent = xFmt ? xFmt( k ) : k;
 			svg.appendChild( label );
 		} );
 	}
@@ -366,7 +533,7 @@
 				dots[ si ].setAttribute( 'visibility', 'visible' );
 				rows.push( tipRow( spec.color, spec.name, spec.valueAt( keys[ i ] ) ) );
 			} );
-			showTip( '<b>' + esc( keys[ i ] ) + '</b>' + rows.join( '' ), evt.clientX, evt.clientY );
+			showTip( '<b>' + esc( opts.xFmt ? opts.xFmt( keys[ i ] ) : keys[ i ] ) + '</b>' + rows.join( '' ), evt.clientX, evt.clientY );
 		}
 
 		function deactivate() {
@@ -411,7 +578,11 @@
 
 		var w = widthOf( target );
 		var h = opts.height || 260;
-		var margin = { top: 12, right: 16, bottom: 28, left: 44 };
+		// opts.baseline = { until, label, afterLabel }: shade the columns before
+		// `until` and rule a line at it, for a before/after chart whose left half
+		// is a baseline. Same as the app's LineChart. A key not on the axis draws nothing.
+		var baseIdx = opts.baseline ? keys.indexOf( opts.baseline.until ) : -1;
+		var margin = { top: baseIdx >= 0 ? 24 : 12, right: 16, bottom: 28, left: 44 };
 		var innerW = Math.max( 0, w - margin.left - margin.right );
 		var innerH = Math.max( 0, h - margin.top - margin.bottom );
 
@@ -453,8 +624,33 @@
 
 		var svg = el( 'svg', { viewBox: '0 0 ' + w + ' ' + h, width: '100%', height: h } );
 
+		if ( baseIdx >= 0 ) {
+			var cutX = positions[ baseIdx ];
+			var CAPTION_ROOM = 96;
+			svg.appendChild( el( 'rect', {
+				x: margin.left, y: margin.top, width: Math.max( 0, cutX - margin.left ), height: innerH,
+				fill: 'currentColor', 'fill-opacity': 0.04
+			} ) );
+			svg.appendChild( el( 'line', {
+				x1: cutX, x2: cutX, y1: margin.top - 4, y2: margin.top + innerH,
+				stroke: 'currentColor', 'stroke-opacity': 0.45, 'stroke-width': 1, 'stroke-dasharray': '3 3'
+			} ) );
+			if ( cutX - margin.left >= CAPTION_ROOM ) {
+				var before = el( 'text', { x: cutX - 6, y: margin.top - 8, 'text-anchor': 'end', 'class': 'ace-axis-label' } );
+				before.textContent = opts.baseline.label;
+				svg.appendChild( before );
+			}
+			if ( opts.baseline.afterLabel && margin.left + innerW - cutX >= CAPTION_ROOM ) {
+				var after = el( 'text', { x: cutX + 6, y: margin.top - 8, 'text-anchor': 'start', 'class': 'ace-axis-label', 'font-weight': 600 } );
+				after.textContent = opts.baseline.afterLabel;
+				svg.appendChild( after );
+			}
+		}
+
 		yAxis( svg, yScale, ticks, margin, innerW, opts.yFmt );
-		xLabels( svg, keys, positions, h - 8, 8 );
+		// At most eight labels, and fewer on a narrow chart: a short date needs
+		// about 60px, so eight of them overlap on a phone.
+		xLabels( svg, keys, positions, h - 8, Math.max( 2, Math.min( 8, Math.floor( innerW / 60 ) ) ), opts.xFmt );
 
 		var maps = [];
 		series.forEach( function ( s ) {
@@ -477,6 +673,7 @@
 		if ( false !== opts.unified ) {
 			unifiedHover( svg, {
 				keys: keys,
+				xFmt: opts.xFmt,
 				positions: positions,
 				margin: margin,
 				innerW: innerW,
@@ -509,6 +706,22 @@
 				return { label: s.name, color: s.color };
 			} ) ) );
 		}
+
+		var lineFmt = function ( v ) {
+			return opts.yFmt ? opts.yFmt( v ) : fmtNum( v );
+		};
+		var lineTitle = chartTitle( target, opts );
+		accessible( target, svg, {
+			summary: seriesSummary( lineTitle, i18nStr( 'chartKindLine', 'Line chart' ), keys, series, lineFmt ),
+			caption: lineTitle,
+			columns: [ opts.xLabel || i18nStr( 'chartColDate', 'Date' ) ].concat( series.map( function ( s ) {
+				return s.name || lineTitle;
+			} ) ),
+			rows: seriesRows( keys, series, function ( si, k ) {
+				var v = maps[ si ][ k ];
+				return ( v === null || v === undefined ) ? null : lineFmt( v );
+			}, opts.xFmt )
+		} );
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -579,6 +792,20 @@
 		svg.addEventListener( 'mouseleave', hideTip );
 
 		target.appendChild( svg );
+
+		var sparkTitle = chartTitle( target, opts );
+		var sparkRange = extremes( list.map( function ( p ) {
+			return p.y;
+		} ), fmtNum );
+		accessible( target, svg, {
+			summary: fmtStr( i18nStr( 'chartSummarySpark', '%1$s. Trend from %2$s to %3$s: lowest %4$s, highest %5$s, latest %6$s.' ),
+				sparkTitle, list[ 0 ].x, last.x, sparkRange.lo, sparkRange.hi, fmtNum( last.y ) ),
+			caption: sparkTitle,
+			columns: [ opts.xLabel || i18nStr( 'chartColDate', 'Date' ), opts.valueLabel || i18nStr( 'chartColValue', 'Value' ) ],
+			rows: list.map( function ( p ) {
+				return [ p.x, fmtNum( p.y ) ];
+			} )
+		} );
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -690,6 +917,21 @@
 				return { label: s.name, color: s.color };
 			} ) ) );
 		}
+
+		var areaFmt = function ( v ) {
+			return opts.yFmt ? opts.yFmt( v ) : fmtNum( v );
+		};
+		var areaTitle = chartTitle( target, opts );
+		accessible( target, svg, {
+			summary: seriesSummary( areaTitle, i18nStr( 'chartKindArea', 'Area chart' ), keys, series, areaFmt ),
+			caption: areaTitle,
+			columns: [ opts.xLabel || i18nStr( 'chartColDate', 'Date' ) ].concat( series.map( function ( s ) {
+				return s.name || areaTitle;
+			} ) ),
+			rows: seriesRows( keys, series, function ( si, k ) {
+				return areaFmt( maps[ si ][ k ] || 0 );
+			} )
+		} );
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -768,6 +1010,33 @@
 		xLabels( svg, keys, centers, h - 8, 10 );
 
 		target.appendChild( svg );
+
+		var barFmt = function ( v ) {
+			return opts.yFmt ? opts.yFmt( v ) : fmtNum( v );
+		};
+		describeBars( target, svg, opts, keys.map( function ( k, i ) {
+			return { label: k, value: Number( values[ i ] ) || 0 };
+		} ), barFmt );
+	}
+
+	/** Bars (either way up): the highest value in words, every value in the table. */
+	function describeBars( target, svg, opts, rows, fmt ) {
+		var title = chartTitle( target, opts );
+		var top = null;
+		rows.forEach( function ( r ) {
+			if ( ! top || r.value > top.value ) {
+				top = r;
+			}
+		} );
+		accessible( target, svg, {
+			summary: fmtStr( i18nStr( 'chartSummaryBars', '%1$s. Bar chart of %2$s values. Highest: %3$s, %4$s.' ),
+				title, rows.length, top ? top.label : '', top ? fmt( top.value ) : '' ),
+			caption: title,
+			columns: [ opts.labelHeader || i18nStr( 'chartColName', 'Name' ), opts.valueLabel || i18nStr( 'chartColValue', 'Value' ) ],
+			rows: rows.map( function ( r ) {
+				return [ r.label, fmt( r.value ) ];
+			} )
+		} );
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -840,6 +1109,12 @@
 		} );
 
 		target.appendChild( svg );
+
+		describeBars( target, svg, opts, rows.map( function ( r ) {
+			return { label: String( r.label || '' ), value: Number( r.value ) || 0 };
+		} ), function ( v ) {
+			return opts.valueFmt ? opts.valueFmt( v ) : fmtNum( v );
+		} );
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -987,6 +1262,30 @@
 		}
 
 		target.appendChild( wrap );
+
+		var donutTitle = chartTitle( target, opts );
+		var shown = slices.filter( function ( s ) {
+			return s.value > 0;
+		} );
+		var share = function ( s ) {
+			return ( s.value / total * 100 ).toFixed( 1 ) + '%';
+		};
+		var centerText = '';
+		if ( opts.centerLabel ) {
+			centerText = 'object' === typeof opts.centerLabel
+				? String( opts.centerLabel.value == null ? '' : opts.centerLabel.value ) + ' ' + String( opts.centerLabel.label || '' )
+				: String( opts.centerLabel );
+		}
+		accessible( target, svg, {
+			summary: fmtStr( i18nStr( 'chartSummaryDonut', '%1$s. Donut chart: %2$s.' ), donutTitle, shown.map( function ( s ) {
+				return s.label + ' ' + fmtNum( s.value ) + ' (' + share( s ) + ')';
+			} ).join( '; ' ) ) + ( centerText.trim() ? ' ' + centerText.trim() + '.' : '' ),
+			caption: donutTitle,
+			columns: [ i18nStr( 'chartColName', 'Name' ), i18nStr( 'chartColValue', 'Value' ), i18nStr( 'chartColShare', 'Share' ) ],
+			rows: shown.map( function ( s ) {
+				return [ s.label, fmtNum( s.value ), share( s ) ];
+			} )
+		} );
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -1053,6 +1352,16 @@
 		svg.appendChild( pctText );
 
 		target.appendChild( svg );
+
+		// One value, drawn as text and said in full by the image's name, so
+		// there is no table to add.
+		accessible( target, svg, {
+			summary: fmtStr( i18nStr( 'chartSummaryGauge', '%1$s. %2$s of %3$s, %4$s.' ),
+				data.label || chartTitle( target, opts ),
+				opts.fmt ? opts.fmt( value ) : fmtNum( value ),
+				opts.fmt ? opts.fmt( max ) : fmtNum( max ),
+				Math.round( frac * 100 ) + '%' )
+		} );
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -1113,6 +1422,10 @@
 		}
 
 		target.appendChild( svg );
+		accessible( target, svg, {
+			summary: fmtStr( i18nStr( 'chartSummaryRing', '%1$s. %2$s out of 100.' ),
+				data.title || chartTitle( target, data ), Math.round( value ) )
+		} );
 
 		// Animate the stroke on the next frame (CSS transition on .ace-ring-fg).
 		var targetOffset = circ * ( 1 - value / 100 );
@@ -1133,6 +1446,25 @@
 		var g = Math.round( 242 + ( 56 - 242 ) * t );
 		var b = Math.round( 255 + ( 202 - 255 ) * t );
 		return 'rgb(' + r + ',' + g + ',' + b + ')';
+	}
+
+	/**
+	 * White text only where it reads better than the black text: the number
+	 * in every cell has to clear 4.5:1 against its own shade, and with black
+	 * and white to choose from the worst shade on this scale still gives
+	 * 4.58:1. A fixed cut-off put white on mid indigo at about 3:1.
+	 */
+	function whiteReads( t ) {
+		var r = Math.round( 238 + ( 67 - 238 ) * t );
+		var g = Math.round( 242 + ( 56 - 242 ) * t );
+		var b = Math.round( 255 + ( 202 - 255 ) * t );
+		var lum = [ r, g, b ].map( function ( c ) {
+			var v = c / 255;
+			return v <= 0.03928 ? v / 12.92 : Math.pow( ( v + 0.055 ) / 1.055, 2.4 );
+		} );
+		var L = 0.2126 * lum[ 0 ] + 0.7152 * lum[ 1 ] + 0.0722 * lum[ 2 ];
+		// Contrast against white, then against black (luminance 0).
+		return ( 1.05 / ( L + 0.05 ) ) > ( ( L + 0.05 ) / 0.05 );
 	}
 
 	function renderHeatmap( target, data, opts ) {
@@ -1161,13 +1493,14 @@
 			max = 1;
 		}
 
-		var html = '<div class="ace-heatmap-scroll"><table class="ace-heatmap"><thead><tr><th></th>';
+		var html = '<div class="ace-heatmap-scroll"><table class="ace-heatmap"><caption class="screen-reader-text">' + esc( chartTitle( target, opts ) ) + '</caption>' +
+			'<thead><tr><th scope="col"><span class="screen-reader-text">' + esc( opts.rowHeader || i18nStr( 'chartColName', 'Name' ) ) + '</span></th>';
 		cols.forEach( function ( c ) {
-			html += '<th>' + esc( c ) + '</th>';
+			html += '<th scope="col">' + esc( c ) + '</th>';
 		} );
 		html += '</tr></thead><tbody>';
 		rows.forEach( function ( row ) {
-			html += '<tr><th class="ace-heatmap-row-label" title="' + esc( row.label ) + '">' + esc( row.label ) + '</th>';
+			html += '<tr><th scope="row" class="ace-heatmap-row-label" title="' + esc( row.label ) + '">' + esc( row.label ) + '</th>';
 			cols.forEach( function ( c, ci ) {
 				var cell = ( row.cells || [] )[ ci ];
 				var v = cell ? Number( cell.v ) : null;
@@ -1177,7 +1510,7 @@
 				}
 				var t = Math.max( 0, Math.min( 1, v / max ) );
 				var title = ( cell && cell.title ) ? cell.title : ( row.label + ' / ' + c + ': ' + fmtNum( v ) );
-				html += '<td class="' + ( t > 0.55 ? 'is-deep' : '' ) + '" style="background:' + lerpColor( t ) + '" title="' + esc( title ) + '">' + esc( fmtNum( v ) ) + '</td>';
+				html += '<td class="' + ( whiteReads( t ) ? 'is-deep' : '' ) + '" style="background:' + lerpColor( t ) + '" title="' + esc( title ) + '">' + esc( fmtNum( v ) ) + '</td>';
 			} );
 			html += '</tr>';
 		} );
@@ -1330,6 +1663,34 @@
 		} );
 
 		target.appendChild( svg );
+
+		var bandFmt = function ( v ) {
+			return opts.yFmt ? opts.yFmt( v ) : fmtNum( v );
+		};
+		var bandTitle = chartTitle( target, opts );
+		var rangeText = function ( b ) {
+			return ( ! b || b.lo === null || b.hi === null || ! isFinite( b.lo ) || ! isFinite( b.hi ) )
+				? i18nStr( 'chartNoValue', 'No data' )
+				: fmtStr( i18nStr( 'chartRange', '%1$s to %2$s' ), bandFmt( b.lo ), bandFmt( b.hi ) );
+		};
+		var measuredKeys = keys.filter( function ( k ) {
+			return lineMap[ k ] !== null && lineMap[ k ] !== undefined;
+		} );
+		var lastKey = measuredKeys[ measuredKeys.length - 1 ];
+		accessible( target, svg, {
+			summary: fmtStr( i18nStr( 'chartSummaryBand', '%1$s. Estimate from %2$s to %3$s. Latest %4$s, range %5$s.' ),
+				bandTitle, keys[ 0 ], keys[ keys.length - 1 ], bandFmt( lineMap[ lastKey ] ), rangeText( bandMap[ lastKey ] ) ),
+			caption: bandTitle,
+			columns: [
+				opts.xLabel || i18nStr( 'chartColDate', 'Date' ),
+				opts.valueLabel || i18nStr( 'difference', 'Difference' ),
+				i18nStr( 'chartColRange', 'Range' )
+			],
+			rows: keys.map( function ( k ) {
+				var v = lineMap[ k ];
+				return [ k, ( v === null || v === undefined ) ? i18nStr( 'chartNoValue', 'No data' ) : bandFmt( v ), rangeText( bandMap[ k ] ) ];
+			} )
+		} );
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -1432,6 +1793,28 @@
 		} );
 
 		target.appendChild( svg );
+
+		var forestFmt = function ( v ) {
+			return opts.xFmt ? opts.xFmt( v ) : fmtNum( v );
+		};
+		var forestTitle = chartTitle( target, opts );
+		var forestRange = function ( r ) {
+			return fmtStr( i18nStr( 'chartRange', '%1$s to %2$s' ), forestFmt( r.lo ), forestFmt( r.hi ) );
+		};
+		accessible( target, svg, {
+			summary: fmtStr( i18nStr( 'chartSummaryForest', '%1$s. %2$s.' ), forestTitle, rows.map( function ( r ) {
+				return String( r.label == null ? '' : r.label ) + ' ' + forestFmt( r.estimate ) + ' (' + forestRange( r ) + ')';
+			} ).join( '; ' ) ),
+			caption: forestTitle,
+			columns: [
+				i18nStr( 'chartColName', 'Name' ),
+				opts.valueLabel || i18nStr( 'change', 'Change' ),
+				i18nStr( 'chartColRange', 'Range' )
+			],
+			rows: rows.map( function ( r ) {
+				return [ String( r.label == null ? '' : r.label ), forestFmt( r.estimate ), forestRange( r ) ];
+			} )
+		} );
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -1520,6 +1903,24 @@
 				return { label: s.name, color: s.color };
 			} ) ) );
 		}
+
+		var funnelTitle = chartTitle( target, opts );
+		accessible( target, svg, {
+			summary: fmtStr( i18nStr( 'chartSummaryFunnel', '%1$s. %2$s.' ), funnelTitle, series.map( function ( s ) {
+				return ( s.name ? s.name + ': ' : '' ) + s.stages.map( function ( st ) {
+					return st.label + ' ' + fmtNum( st.value );
+				} ).join( ', ' );
+			} ).join( '; ' ) ),
+			caption: funnelTitle,
+			columns: [ i18nStr( 'chartColStep', 'Step' ) ].concat( series.map( function ( s ) {
+				return s.name || funnelTitle;
+			} ) ),
+			rows: stageLabels.map( function ( label, si ) {
+				return [ label ].concat( series.map( function ( s ) {
+					return s.stages[ si ] ? fmtNum( s.stages[ si ].value ) : i18nStr( 'chartNoValue', 'No data' );
+				} ) );
+			} )
+		} );
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -1532,7 +1933,17 @@
 				return;
 			}
 			register( target, function () {
+				// A resize redraws the chart, and with it the data table
+				// button; keep keyboard focus on the new one.
+				var active = document.activeElement;
+				var refocus = !! ( active && target.contains( active ) && active.classList.contains( 'ace-chart-data-toggle' ) );
 				renderer( target, data, opts );
+				if ( refocus ) {
+					var again = target.querySelector( '.ace-chart-data-toggle' );
+					if ( again ) {
+						again.focus();
+					}
+				}
 			} );
 		};
 	}

@@ -132,7 +132,10 @@
 			var byBotRows = ( data.byBot || [] ).map( function ( b ) {
 				return { label: b.label || b.slug || '', value: b.hits || 0, color: b.color || undefined };
 			} );
-			charts.barsH( bots.byBot, byBotRows, {} );
+			charts.barsH( bots.byBot, byBotRows, {
+				labelHeader: t( 'crawlerCol', 'Crawler' ),
+				valueLabel: t( 'botsHitsCol', 'Hits' )
+			} );
 
 			renderBotsPages( data );
 
@@ -184,10 +187,12 @@
 				return;
 			}
 
-			var html = '<table class="ace-table"><thead><tr>' +
-				'<th>' + core.esc( t( 'botsPage', 'Page' ) ) + '</th>' +
-				'<th>' + core.esc( t( 'botsHitsCol', 'Hits' ) ) + '</th>' +
-				'<th>' + core.esc( t( 'botsLastSeen', 'Last seen' ) ) + '</th>' +
+			var html = '<table class="ace-table">' +
+				'<caption class="screen-reader-text">' + core.esc( t( 'botsPagesCaption', 'Most crawled pages' ) ) + '</caption>' +
+				'<thead><tr>' +
+				'<th scope="col">' + core.esc( t( 'botsPage', 'Page' ) ) + '</th>' +
+				'<th scope="col">' + core.esc( t( 'botsHitsCol', 'Hits' ) ) + '</th>' +
+				'<th scope="col">' + core.esc( t( 'botsLastSeen', 'Last seen' ) ) + '</th>' +
 				'</tr></thead><tbody>';
 			rows.forEach( function ( r ) {
 				html += '<tr>' +
@@ -347,7 +352,9 @@
 			renderDomains( data.topDomains || [] );
 
 			charts.barsH( byId( 'agencoen-aeo-entities' ), brandRows( data.topEntities, vis, 10 ).rows, {
-				valueFmt: function ( v ) { return core.pct( v ); }
+				valueFmt: function ( v ) { return core.pct( v ); },
+				labelHeader: t( 'brandCol', 'Brand' ),
+				valueLabel: t( 'shareOfAnswersCol', 'Share of answers' )
 			} );
 		}
 
@@ -415,7 +422,10 @@
 			sorted.slice( 10 ).forEach( function ( d ) { if ( isOwn( d.domain ) ) { shown.push( d ); } } );
 			charts.barsH( byId( 'agencoen-aeo-domains' ), shown.map( function ( d ) {
 				return { label: d.domain || '', value: d.count || 0, color: isOwn( d.domain ) ? COLOR_YOURS : COLOR_OTHERS };
-			} ), {} );
+			} ), {
+				labelHeader: t( 'domainCol', 'Domain' ),
+				valueLabel: t( 'citationsCol', 'Citations' )
+			} );
 
 			var note = byId( 'agencoen-aeo-own-site' );
 			if ( ! note ) { return; }
@@ -505,9 +515,11 @@
 				return;
 			}
 
-			var html = '<table class="ace-table"><thead><tr>' +
-				'<th>' + core.esc( t( 'promptCol', 'Prompt' ) ) + '</th>' +
-				'<th>' + core.esc( t( 'tagsCol', 'Tags' ) ) + '</th>' +
+			var html = '<table class="ace-table">' +
+				'<caption class="screen-reader-text">' + core.esc( t( 'promptsCaption', 'Research prompts' ) ) + '</caption>' +
+				'<thead><tr>' +
+				'<th scope="col">' + core.esc( t( 'promptCol', 'Prompt' ) ) + '</th>' +
+				'<th scope="col">' + core.esc( t( 'tagsCol', 'Tags' ) ) + '</th>' +
 				'</tr></thead><tbody>';
 			rows.forEach( function ( p ) {
 				var tags = ( p.tags || [] ).map( function ( tag ) {
@@ -560,7 +572,9 @@
 			var vis = overviewData.visibility || null;
 			var brands = brandRows( list, vis, 12 );
 			charts.barsH( chartEl, brands.rows, {
-				valueFmt: function ( v ) { return core.pct( v ); }
+				valueFmt: function ( v ) { return core.pct( v ); },
+				labelHeader: t( 'brandCol', 'Brand' ),
+				valueLabel: t( 'shareOfAnswersCol', 'Share of answers' )
 			} );
 
 			var note = byId( 'agencoen-aeo-competitors-note' );
@@ -572,10 +586,12 @@
 				}
 			}
 
-			var html = '<table class="ace-table"><thead><tr>' +
-				'<th>' + core.esc( t( 'brandCol', 'Brand' ) ) + '</th>' +
-				'<th>' + core.esc( t( 'shareOfAnswersCol', 'Share of answers' ) ) + '</th>' +
-				'<th></th>' +
+			var html = '<table class="ace-table">' +
+				'<caption class="screen-reader-text">' + core.esc( t( 'competitorsCaption', 'Share of answers by brand' ) ) + '</caption>' +
+				'<thead><tr>' +
+				'<th scope="col">' + core.esc( t( 'brandCol', 'Brand' ) ) + '</th>' +
+				'<th scope="col">' + core.esc( t( 'shareOfAnswersCol', 'Share of answers' ) ) + '</th>' +
+				'<th scope="col"><span class="screen-reader-text">' + core.esc( t( 'yourBrand', 'Your brand' ) ) + '</span></th>' +
 				'</tr></thead><tbody>';
 			list.slice().sort( function ( a, b ) { return ( b.total || 0 ) - ( a.total || 0 ); } ).forEach( function ( e ) {
 				html += '<tr>' +
@@ -644,6 +660,76 @@
 					? core.num( c.promptCount ) + ' ' + t( 'promptsOnFlow', 'prompts saved on your research flow.' )
 					: '';
 			}
+
+			loadPromptFacets();
+		}
+
+		/**
+		 * Fill the category + collection pickers that scope prompt generation.
+		 *
+		 * Each picker stays hidden until it has something to offer. A collections
+		 * list that is empty because the store has not synced them yet is NOT the
+		 * same fact as a store with no collections, so the help text says which
+		 * one it is rather than letting an empty box imply the second.
+		 */
+		function loadPromptFacets() {
+			var scope = byId( 'agencoen-aeo-scope' );
+			if ( ! scope ) { return; }
+			core.post( 'aeo_prompt_facets', {} ).then( function ( data ) {
+				var categories = ( data && data.categories ) || [];
+				var collections = ( data && data.collections ) || [];
+				var synced = !! ( data && data.collectionsSynced );
+
+				fillFacetSelect( byId( 'agencoen-aeo-categories' ), categories );
+				fillFacetSelect( byId( 'agencoen-aeo-collections' ), collections );
+
+				var catField = byId( 'agencoen-aeo-scope-categories' );
+				if ( catField ) { catField.hidden = categories.length === 0; }
+
+				// Not synced yet: keep the field so the merchant learns WHY there is
+				// nothing to pick, but hide the empty box itself — an empty
+				// multi-select reads as a broken control, not as an explanation.
+				var colField = byId( 'agencoen-aeo-scope-collections' );
+				var colSelect = byId( 'agencoen-aeo-collections' );
+				var colHelp = byId( 'agencoen-aeo-collections-help' );
+				if ( colField ) { colField.hidden = collections.length === 0 && synced; }
+				if ( colSelect ) { colSelect.hidden = collections.length === 0; }
+				if ( colHelp ) {
+					colHelp.textContent = collections.length > 0
+						? t( 'facetHelp', 'Hold Ctrl or Cmd to pick more than one. Leave empty to draw from your whole catalog.' )
+						: t( 'collectionsNotSynced', 'Sync your catalog to filter by collection.' );
+				}
+
+				scope.hidden = ( catField ? catField.hidden : true ) && ( colField ? colField.hidden : true );
+			}, function () {
+				// A failed read leaves the pickers hidden rather than showing an
+				// empty list the merchant would read as "I have none".
+				scope.hidden = true;
+			} );
+		}
+
+		function fillFacetSelect( select, items ) {
+			if ( ! select ) { return; }
+			select.innerHTML = '';
+			( items || [] ).forEach( function ( item ) {
+				if ( ! item || typeof item.name !== 'string' || ! item.name ) { return; }
+				var option = document.createElement( 'option' );
+				option.value = item.name;
+				option.textContent = item.name + ' (' + core.num( item.count || 0 ) + ')';
+				select.appendChild( option );
+			} );
+		}
+
+		/** Selected values of a multi-select, as an array. */
+		function selectedValues( select ) {
+			var out = [];
+			if ( ! select ) { return out; }
+			for ( var i = 0; i < select.options.length; i++ ) {
+				if ( select.options[ i ].selected && select.options[ i ].value ) {
+					out.push( select.options[ i ].value );
+				}
+			}
+			return out;
 		}
 
 		function pickValue( item, keys ) {
@@ -732,6 +818,10 @@
 					var payload = { branded: brandedEl && brandedEl.checked ? 1 : 0 };
 					var topic = topicEl && topicEl.value ? topicEl.value.replace( /^\s+|\s+$/g, '' ) : '';
 					if ( topic ) { payload.topic = topic; }
+					var categories = selectedValues( byId( 'agencoen-aeo-categories' ) );
+					var collections = selectedValues( byId( 'agencoen-aeo-collections' ) );
+					if ( categories.length ) { payload.categories = categories; }
+					if ( collections.length ) { payload.collections = collections; }
 					core.setBusy( suggestBtn, true );
 					core.post( 'aeo_prompts_suggest', payload ).then( function ( data ) {
 						core.setBusy( suggestBtn, false );
@@ -774,17 +864,6 @@
 				} );
 			}
 
-			var estimateBtn = byId( 'agencoen-aeo-estimate' );
-			if ( estimateBtn ) {
-				estimateBtn.addEventListener( 'click', function () {
-					core.setBusy( estimateBtn, true );
-					core.post( 'aeo_estimate', gatherRunArgs() ).then( function ( data ) {
-						core.setBusy( estimateBtn, false );
-						core.toast( estimateSummary( data ) );
-					}, failWith( estimateBtn ) );
-				} );
-			}
-
 			var launchBtn = byId( 'agencoen-aeo-launch' );
 			if ( launchBtn ) {
 				launchBtn.addEventListener( 'click', function () {
@@ -816,26 +895,6 @@
 					}, failWith( flowBtn ) );
 				} );
 			}
-		}
-
-		function estimateSummary( data ) {
-			var est = ( data && data.estimate ) || data || {};
-			if ( typeof est !== 'object' || est === null ) { est = {}; }
-
-			// Look for a credits-like numeric field, defensively.
-			var keys = Object.keys( est );
-			for ( var i = 0; i < keys.length; i++ ) {
-				var key = keys[ i ];
-				if ( /credit|cost/i.test( key ) && typeof est[ key ] === 'number' ) {
-					return t( 'estimatePrefix', 'Estimated cost:' ) + ' ' + core.num( est[ key ] ) + ' ' + t( 'credits', 'credits' );
-				}
-			}
-			var raw = '';
-			try { raw = JSON.stringify( est ); } catch ( e ) { raw = ''; }
-			if ( raw && raw.length > 140 ) { raw = raw.slice( 0, 140 ) + '…'; }
-			return raw && raw !== '{}'
-				? t( 'estimateReady', 'Estimate:' ) + ' ' + raw
-				: t( 'estimateEmpty', 'The estimate came back empty. You can launch the run directly.' );
 		}
 
 		/* --- Runs table + polling ----------------------------------------- */
@@ -903,13 +962,15 @@
 				return;
 			}
 
-			var html = '<table class="ace-table"><thead><tr>' +
-				'<th>' + core.esc( t( 'runCol', 'Run' ) ) + '</th>' +
-				'<th>' + core.esc( t( 'statusCol', 'Status' ) ) + '</th>' +
-				'<th>' + core.esc( t( 'startedCol', 'Started' ) ) + '</th>' +
-				'<th>' + core.esc( t( 'endedCol', 'Ended' ) ) + '</th>' +
-				'<th>' + core.esc( t( 'snapshotCol', 'Results' ) ) + '</th>' +
-				'<th></th>' +
+			var html = '<table class="ace-table">' +
+				'<caption class="screen-reader-text">' + core.esc( t( 'runsCaption', 'Research runs' ) ) + '</caption>' +
+				'<thead><tr>' +
+				'<th scope="col">' + core.esc( t( 'runCol', 'Run' ) ) + '</th>' +
+				'<th scope="col">' + core.esc( t( 'statusCol', 'Status' ) ) + '</th>' +
+				'<th scope="col">' + core.esc( t( 'startedCol', 'Started' ) ) + '</th>' +
+				'<th scope="col">' + core.esc( t( 'endedCol', 'Ended' ) ) + '</th>' +
+				'<th scope="col">' + core.esc( t( 'snapshotCol', 'Results' ) ) + '</th>' +
+				'<th scope="col"><span class="screen-reader-text">' + core.esc( t( 'colActions', 'Actions' ) ) + '</span></th>' +
 				'</tr></thead><tbody>';
 			runs.forEach( function ( run ) {
 				var id = String( run.id || '' );
@@ -934,12 +995,14 @@
 			if ( ! prompts.length ) {
 				return '<p class="ace-help">' + core.esc( t( 'noPromptResults', 'No per prompt results are available for this run yet.' ) ) + '</p>';
 			}
-			var html = '<table class="ace-table"><thead><tr>' +
-				'<th>' + core.esc( t( 'promptCol', 'Prompt' ) ) + '</th>' +
-				'<th>' + core.esc( t( 'engineCol', 'Engine' ) ) + '</th>' +
-				'<th>' + core.esc( t( 'brandCol', 'Brand' ) ) + '</th>' +
-				'<th>' + core.esc( t( 'citationsCol', 'Citations' ) ) + '</th>' +
-				'<th>' + core.esc( t( 'entitiesCol', 'Top entities' ) ) + '</th>' +
+			var html = '<table class="ace-table">' +
+				'<caption class="screen-reader-text">' + core.esc( t( 'runResultsCaption', 'Results by prompt' ) ) + '</caption>' +
+				'<thead><tr>' +
+				'<th scope="col">' + core.esc( t( 'promptCol', 'Prompt' ) ) + '</th>' +
+				'<th scope="col">' + core.esc( t( 'engineCol', 'Engine' ) ) + '</th>' +
+				'<th scope="col">' + core.esc( t( 'brandCol', 'Brand' ) ) + '</th>' +
+				'<th scope="col">' + core.esc( t( 'citationsCol', 'Citations' ) ) + '</th>' +
+				'<th scope="col">' + core.esc( t( 'entitiesCol', 'Top entities' ) ) + '</th>' +
 				'</tr></thead><tbody>';
 			prompts.forEach( function ( p ) {
 				var citations = ( p.citations && p.citations.length ) || 0;

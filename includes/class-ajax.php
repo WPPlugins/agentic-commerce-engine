@@ -18,6 +18,9 @@ class Ajax extends Ajax_Base {
 	const MAX_ENRICH_ALL  = 200;
 	const APPROVE_ALL_CAP = 200;
 
+	/** Transient holding the ChatGPT product file URL: { storeId, url }. */
+	const OPENAI_FEED_CACHE = 'agencoen_openai_feed_url';
+
 	/**
 	 * Register every wp_ajax_agencoen_* action. Commerce actions are wrapped
 	 * with a WooCommerce gate so a hand-crafted request on a Woo-less site can
@@ -39,9 +42,11 @@ class Ajax extends Ajax_Base {
 			'review_save_edit',
 			'quality_get',
 			'quality_rescore',
+			'review_held_back',
 			'enrich_batch',
 			'approve_batch',
 			'export',
+			'openai_feed',
 		);
 		foreach ( $core as $action ) {
 			add_action( 'wp_ajax_agencoen_' . $action, array( $this, $action ) );
@@ -207,7 +212,15 @@ class Ajax extends Ajax_Base {
 			wp_send_json_error( $this->error_payload( $result ) );
 		}
 
-		wp_send_json_success( array( 'queued' => (int) $result['count'] ) );
+		wp_send_json_success(
+			array(
+				'queued' => (int) $result['count'],
+				// Left out because a running experiment is measuring them. Not
+				// an error: the products are simply not available to enrich
+				// until the experiment finishes.
+				'skipped' => isset( $result['skipped'] ) ? (int) $result['skipped'] : 0,
+			)
+		);
 	}
 
 	/**
@@ -279,7 +292,13 @@ class Ajax extends Ajax_Base {
 	public function approve_all() {
 		check_ajax_referer( self::NONCE_ACTION, 'nonce' );
 		$this->require_manage();
-		$ids     = $this->plugin->repository()->ids_with_status( Meta::STATUS_ENRICHED, 1, self::APPROVE_ALL_CAP );
+		// Products a product split is known to hold are stepped past, and the
+		// rest are asked about in one request before any is applied (4.29.0).
+		$ids     = $this->plugin->repository()->ids_with_status( Meta::STATUS_ENRICHED, 1, self::APPROVE_ALL_CAP, true );
+		$checked = $this->plugin->held_back()->check( $ids );
+		if ( is_wp_error( $checked ) ) {
+			wp_send_json_error( $this->error_payload( $checked ) );
+		}
 		$applied = 0;
 		foreach ( $ids as $id ) {
 			if ( true === $this->plugin->review()->approve( $id ) ) {
@@ -290,6 +309,7 @@ class Ajax extends Ajax_Base {
 			array(
 				'applied'   => $applied,
 				'remaining' => $this->plugin->repository()->pending_review_count(),
+				'held'      => $this->held_count(),
 			)
 		);
 	}
@@ -353,6 +373,66 @@ class Ajax extends Ajax_Base {
 					'microsoft' => Feeds::feed_url( 'microsoft' ),
 					'agentic'   => Feeds::feed_url( 'agentic' ),
 				),
+			)
+		);
+	}
+
+	/**
+	 * The ChatGPT product file URL for this store (4.34.0), as the platform
+	 * reports it from GET /api/v1/plugin/feeds (`openaiFeedUrl`). The file is
+	 * built and hosted by Rezolve Ai from the synced catalog, so a site that
+	 * is not connected has none.
+	 *
+	 * A URL is cached for an hour: it is the store's own address and does not
+	 * change. A failed read is an error, never "no file", so the screen can
+	 * say it could not read it and offer to try again.
+	 *
+	 * Response: { connected: bool, url: string|null }.
+	 */
+	public function openai_feed() {
+		check_ajax_referer( self::NONCE_ACTION, 'nonce' );
+		$this->require_manage();
+
+		$settings = $this->plugin->settings();
+		if ( ! $settings->is_connected() ) {
+			wp_send_json_success(
+				array(
+					'connected' => false,
+					'url'       => null,
+				)
+			);
+		}
+
+		$store_id = $settings->get_store_id();
+		$cached   = get_transient( self::OPENAI_FEED_CACHE );
+		if ( is_array( $cached ) && isset( $cached['storeId'], $cached['url'] ) && $cached['storeId'] === $store_id ) {
+			wp_send_json_success(
+				array(
+					'connected' => true,
+					'url'       => $cached['url'],
+				)
+			);
+		}
+
+		$feeds = $this->plugin->api()->plugin_feeds( $store_id );
+		if ( is_wp_error( $feeds ) ) {
+			wp_send_json_error( array( 'message' => __( 'Could not read your ChatGPT product file URL from Rezolve Ai.', 'agentic-commerce-engine' ) ) );
+		}
+		$url = Legal_Policies::http_url( is_array( $feeds ) && isset( $feeds['openaiFeedUrl'] ) ? $feeds['openaiFeedUrl'] : null );
+		if ( null !== $url ) {
+			set_transient(
+				self::OPENAI_FEED_CACHE,
+				array(
+					'storeId' => $store_id,
+					'url'     => $url,
+				),
+				HOUR_IN_SECONDS
+			);
+		}
+		wp_send_json_success(
+			array(
+				'connected' => true,
+				'url'       => $url,
 			)
 		);
 	}
@@ -438,6 +518,58 @@ class Ajax extends Ajax_Base {
 				$agencoen_placement[ $agencoen_type ] = sanitize_key( wp_unslash( $_POST[ $agencoen_field ] ) );
 			}
 		}
+		/*
+		 * Where each content type is written (4.25.0): the block, one of this
+		 * store's fields, or a section of the description. Only a screen that
+		 * shows the choice posts it. The platform validates it and is the
+		 * source of truth, so it is pushed with the placement in one request
+		 * and saved locally from the platform's answer, never from the post.
+		 */
+		$agencoen_destinations = array();
+		$agencoen_candidates   = null;
+		foreach ( Content_Destinations::TYPES as $agencoen_type ) {
+			$agencoen_field = 'destination_' . str_replace( '-', '_', $agencoen_type );
+			if ( ! isset( $_POST[ $agencoen_field ] ) ) {
+				continue;
+			}
+			if ( null === $agencoen_candidates ) {
+				$agencoen_candidates = Content_Destinations::candidates( $this->plugin );
+			}
+			$agencoen_heading     = isset( $_POST[ 'destination_heading_' . str_replace( '-', '_', $agencoen_type ) ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'destination_heading_' . str_replace( '-', '_', $agencoen_type ) ] ) ) : '';
+			$agencoen_destination = Content_Destinations::from_choice(
+				$agencoen_type,
+				sanitize_text_field( wp_unslash( $_POST[ $agencoen_field ] ) ),
+				$agencoen_heading,
+				$agencoen_candidates
+			);
+			if ( null !== $agencoen_destination ) {
+				$agencoen_destinations[ $agencoen_type ] = $agencoen_destination;
+			}
+		}
+		if ( ! empty( $agencoen_destinations ) ) {
+			if ( ! empty( $agencoen_placement ) ) {
+				$settings->save_placement( $agencoen_placement );
+			}
+			if ( ! $settings->is_connected() ) {
+				wp_send_json_error( array( 'message' => __( 'Connect to Rezolve Ai to choose where content goes.', 'agentic-commerce-engine' ) ) );
+			}
+			$agencoen_saved = $this->plugin->api()->update_content_placement(
+				$settings->get_store_id(),
+				$settings->get_placements(),
+				$agencoen_destinations
+			);
+			if ( is_wp_error( $agencoen_saved ) ) {
+				wp_send_json_error( array( 'message' => $agencoen_saved->get_error_message() ) );
+			}
+			if ( isset( $agencoen_saved['placement'] ) && is_array( $agencoen_saved['placement'] ) ) {
+				$settings->save_placement( $agencoen_saved['placement'] );
+			}
+			if ( isset( $agencoen_saved['destinations'] ) && is_array( $agencoen_saved['destinations'] ) ) {
+				Content_Destinations::save( $agencoen_saved['destinations'] );
+			}
+			$agencoen_placement = array();
+		}
+
 		if ( ! empty( $agencoen_placement ) ) {
 			$settings->save_placement( $agencoen_placement );
 			if ( $settings->is_connected() ) {
@@ -590,6 +722,9 @@ class Ajax extends Ajax_Base {
 				),
 				'fields'   => $fields,
 				'editLink' => get_edit_post_link( $id, 'raw' ),
+				// As last checked, so the note paints at once. The screen then
+				// asks `review_held_back` for the current answer.
+				'heldBack' => $this->held_label( Held_Back::stored( $id ) ),
 			);
 		}
 
@@ -721,6 +856,44 @@ class Ajax extends Ajax_Base {
 	}
 
 	/**
+	 * Which products on the Review page a product split is holding back now
+	 * (4.29.0), asked after the list has painted.
+	 *
+	 * DISPLAY ONLY, so a failed check is an error the screen ignores: the row
+	 * keeps whatever it showed, and Apply asks again and refuses on its own.
+	 */
+	public function review_held_back() {
+		check_ajax_referer( self::NONCE_ACTION, 'nonce' );
+		$this->require_manage();
+
+		$ids = isset( $_POST['ids'] ) ? array_map( 'absint', (array) wp_unslash( $_POST['ids'] ) ) : array();
+		$ids = array_slice( array_values( array_unique( array_filter( $ids ) ) ), 0, 100 );
+		if ( empty( $ids ) ) {
+			wp_send_json_success( array( 'products' => (object) array() ) );
+		}
+
+		$checked = $this->plugin->held_back()->check( $ids );
+		if ( is_wp_error( $checked ) ) {
+			wp_send_json_error( $this->error_payload( $checked ) );
+		}
+		$products = array();
+		foreach ( $ids as $id ) {
+			$products[ (string) $id ] = $this->held_label( isset( $checked[ $id ] ) ? $checked[ $id ] : null );
+		}
+		wp_send_json_success( array( 'products' => (object) $products ) );
+	}
+
+	/**
+	 * A held product's line for the screen, or '' when it is not held.
+	 *
+	 * @param array|null $note Held_Back note.
+	 * @return string
+	 */
+	private function held_label( $note ) {
+		return is_array( $note ) ? Held_Back::label( $note ) : '';
+	}
+
+	/**
 	 * Ask Rezolve Ai to score some of one product's content again.
 	 *
 	 * Answers with what was queued, not with new numbers: scoring takes 10 to
@@ -810,12 +983,17 @@ class Ajax extends Ajax_Base {
 		$this->require_manage();
 		$search = isset( $_POST['search'] ) ? sanitize_text_field( wp_unslash( $_POST['search'] ) ) : '';
 
+		// Products a product split holds stay waiting (4.29.0). Each batch
+		// steps past the ones already known to be held, so they cannot fill
+		// every batch and stall the rest, and asks about the others in one
+		// request before any is applied.
 		$batch = $this->plugin->repository()->query_products(
 			array(
 				'status' => Meta::STATUS_ENRICHED,
 				'search' => $search,
 				'per'    => 100,
 				'page'   => 1,
+				'held'   => 'exclude',
 			)
 		);
 		if ( empty( $batch['ids'] ) ) {
@@ -824,12 +1002,23 @@ class Ajax extends Ajax_Base {
 					'processed' => 0,
 					'remaining' => 0,
 					'done'      => true,
+					'held'      => $this->held_count(),
 				)
 			);
 		}
 
+		$checked = $this->plugin->held_back()->check( $batch['ids'] );
+		if ( is_wp_error( $checked ) ) {
+			wp_send_json_error( $this->error_payload( $checked ) );
+		}
+
 		$applied = 0;
+		$held    = 0;
 		foreach ( $batch['ids'] as $id ) {
+			if ( ! empty( $checked[ $id ] ) ) {
+				++$held;
+				continue;
+			}
 			if ( true === $this->plugin->review()->approve( $id ) ) {
 				++$applied;
 			}
@@ -841,16 +1030,37 @@ class Ajax extends Ajax_Base {
 				'search' => $search,
 				'per'    => 1,
 				'page'   => 1,
+				'held'   => 'exclude',
 			)
 		)['total'];
 
 		wp_send_json_success(
 			array(
-				'processed' => $applied,
+				// A batch that only found held products still moved on: they
+				// are stepped past from now on. Counted as progress so the
+				// screen asks for the next batch rather than stopping here.
+				'processed' => $applied + $held,
 				'remaining' => $remaining,
 				'done'      => $remaining <= 0,
+				'held'      => $this->held_count(),
 			)
 		);
+	}
+
+	/**
+	 * Waiting products a product split is holding back, as last checked.
+	 *
+	 * @return int
+	 */
+	private function held_count() {
+		return (int) $this->plugin->repository()->query_products(
+			array(
+				'status' => Meta::STATUS_ENRICHED,
+				'per'    => 1,
+				'page'   => 1,
+				'held'   => 'only',
+			)
+		)['total'];
 	}
 
 	/**

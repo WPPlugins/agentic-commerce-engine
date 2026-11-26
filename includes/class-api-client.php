@@ -25,6 +25,12 @@ class Api_Client {
 	const MAX_RETRIES = 3;
 
 	const TIMEOUT_INTERACTIVE  = 12;
+	/**
+	 * Cohort suggestion only. Up to two LLM round trips behind a route that
+	 * declares maxDuration = 90, so our ceiling has to sit above the work and
+	 * below the platform's own, or a slow success is reported as a failure.
+	 */
+	const TIMEOUT_SUGGEST      = 85;
 	const ATTEMPTS_INTERACTIVE = 1;
 
 	/** @var Settings */
@@ -160,6 +166,40 @@ class Api_Client {
 	}
 
 	/**
+	 * POST /api/v1/plugin/legal-policies (4.34.0)
+	 *
+	 * The store's policy pages for the seller columns of its OpenAI product
+	 * file. Replaces the platform's value whole. See Legal_Policies.
+	 *
+	 * @param string $store_id Store id.
+	 * @param array  $policies { returnPolicyUrl, privacyPolicyUrl, termsOfServiceUrl, acceptsReturns }.
+	 * @return array|\WP_Error
+	 */
+	public function legal_policies( $store_id, array $policies ) {
+		return $this->request(
+			'POST',
+			'/api/v1/plugin/legal-policies',
+			array(
+				'storeId'  => (string) $store_id,
+				'policies' => $policies,
+			)
+		);
+	}
+
+	/**
+	 * GET /api/v1/plugin/feeds (4.34.0)
+	 *
+	 * Which hosted feeds the platform serves for this store. The Settings
+	 * screen reads `openaiFeedUrl`, the ChatGPT product file.
+	 *
+	 * @param string $store_id Store id.
+	 * @return array|\WP_Error
+	 */
+	public function plugin_feeds( $store_id ) {
+		return $this->request( 'GET', '/api/v1/plugin/feeds', null, array( 'storeId' => (string) $store_id ) );
+	}
+
+	/**
 	 * GET /api/v1/plugin/bootstrap — one-call dashboard payload.
 	 *
 	 * @param string $store_id Store id.
@@ -185,15 +225,104 @@ class Api_Client {
 	 * @param array  $placement Map of content type to placement.
 	 * @return array|\WP_Error
 	 */
-	public function update_content_placement( $store_id, array $placement ) {
-		return $this->request(
-			'PATCH',
-			'/api/v1/plugin/content-placement',
-			array(
-				'storeId'   => $store_id,
-				'placement' => $placement,
-			)
+	public function update_content_placement( $store_id, array $placement, $destinations = null ) {
+		$body = array(
+			'storeId'   => $store_id,
+			'placement' => $placement,
 		);
+		// Where each content type is written (4.25.0). Sent only by a screen
+		// that shows the choice, so an older caller never resets it.
+		if ( is_array( $destinations ) && ! empty( $destinations ) ) {
+			$body['destinations'] = $destinations;
+		}
+		return $this->request( 'PATCH', '/api/v1/plugin/content-placement', $body );
+	}
+
+	/**
+	 * GET /api/v1/plugin/content-placement: placement, destinations, and the
+	 * store's fields each content type could be sent to (4.25.0), from the
+	 * catalogue the platform has synced.
+	 *
+	 * @param string $store_id Rezolve Ai store id.
+	 * @return array|\WP_Error
+	 */
+	public function content_placement( $store_id ) {
+		return $this->request( 'GET', '/api/v1/plugin/content-placement', null, array( 'storeId' => $store_id ) );
+	}
+
+	/**
+	 * GET /api/v1/plugin/custom-fields — the store's custom fields, each with a
+	 * merchant-facing label, whether it is used, left out or skipped (and why),
+	 * and whether it may be rewritten. Shared with the web app and the Shopify
+	 * app, so every surface lists the same thing.
+	 *
+	 * @param string $store_id Rezolve Ai store id.
+	 * @return array|\WP_Error
+	 */
+	public function custom_fields( $store_id ) {
+		return $this->request( 'GET', '/api/v1/plugin/custom-fields', null, array( 'storeId' => $store_id ) );
+	}
+
+	/**
+	 * PATCH /api/v1/plugin/custom-fields — partial: exclude, include,
+	 * rewriteOn and rewriteOff, each optional.
+	 *
+	 * @param string $store_id Rezolve Ai store id.
+	 * @param array  $patch    Change.
+	 * @return array|\WP_Error
+	 */
+	public function update_custom_fields( $store_id, array $patch ) {
+		return $this->request( 'PATCH', '/api/v1/plugin/custom-fields', array_merge( array( 'storeId' => $store_id ), $patch ) );
+	}
+
+	/**
+	 * GET /api/v1/plugin/field-formats (4.28.0): each field Rezolve Ai writes
+	 * and the format it is written in. With a target, that one field in full.
+	 *
+	 * @param string $store_id Rezolve Ai store id.
+	 * @param string $target   Opaque field target, or '' for the whole list.
+	 * @return array|\WP_Error
+	 */
+	public function field_formats( $store_id, $target = '' ) {
+		$query = array( 'storeId' => $store_id );
+		if ( '' !== $target ) {
+			$query['target'] = $target;
+		}
+		return $this->request( 'GET', '/api/v1/plugin/field-formats', null, $query );
+	}
+
+	/**
+	 * PATCH /api/v1/plugin/field-formats: one field's choice, partial
+	 * (target, mode, preset, locks, fillEmpty).
+	 *
+	 * @param string $store_id Rezolve Ai store id.
+	 * @param array  $patch    Change.
+	 * @return array|\WP_Error
+	 */
+	public function update_field_format( $store_id, array $patch ) {
+		return $this->request( 'PATCH', '/api/v1/plugin/field-formats', array_merge( array( 'storeId' => $store_id ), $patch ) );
+	}
+
+	/**
+	 * POST /api/v1/plugin/field-formats/preview: a product's current value laid
+	 * out in a format. Free: nothing is written.
+	 *
+	 * @param string $store_id Rezolve Ai store id.
+	 * @param array  $body     target, and optionally mode, preset, locks.
+	 * @return array|\WP_Error
+	 */
+	public function preview_field_format( $store_id, array $body ) {
+		return $this->request( 'POST', '/api/v1/plugin/field-formats/preview', array_merge( array( 'storeId' => $store_id ), $body ) );
+	}
+
+	/**
+	 * POST /api/v1/plugin/field-formats/relearn: learn every format again now.
+	 *
+	 * @param string $store_id Rezolve Ai store id.
+	 * @return array|\WP_Error
+	 */
+	public function relearn_field_formats( $store_id ) {
+		return $this->request( 'POST', '/api/v1/plugin/field-formats/relearn', array( 'storeId' => $store_id ) );
 	}
 
 	/**
@@ -413,9 +542,24 @@ class Api_Client {
 	}
 
 	/**
+	 * GET /api/v1/plugin/aeo/prompts/facets — category + collection pickers.
+	 *
+	 * @param string $store_id Store id.
+	 * @return array|\WP_Error { categories, collections, collectionsSynced }.
+	 */
+	public function aeo_prompt_facets( $store_id ) {
+		return $this->request(
+			'GET',
+			'/api/v1/plugin/aeo/prompts/facets',
+			null,
+			array( 'storeId' => $store_id )
+		);
+	}
+
+	/**
 	 * POST /api/v1/plugin/aeo/prompts/suggest — AI prompt ideas from the catalog.
 	 *
-	 * @param array $args { storeId, topic?, branded?, regionLabel?, languageLabel? }.
+	 * @param array $args { storeId, topic?, branded?, regionLabel?, languageLabel?, categories?, collections? }.
 	 * @return array|\WP_Error
 	 */
 	public function aeo_suggest_prompts( array $args ) {
@@ -507,17 +651,22 @@ class Api_Client {
 	 *
 	 * @param string $store_id Store id.
 	 * @param array  $days     Day payloads.
+	 * @param array  $agent    Agent-sent day payloads: totals per attribution token.
+	 * @param string $currency Store currency code, for the agent totals.
 	 * @return array|\WP_Error
 	 */
-	public function sales_ingest( $store_id, array $days ) {
-		return $this->request(
-			'POST',
-			'/api/v1/plugin/sales/ingest',
-			array(
-				'storeId' => $store_id,
-				'days'    => array_values( $days ),
-			)
+	public function sales_ingest( $store_id, array $days, array $agent = array(), $currency = '' ) {
+		$body = array(
+			'storeId' => $store_id,
+			'days'    => array_values( $days ),
 		);
+		if ( ! empty( $agent ) ) {
+			$body['agent'] = array(
+				'currency' => preg_match( '/^[A-Za-z]{3}$/', (string) $currency ) ? strtoupper( $currency ) : null,
+				'days'     => array_values( $agent ),
+			);
+		}
+		return $this->request( 'POST', '/api/v1/plugin/sales/ingest', $body );
 	}
 
 	/**
@@ -642,12 +791,122 @@ class Api_Client {
 	 * @param string|null $category Optional category filter.
 	 * @return array|\WP_Error
 	 */
-	public function experiment_subjects( $store_id, $category = null ) {
+	public function experiment_subjects( $store_id, $category = null, $include_facets = false ) {
 		$query = array( 'storeId' => $store_id );
 		if ( is_string( $category ) && '' !== $category ) {
 			$query['category'] = $category;
 		}
+		if ( $include_facets ) {
+			$query['includeFacets'] = '1';
+		}
 		return $this->request( 'GET', '/api/v1/plugin/experiments/subjects', null, $query );
+	}
+
+	/**
+	 * Resolve a selection spec to a count, and optionally a page of products.
+	 *
+	 * POST rather than GET because a selection can carry five hundred
+	 * hand-picked ids, which do not fit in a query string. `countOnly` answers
+	 * a number and no ids at all: the screen only needs the number while the
+	 * merchant is still choosing, and this plugin runs on the merchant's own
+	 * server, so five thousand ids crossing the wire on every checkbox is both
+	 * slow and a payload the browser could edit.
+	 *
+	 * @param array $body { storeId, selection, type?, countOnly?, page?, pageSize? }.
+	 * @return array|\WP_Error
+	 */
+	public function experiment_resolve_subjects( array $body ) {
+		return $this->request( 'POST', '/api/v1/plugin/experiments/subjects', $body );
+	}
+
+	/**
+	 * A page of products in the platform's own id space, for hand-picking.
+	 *
+	 * NOT WordPress post ids and not WooCommerce product ids. The platform keys
+	 * experiment units and review items by `products.product_id`, and a
+	 * selection carrying anything else produces an experiment whose units match
+	 * no content at all, with nothing to say so.
+	 *
+	 * @param string $store_id Store id.
+	 * @param string $query    Optional search term.
+	 * @param int    $page     Zero-based page.
+	 * @return array|\WP_Error
+	 */
+	public function experiment_products( $store_id, $query = '', $page = 0 ) {
+		$args = array(
+			'storeId' => $store_id,
+			'page'    => (int) $page,
+		);
+		if ( is_string( $query ) && '' !== $query ) {
+			$args['q'] = $query;
+		}
+		return $this->request( 'GET', '/api/v1/plugin/experiments/products', null, $args );
+	}
+
+	/**
+	 * A model proposes a cohort from a sentence the merchant typed.
+	 *
+	 * ON ITS OWN, LONGER TIMEOUT. This is up to two LLM round trips and the
+	 * platform route declares maxDuration = 90. At the interactive default of
+	 * twelve seconds every normal call would come back a `WP_Error`, which is
+	 * exactly the failure the Shopify client documents for prompt suggestion:
+	 * a slow-but-successful generation, already billed, reported to the
+	 * merchant as "could not suggest".
+	 *
+	 * @param array $body { storeId, brief, arms?, holdoutFraction? }.
+	 * @return array|\WP_Error
+	 */
+	public function experiment_suggest_subjects( array $body ) {
+		return $this->request(
+			'POST',
+			'/api/v1/plugin/experiments/suggest-subjects',
+			$body,
+			null,
+			array(
+				'timeout'  => self::TIMEOUT_SUGGEST,
+				'attempts' => 1,
+			)
+		);
+	}
+
+	/**
+	 * The project's saved product selections.
+	 *
+	 * @param string $store_id Store id.
+	 * @return array|\WP_Error
+	 */
+	public function product_groups( $store_id ) {
+		return $this->request( 'GET', '/api/v1/plugin/product-groups', null, array( 'storeId' => $store_id ) );
+	}
+
+	/**
+	 * Save a selection as a named, reusable group.
+	 *
+	 * @param array $body { storeId, name, description?, selection }.
+	 * @return array|\WP_Error
+	 */
+	public function save_product_group( array $body ) {
+		return $this->request( 'POST', '/api/v1/plugin/product-groups', $body );
+	}
+
+	/**
+	 * Delete a saved group.
+	 *
+	 * Deleting one does NOT touch a running experiment: its products were
+	 * frozen into experiment units when it started, and nothing re-resolves
+	 * them. The screen says so, or a merchant will believe otherwise.
+	 *
+	 * @param string $store_id Store id.
+	 * @param string $group_id Group id.
+	 * @return array|\WP_Error
+	 */
+	public function delete_product_group( $store_id, $group_id ) {
+		return $this->request(
+			'DELETE',
+			'/api/v1/plugin/product-groups/' . rawurlencode( $group_id ),
+			null,
+			array( 'storeId' => $store_id )
+		);
 	}
 
 	/**
@@ -819,6 +1078,29 @@ class Api_Client {
 	}
 
 	/**
+	 * Which of the proposals this site is about to apply belong to products a
+	 * product split is holding back (4.29.0). See {@see Held_Back}.
+	 *
+	 * POST although it changes nothing: a batch asks about up to 500 items. An
+	 * empty `heldBack` means nothing is held; Rezolve Ai answers 503 when it
+	 * could not tell, never an empty list.
+	 *
+	 * @param string $store_id Rezolve Ai store id.
+	 * @param array  $items    List of { productId, field } or { productId, contentType }.
+	 * @return array|\WP_Error { heldBack: [{ productId, field, contentType, experimentName, releaseAt }] }.
+	 */
+	public function held_back( $store_id, array $items ) {
+		return $this->request(
+			'POST',
+			'/api/v1/plugin/held-back',
+			array(
+				'storeId' => $store_id,
+				'items'   => array_values( $items ),
+			)
+		);
+	}
+
+	/**
 	 * The quality scores Rezolve Ai has measured for this site's proposals.
 	 *
 	 * POST although it changes nothing: a review page asks about up to 200
@@ -882,6 +1164,24 @@ class Api_Client {
 			array(
 				'storeId' => $store_id,
 				'events'  => array_values( $events ),
+			)
+		);
+	}
+
+	/**
+	 * POST /api/v1/plugin/bot-traffic/signatures: signed agent requests, checked by Rezolve Ai.
+	 *
+	 * @param string $store_id Store id.
+	 * @param array  $samples  From Signed_Agents::from_server().
+	 * @return array|\WP_Error
+	 */
+	public function signed_agents_ingest( $store_id, array $samples ) {
+		return $this->request(
+			'POST',
+			'/api/v1/plugin/bot-traffic/signatures',
+			array(
+				'storeId' => $store_id,
+				'samples' => array_values( $samples ),
 			)
 		);
 	}

@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Rezolve Ai 4.20.0\n"
+"Project-Id-Version: Rezolve Ai 4.34.3\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/agentic-commerce-engine\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-18T10:31:51+00:00\n"
+"POT-Creation-Date: 2026-11-26T02:39:09+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: rezolve-ai-make-pot\n"
 "X-Domain: agentic-commerce-engine\n"
@@ -58,8 +58,12 @@ msgid "Crawlers"
 msgstr ""
 
 #: admin/views/page-aisearch.php:29
-#: admin/views/page-aisearch.php:220
+#: admin/views/page-aisearch.php:244
 msgid "Runs"
+msgstr ""
+
+#: admin/views/page-aisearch.php:36
+msgid "AI Search sections"
 msgstr ""
 
 #: admin/views/page-aisearch.php:54
@@ -79,6 +83,7 @@ msgid "Track how AI assistants answer questions about your products, which brand
 msgstr ""
 
 #: admin/views/page-aisearch.php:61
+#: admin/views/page-settings.php:398
 msgid "Open Connection"
 msgstr ""
 
@@ -111,6 +116,7 @@ msgid "How often AI answers name each brand"
 msgstr ""
 
 #: admin/views/page-aisearch.php:106
+#: includes/class-assets.php:981
 msgid "Research prompts"
 msgstr ""
 
@@ -132,6 +138,7 @@ msgid "The share of AI answers naming each brand in the latest run. One answer c
 msgstr ""
 
 #: admin/views/page-aisearch.php:130
+#: includes/class-assets.php:982
 msgid "Share of answers by brand"
 msgstr ""
 
@@ -187,89 +194,109 @@ msgstr ""
 msgid "Suggest prompts"
 msgstr ""
 
-#: admin/views/page-aisearch.php:187
-msgid "Append to saved prompts"
+#: admin/views/page-aisearch.php:194
+msgid "Product categories"
 msgstr ""
 
-#: admin/views/page-aisearch.php:191
-msgid "Replace saved prompts"
+#: admin/views/page-aisearch.php:196
+#: includes/class-assets.php:583
+msgid "Hold Ctrl or Cmd to pick more than one. Leave empty to draw from your whole catalog."
 msgstr ""
 
-#: admin/views/page-aisearch.php:193
-msgid "Save prompts"
-msgstr ""
-
-#: admin/views/page-aisearch.php:198
-msgid "AI engines"
-msgstr ""
-
-#: admin/views/page-aisearch.php:200
-msgid "Hold Ctrl or Cmd to pick more than one engine. Leave empty to use the flow defaults."
-msgstr ""
-
-#: admin/views/page-aisearch.php:203
-msgid "Region"
+#: admin/views/page-aisearch.php:199
+#: includes/class-assets.php:690
+msgid "Collections"
 msgstr ""
 
 #: admin/views/page-aisearch.php:207
+msgid "When saving these prompts"
+msgstr ""
+
+#: admin/views/page-aisearch.php:210
+msgid "Append to saved prompts"
+msgstr ""
+
+#: admin/views/page-aisearch.php:214
+msgid "Replace saved prompts"
+msgstr ""
+
+#: admin/views/page-aisearch.php:217
+msgid "Save prompts"
+msgstr ""
+
+#: admin/views/page-aisearch.php:222
+msgid "AI engines"
+msgstr ""
+
+#: admin/views/page-aisearch.php:224
+msgid "Hold Ctrl or Cmd to pick more than one engine. Leave empty to use the flow defaults."
+msgstr ""
+
+#: admin/views/page-aisearch.php:227
+msgid "Region"
+msgstr ""
+
+#: admin/views/page-aisearch.php:231
 #: admin/views/page-content.php:95
 msgid "Language"
 msgstr ""
 
-#: admin/views/page-aisearch.php:213
-msgid "Estimate credits"
-msgstr ""
-
-#: admin/views/page-aisearch.php:214
+#: admin/views/page-aisearch.php:237
 msgid "Launch run"
 msgstr ""
 
-#: admin/views/page-aisearch.php:232
-msgid "AI crawler tracking is currently turned off, so new visits are not being recorded. You can turn it back on under Settings."
-msgstr ""
-
-#: admin/views/page-aisearch.php:237
-#: includes/class-assets.php:453
-msgid "Range"
-msgstr ""
-
 #: admin/views/page-aisearch.php:239
-msgid "Last 7 days"
-msgstr ""
-
-#: admin/views/page-aisearch.php:240
-msgid "Last 30 days"
-msgstr ""
-
-#: admin/views/page-aisearch.php:241
-msgid "Last 90 days"
-msgstr ""
-
-#: admin/views/page-aisearch.php:245
-msgid "Send daily summary to Rezolve Ai"
-msgstr ""
-
-#: admin/views/page-aisearch.php:247
-msgid "Send now"
+msgid "Runs do not use your credits."
 msgstr ""
 
 #: admin/views/page-aisearch.php:256
-msgid "Crawler visits over time"
+msgid "AI crawler tracking is currently turned off, so new visits are not being recorded. You can turn it back on under Settings."
 msgstr ""
 
-#: admin/views/page-aisearch.php:260
-msgid "Hits by crawler"
+#: admin/views/page-aisearch.php:261
+#: includes/class-assets.php:501
+#: includes/class-assets.php:1008
+msgid "Range"
 msgstr ""
 
-#: admin/views/page-aisearch.php:266
-msgid "Most crawled pages"
+#: admin/views/page-aisearch.php:263
+msgid "Last 7 days"
+msgstr ""
+
+#: admin/views/page-aisearch.php:264
+msgid "Last 30 days"
+msgstr ""
+
+#: admin/views/page-aisearch.php:265
+msgid "Last 90 days"
+msgstr ""
+
+#: admin/views/page-aisearch.php:269
+msgid "Send daily summary to Rezolve Ai"
 msgstr ""
 
 #: admin/views/page-aisearch.php:271
+msgid "Send now"
+msgstr ""
+
+#: admin/views/page-aisearch.php:280
+msgid "Crawler visits over time"
+msgstr ""
+
+#: admin/views/page-aisearch.php:284
+msgid "Hits by crawler"
+msgstr ""
+
+#: admin/views/page-aisearch.php:290
+#: includes/class-assets.php:980
+msgid "Most crawled pages"
+msgstr ""
+
+#: admin/views/page-aisearch.php:295
 msgid "Daily activity by crawler"
 msgstr ""
 
-#: admin/views/page-aisearch.php:276
+#: admin/views/page-aisearch.php:300
 msgid "Counts are a lower bound: page caches and CDNs can serve crawlers without reaching WordPress. For privacy, only the date, crawler name, path, and hit count are stored. IP addresses and full user agents are never recorded."
 msgstr ""
 
@@ -323,19 +350,23 @@ msgstr ""
 msgid "New article"
 msgstr ""
 
+#: admin/views/page-content.php:32
+msgid "Content sections"
+msgstr ""
+
 #: admin/views/page-content.php:33
 msgid "Generate"
 msgstr ""
 
 #: admin/views/page-content.php:34
-#: includes/class-assets.php:556
+#: includes/class-assets.php:622
 msgid "Briefs"
 msgstr ""
 
 #: admin/views/page-content.php:35
-#: admin/views/page-content.php:142
-#: includes/class-assets.php:550
-#: includes/class-assets.php:560
+#: admin/views/page-content.php:144
+#: includes/class-assets.php:616
+#: includes/class-assets.php:626
 msgid "Published"
 msgstr ""
 
@@ -344,8 +375,8 @@ msgid "Writing an article is done by a language model on Rezolve Ai servers, so 
 msgstr ""
 
 #: admin/views/page-content.php:52
-#: includes/class-assets.php:590
-#: includes/class-meta.php:129
+#: includes/class-assets.php:658
+#: includes/class-meta.php:146
 msgid "Title"
 msgstr ""
 
@@ -418,7 +449,7 @@ msgid "Starting the writer."
 msgstr ""
 
 #: admin/views/page-content.php:115
-#: includes/class-meta.php:132
+#: includes/class-meta.php:149
 msgid "SEO title"
 msgstr ""
 
@@ -438,156 +469,169 @@ msgstr ""
 msgid "Discard"
 msgstr ""
 
-#: admin/views/page-content.php:136
+#: admin/views/page-content.php:135
+#: includes/class-assets.php:978
+msgid "Project briefs"
+msgstr ""
+
+#: admin/views/page-content.php:137
 msgid "Briefs are stored in your Rezolve Ai project, so this list is empty without an account. Articles already in WordPress are on the Published tab."
 msgstr ""
 
 #: admin/views/page-content.php:140
+msgid "Brief status"
+msgstr ""
+
+#: admin/views/page-content.php:142
 msgid "All statuses"
 msgstr ""
 
-#: admin/views/page-content.php:141
-#: includes/class-assets.php:549
+#: admin/views/page-content.php:143
+#: includes/class-assets.php:615
 msgid "Ready to publish"
 msgstr ""
 
-#: admin/views/page-content.php:144
+#: admin/views/page-content.php:146
+#: admin/views/page-content.php:147
 msgid "Search briefs"
 msgstr ""
 
-#: admin/views/page-content.php:154
+#: admin/views/page-content.php:157
+#: includes/class-assets.php:979
 msgid "Articles in WordPress"
 msgstr ""
 
-#: admin/views/page-dashboard.php:38
+#. translators: %s: the title of a dashboard chart, for example "Optimization coverage".
+#: admin/views/page-dashboard.php:34
+#, php-format
+msgid "About %s"
+msgstr ""
+
+#: admin/views/page-dashboard.php:55
 #, php-format
 msgid "%s product is ready to review."
 msgid_plural "%s products are ready to review."
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/views/page-dashboard.php:43
+#: admin/views/page-dashboard.php:60
 msgid "Review now"
 msgstr ""
 
-#: admin/views/page-dashboard.php:61
+#: admin/views/page-dashboard.php:78
 msgid "Sync now"
 msgstr ""
 
-#: admin/views/page-dashboard.php:62
-#: admin/views/page-products.php:58
+#: admin/views/page-dashboard.php:79
+#: admin/views/page-products.php:61
 msgid "Enrich all"
 msgstr ""
 
-#: admin/views/page-dashboard.php:63
-#: admin/views/page-products.php:57
+#: admin/views/page-dashboard.php:80
+#: admin/views/page-products.php:60
 msgid "Export CSV"
 msgstr ""
 
-#: admin/views/page-dashboard.php:65
+#: admin/views/page-dashboard.php:82
 msgid "Generate an article"
 msgstr ""
 
-#: admin/views/page-dashboard.php:66
+#: admin/views/page-dashboard.php:83
 msgid "Set up AI research"
 msgstr ""
 
-#: admin/views/page-dashboard.php:68
-#: admin/views/page-experiments.php:54
+#: admin/views/page-dashboard.php:85
+#: admin/views/page-experiments.php:55
 msgid "Refresh"
 msgstr ""
 
-#: admin/views/page-dashboard.php:79
+#: admin/views/page-dashboard.php:87
+#: admin/views/page-products.php:76
+msgid "Enrichment progress"
+msgstr ""
+
+#: admin/views/page-dashboard.php:96
 msgid "Optimization coverage"
 msgstr ""
 
-#: admin/views/page-dashboard.php:79
+#: admin/views/page-dashboard.php:96
 msgid "How your catalog breaks down by enrichment status. Click a slice to filter Products."
 msgstr ""
 
-#: admin/views/page-dashboard.php:79
-#: admin/views/page-dashboard.php:83
-#: admin/views/page-dashboard.php:87
-#: admin/views/page-dashboard.php:93
-#: admin/views/page-dashboard.php:105
-#: admin/views/page-dashboard.php:121
-msgid "Help"
-msgstr ""
-
-#: admin/views/page-dashboard.php:83
+#: admin/views/page-dashboard.php:100
 msgid "Quality score distribution"
 msgstr ""
 
-#: admin/views/page-dashboard.php:83
+#: admin/views/page-dashboard.php:100
 msgid "Quality scores measured by Rezolve Ai for products with content waiting for review or applied, grouped from 0 to 100. Products with nothing measured yet are counted as Not scored."
 msgstr ""
 
-#: admin/views/page-dashboard.php:87
+#: admin/views/page-dashboard.php:104
 msgid "Products optimized in the last 14 days"
 msgstr ""
 
-#: admin/views/page-dashboard.php:87
-msgid "Number of products you applied AI content to each day over the last 14 days."
+#: admin/views/page-dashboard.php:104
+msgid "Number of products you applied new content to each day over the last 14 days."
 msgstr ""
 
-#: admin/views/page-dashboard.php:93
+#: admin/views/page-dashboard.php:110
 msgid "AI bot hits, last 7 days"
 msgstr ""
 
-#: admin/views/page-dashboard.php:93
+#: admin/views/page-dashboard.php:110
 msgid "Visits from AI crawlers such as GPTBot, ClaudeBot, and PerplexityBot, tracked natively on this site."
 msgstr ""
 
-#: admin/views/page-dashboard.php:99
+#: admin/views/page-dashboard.php:116
 msgid "See the full crawler breakdown"
 msgstr ""
 
-#: admin/views/page-dashboard.php:105
-#: includes/class-assets.php:398
+#: admin/views/page-dashboard.php:122
+#: includes/class-assets.php:429
 msgid "Credits"
 msgstr ""
 
-#: admin/views/page-dashboard.php:105
+#: admin/views/page-dashboard.php:122
 msgid "Your Rezolve Ai service balance. Generating content for one product or one content type uses about one credit."
 msgstr ""
 
 #. translators: 1: credits used, 2: credit limit.
-#: admin/views/page-dashboard.php:111
-#: includes/class-assets.php:400
+#: admin/views/page-dashboard.php:128
+#: includes/class-assets.php:431
 #, php-format
 msgid "%1$s used of %2$s"
 msgstr ""
 
-#: admin/views/page-dashboard.php:121
-#: includes/class-assets.php:412
+#: admin/views/page-dashboard.php:138
+#: includes/class-assets.php:443
 msgid "Your brand in AI answers"
 msgstr ""
 
-#: admin/views/page-dashboard.php:121
+#: admin/views/page-dashboard.php:138
 msgid "The share of AI answers that name your brand in each AI Search research run."
 msgstr ""
 
-#: admin/views/page-dashboard.php:124
+#: admin/views/page-dashboard.php:141
 msgid "Open AI Search"
 msgstr ""
 
-#: admin/views/page-dashboard.php:133
-#: admin/views/page-dashboard.php:134
-#: admin/views/page-products.php:107
-#: admin/views/page-products.php:108
-#: includes/class-assets.php:254
+#: admin/views/page-dashboard.php:151
+#: admin/views/page-products.php:112
+#: includes/class-assets.php:281
 msgid "Choose what to enrich"
 msgstr ""
 
-#: admin/views/page-dashboard.php:139
-#: admin/views/page-products.php:113
-#: includes/class-assets.php:228
+#: admin/views/page-dashboard.php:156
+#: admin/views/page-products.php:117
+#: admin/views/page-settings.php:200
+#: admin/views/page-settings.php:212
+#: includes/class-assets.php:251
 msgid "Cancel"
 msgstr ""
 
-#: admin/views/page-dashboard.php:140
-#: admin/views/page-products.php:114
-#: includes/class-assets.php:255
+#: admin/views/page-dashboard.php:157
+#: admin/views/page-products.php:118
+#: includes/class-assets.php:282
 msgid "Enrich now"
 msgstr ""
 
@@ -606,158 +650,222 @@ msgid "Experiments"
 msgstr ""
 
 #: admin/views/page-experiments.php:39
+#: admin/views/page-experiments.php:51
+#: includes/class-assets.php:992
 msgid "Your tests"
 msgstr ""
 
 #: admin/views/page-experiments.php:42
+#: admin/views/page-experiments.php:67
 msgid "History"
 msgstr ""
 
 #: admin/views/page-experiments.php:45
+#: admin/views/page-experiments.php:96
 msgid "New experiment"
 msgstr ""
 
-#: admin/views/page-experiments.php:70
+#: admin/views/page-experiments.php:72
 msgid "Search tests by name"
 msgstr ""
 
-#: admin/views/page-experiments.php:76
+#: admin/views/page-experiments.php:78
 msgid "Search by name"
 msgstr ""
 
-#: admin/views/page-experiments.php:87
+#: admin/views/page-experiments.php:89
 msgid "All experiments"
 msgstr ""
 
-#: admin/views/page-experiments.php:97
+#: admin/views/page-experiments.php:100
 msgid "1. What to split"
 msgstr ""
 
-#: admin/views/page-experiments.php:100
+#: admin/views/page-experiments.php:103
 msgid "Split shoppers. Some see one version of your product copy and some see another, and you compare what they bought."
 msgstr ""
 
-#: admin/views/page-experiments.php:104
+#: admin/views/page-experiments.php:107
 msgid "Split products. Some products get the new content and some are held back unchanged, and you compare how they sold."
 msgstr ""
 
-#: admin/views/page-experiments.php:109
+#: admin/views/page-experiments.php:112
 msgid "2. Which products"
 msgstr ""
 
-#: admin/views/page-experiments.php:110
-msgid "Category"
+#: admin/views/page-experiments.php:116
+msgid "Start from a saved group"
 msgstr ""
 
-#: admin/views/page-experiments.php:113
-msgid "A test needs enough products behind it to tell a real change from noise, so pick a whole category rather than a handful."
-msgstr ""
-
-#: admin/views/page-experiments.php:118
-msgid "3. What to test"
+#: admin/views/page-experiments.php:122
+#: includes/class-assets.php:703
+msgid "Every product"
 msgstr ""
 
 #: admin/views/page-experiments.php:128
-msgid "Each piece of content you choose goes live on the products in the test and stays off the ones held back. Test one at a time to measure each on its own: content that goes live together cannot be told apart."
+msgid "Describe them instead"
 msgstr ""
 
-#: admin/views/page-experiments.php:133
-msgid "4. How many versions"
+#: admin/views/page-experiments.php:129
+msgid "Describe the products you want to test"
 msgstr ""
 
-#: admin/views/page-experiments.php:134
-msgid "Versions to write"
+#: admin/views/page-experiments.php:132
+msgid "Find products"
 msgstr ""
 
-#: admin/views/page-experiments.php:136
-msgid "1, your house style against unchanged products"
+#: admin/views/page-experiments.php:138
+msgid "Review and adjust"
 msgstr ""
 
-#: admin/views/page-experiments.php:137
-msgid "2, your copy and one challenger"
-msgstr ""
-
-#: admin/views/page-experiments.php:142
-msgid "Every extra version needs more traffic to reach an answer. This applies to the description and meta tags; other content is written once, in your house style."
+#: admin/views/page-experiments.php:139
+msgid "Search your catalogue to add a product"
 msgstr ""
 
 #: admin/views/page-experiments.php:147
-msgid "5. What to measure"
-msgstr ""
-
 #: admin/views/page-experiments.php:148
-msgid "Goal"
+msgid "Name this group"
 msgstr ""
 
-#: admin/views/page-experiments.php:151
-msgid "Days to run"
+#: admin/views/page-experiments.php:149
+msgid "Save as group"
 msgstr ""
 
-#: admin/views/page-experiments.php:156
-msgid "6. Check and launch"
+#: admin/views/page-experiments.php:154
+msgid "3. What to test"
 msgstr ""
 
-#: admin/views/page-experiments.php:157
-msgid "Name this test"
+#: admin/views/page-experiments.php:164
+msgid "Each piece of content you choose goes live on the products in the test and stays off the ones held back. Test one at a time to measure each on its own: content that goes live together cannot be told apart."
+msgstr ""
+
+#: admin/views/page-experiments.php:169
+msgid "4. How many versions"
+msgstr ""
+
+#: admin/views/page-experiments.php:170
+msgid "Versions to write"
+msgstr ""
+
+#: admin/views/page-experiments.php:172
+msgid "1, your house style against unchanged products"
 msgstr ""
 
 #: admin/views/page-experiments.php:173
-msgid "Lower is better. Fewer versions, or a longer run, both move this line down."
+msgid "2, your copy and one challenger"
 msgstr ""
 
 #: admin/views/page-experiments.php:178
-msgid "Start it anyway, knowing it will take longer than planned"
+msgid "Every extra version needs more traffic to reach an answer. This applies to the description and meta tags; other content is written once, in your house style."
 msgstr ""
 
 #: admin/views/page-experiments.php:183
+msgid "5. What to measure"
+msgstr ""
+
+#: admin/views/page-experiments.php:184
+#: includes/class-assets.php:495
+msgid "Goal"
+msgstr ""
+
+#: admin/views/page-experiments.php:188
+msgid "Days to run"
+msgstr ""
+
+#: admin/views/page-experiments.php:192
+msgid "How many to hold back"
+msgstr ""
+
+#: admin/views/page-experiments.php:195
+msgid "Choose for me"
+msgstr ""
+
+#: admin/views/page-experiments.php:196
+msgid "Half when these products get few visits, a fifth when they get plenty."
+msgstr ""
+
+#: admin/views/page-experiments.php:200
+msgid "Half"
+msgstr ""
+
+#: admin/views/page-experiments.php:201
+msgid "The clearest answer from the same products."
+msgstr ""
+
+#: admin/views/page-experiments.php:205
+msgid "About a fifth"
+msgstr ""
+
+#: admin/views/page-experiments.php:206
+msgid "Keeps more products on the new content while the test runs, and needs more visits to give a clear answer."
+msgstr ""
+
+#: admin/views/page-experiments.php:212
+msgid "6. Check and launch"
+msgstr ""
+
+#: admin/views/page-experiments.php:213
+msgid "Name this test"
+msgstr ""
+
+#: admin/views/page-experiments.php:229
+msgid "Lower is better. Fewer versions, or a longer run, both move this line down."
+msgstr ""
+
+#: admin/views/page-experiments.php:234
+msgid "Start it anyway, knowing it will take longer than planned"
+msgstr ""
+
+#: admin/views/page-experiments.php:239
 msgid "Check this design"
 msgstr ""
 
-#: admin/views/page-experiments.php:186
+#: admin/views/page-experiments.php:242
 msgid "Write the content and launch"
 msgstr ""
 
-#: admin/views/page-experiments.php:191
-msgid "Launching writes the content with AI, which uses credits. Nothing is shown to a visitor until you approve it in Review and it goes live on your site."
+#: admin/views/page-experiments.php:247
+msgid "Launching writes the content, which uses credits. Nothing is shown to a visitor until you approve it in Review and it goes live on your site."
 msgstr ""
 
 #: admin/views/page-products.php:22
-#: includes/class-assets.php:632
+#: includes/class-assets.php:743
+#: includes/class-assets.php:780
 msgid "All"
 msgstr ""
 
 #: admin/views/page-products.php:23
 #: includes/class-admin.php:239
-#: includes/class-assets.php:276
+#: includes/class-assets.php:303
 #: includes/class-dashboard.php:170
 msgid "Not enriched"
 msgstr ""
 
 #: admin/views/page-products.php:24
 #: includes/class-admin.php:232
-#: includes/class-assets.php:271
-#: includes/class-assets.php:546
-#: includes/class-assets.php:568
+#: includes/class-assets.php:298
+#: includes/class-assets.php:612
+#: includes/class-assets.php:635
 #: includes/class-dashboard.php:152
 msgid "Queued"
 msgstr ""
 
 #: admin/views/page-products.php:25
-#: includes/class-assets.php:527
+#: includes/class-assets.php:593
 msgid "Ready"
 msgstr ""
 
 #: admin/views/page-products.php:26
 #: admin/views/page-review.php:25
 #: includes/class-admin.php:234
-#: includes/class-assets.php:273
+#: includes/class-assets.php:300
 #: includes/class-dashboard.php:140
 msgid "Applied"
 msgstr ""
 
 #: admin/views/page-products.php:27
 #: includes/class-admin.php:236
-#: includes/class-assets.php:275
+#: includes/class-assets.php:302
 #: includes/class-dashboard.php:158
 msgid "Failed"
 msgstr ""
@@ -767,72 +875,94 @@ msgid "Filter by enrichment status"
 msgstr ""
 
 #: admin/views/page-products.php:44
-#: admin/views/page-review.php:31
+msgid "Search products by name or SKU"
+msgstr ""
+
+#: admin/views/page-products.php:45
+#: admin/views/page-review.php:32
 msgid "Search by name or SKU"
 msgstr ""
 
 #: admin/views/page-products.php:46
+msgid "Category"
+msgstr ""
+
+#: admin/views/page-products.php:48
 msgid "All categories"
 msgstr ""
 
-#: admin/views/page-products.php:52
+#: admin/views/page-products.php:53
+msgid "Sort by"
+msgstr ""
+
+#: admin/views/page-products.php:55
 msgid "Recently updated"
 msgstr ""
 
-#: admin/views/page-products.php:53
+#: admin/views/page-products.php:56
 msgid "Name (A to Z)"
 msgstr ""
 
-#: admin/views/page-products.php:54
+#: admin/views/page-products.php:57
 msgid "Highest score"
 msgstr ""
 
-#: admin/views/page-products.php:67
+#: admin/views/page-products.php:70
 msgid "Enrich selected"
 msgstr ""
 
-#: admin/views/page-products.php:68
+#: admin/views/page-products.php:71
 msgid "Clear"
 msgstr ""
 
-#: admin/views/page-products.php:83
-msgid "Select all rows on this page"
-msgstr ""
-
 #: admin/views/page-products.php:84
-msgid "Image"
-msgstr ""
-
-#: admin/views/page-products.php:85
-msgid "Product"
-msgstr ""
-
-#: admin/views/page-products.php:86
-msgid "SKU"
+#: includes/class-admin.php:73
+#: includes/class-admin.php:101
+#: includes/class-assets.php:795
+#: includes/class-assets.php:1011
+msgid "Products"
 msgstr ""
 
 #: admin/views/page-products.php:87
-#: includes/class-assets.php:532
-#: includes/class-assets.php:592
-msgid "Status"
+msgid "Select all rows on this page"
 msgstr ""
 
 #: admin/views/page-products.php:88
-msgid "Score"
+#: includes/class-assets.php:975
+msgid "Image"
+msgstr ""
+
+#: admin/views/page-products.php:89
+msgid "Product"
+msgstr ""
+
+#: admin/views/page-products.php:90
+msgid "SKU"
+msgstr ""
+
+#: admin/views/page-products.php:91
+#: includes/class-assets.php:598
+#: includes/class-assets.php:660
+#: includes/class-assets.php:797
+msgid "Status"
 msgstr ""
 
 #: admin/views/page-products.php:92
+msgid "Score"
+msgstr ""
+
+#: admin/views/page-products.php:96
 msgid "Loading products"
 msgstr ""
 
-#: admin/views/page-products.php:98
-#: includes/class-assets.php:585
-#: includes/class-assets.php:649
+#: admin/views/page-products.php:102
+#: includes/class-assets.php:653
+#: includes/class-assets.php:760
 msgid "Previous"
 msgstr ""
 
-#: admin/views/page-products.php:100
-#: includes/class-assets.php:586
+#: admin/views/page-products.php:104
+#: includes/class-assets.php:654
 msgid "Next"
 msgstr ""
 
@@ -841,22 +971,39 @@ msgid "Review queues"
 msgstr ""
 
 #: admin/views/page-review.php:21
-#: includes/class-assets.php:553
+#: includes/class-assets.php:619
 msgid "Pending"
 msgstr ""
 
-#: admin/views/page-review.php:33
+#: admin/views/page-review.php:31
+msgid "Search pending products by name or SKU"
+msgstr ""
+
+#: admin/views/page-review.php:34
 msgid "Approve all"
 msgstr ""
 
+#: admin/views/page-review.php:39
+msgid "Approval progress"
+msgstr ""
+
 #: admin/views/page-review.php:44
-msgid "Loading"
+msgid "Products waiting for review"
 msgstr ""
 
 #: admin/views/page-review.php:46
-#: admin/views/page-review.php:51
-#: includes/class-assets.php:230
+#: includes/class-assets.php:966
+msgid "Loading"
+msgstr ""
+
+#: admin/views/page-review.php:48
+#: admin/views/page-review.php:54
+#: includes/class-assets.php:253
 msgid "Load more"
+msgstr ""
+
+#: admin/views/page-review.php:52
+msgid "Products with applied content"
 msgstr ""
 
 #: admin/views/page-settings.php:37
@@ -900,7 +1047,7 @@ msgid "Send daily crawler totals to my Rezolve Ai project"
 msgstr ""
 
 #: admin/views/page-settings.php:65
-msgid "Optional. When enabled, Rezolve Ai receives one aggregate row per crawler per day (crawler name, date, hit count). No IP addresses, cookies, or personal information ever leave your site. This setting covers crawlers only; visitor pageviews are a separate setting below and are off unless you turn them on."
+msgid "Optional. When enabled, Rezolve Ai receives one aggregate row per crawler per day (crawler name, date, hit count), and the requests of AI agents that sign them, at most 200 a day, so their signatures can be checked. No IP addresses, cookies, or personal information ever leave your site. This setting covers crawlers only; visitor pageviews are a separate setting below and are off unless you turn them on."
 msgstr ""
 
 #: admin/views/page-settings.php:68
@@ -932,7 +1079,7 @@ msgid "Send daily pageview and sales totals to my Rezolve Ai project"
 msgstr ""
 
 #: admin/views/page-settings.php:93
-msgid "Optional, and separate from the crawler setting above. Rezolve Ai receives one row per page per day (page, date, view count, and the referring site for visits from search and AI assistants), and for WooCommerce stores one row per product per day (units and revenue). No order details, customer records, names, email addresses or postal addresses are ever sent."
+msgid "Optional, and separate from the crawler setting above. Rezolve Ai receives one row per page per day (page, date, view count, and the referring site for visits from search and AI assistants), and for WooCommerce stores one row per product per day (units and revenue). Orders that came through a buy link given to a shopping agent are also totalled per day against the reference Rezolve Ai put on that link. No order details, customer records, names, email addresses or postal addresses are ever sent."
 msgstr ""
 
 #: admin/views/page-settings.php:96
@@ -1020,159 +1167,295 @@ msgid "Output Article schema (JSON-LD) on published Rezolve Ai articles"
 msgstr ""
 
 #: admin/views/page-settings.php:170
-msgid "Automation"
+msgid "Custom fields"
 msgstr ""
 
 #: admin/views/page-settings.php:171
-msgid "Keep your catalog and AI content moving without manual clicks."
+msgid "Content you keep outside the main product fields, such as ACF fields, custom fields, attributes, custom tabs and brand, is used as product facts whenever Rezolve Ai writes for a product. Leave out any field you do not want used. Turn on Rewrite for a text field to get improved versions in Review; nothing in your store changes until you approve them."
 msgstr ""
 
-#: admin/views/page-settings.php:175
-msgid "Auto-sync my catalog on a schedule"
+#: admin/views/page-settings.php:172
+msgid "Fields that look private, such as costs, supplier details, keys, passwords, email addresses and phone numbers, are never sent."
 msgstr ""
 
-#: admin/views/page-settings.php:179
-msgid "Frequency"
+#: admin/views/page-settings.php:174
+msgid "Connect your site to see the fields found on your products."
 msgstr ""
 
-#: admin/views/page-settings.php:181
-msgid "Daily"
+#: admin/views/page-settings.php:178
+#: includes/class-assets.php:778
+msgid "Loading your custom fields…"
 msgstr ""
 
-#: admin/views/page-settings.php:182
-msgid "Weekly"
+#: admin/views/page-settings.php:185
+msgid "Field formats"
+msgstr ""
+
+#: admin/views/page-settings.php:186
+msgid "Rezolve Ai learns how your store writes the product description and each custom field from your own products: the parts, their order, the formatting and the length. New content is written the same way, so it reads like the rest of your store. Pick a preset for any field instead, keep the parts you want untouched, and preview a format on one of your products for free."
 msgstr ""
 
 #: admin/views/page-settings.php:188
-msgid "Auto-apply AI suggestions without review"
+msgid "Connect your site to see how your fields are written."
 msgstr ""
 
-#: admin/views/page-settings.php:190
-msgid "When on, AI changes go live on your products automatically. You can still revert any product from the Review screen."
+#: admin/views/page-settings.php:191
+#: includes/class-assets.php:921
+msgid "Loading your field formats…"
 msgstr ""
 
-#: admin/views/page-settings.php:192
-msgid "Scheduled sync and auto-apply send products to Rezolve Ai for enrichment, so they need an account. The schema and product-page options below work on their own."
+#: admin/views/page-settings.php:201
+#: includes/class-assets.php:398
+#: includes/class-assets.php:752
+#: includes/class-assets.php:952
+msgid "Save"
 msgstr ""
 
-#: admin/views/page-settings.php:197
-msgid "Output Product schema (JSON-LD) on product pages"
-msgstr ""
-
-#: admin/views/page-settings.php:202
-msgid "Show IRL scenarios, internal links, highlights and Q&A on the product page automatically"
-msgstr ""
-
-#: admin/views/page-settings.php:204
-msgid "Or place them yourself with the [agencoen_irl], [agencoen_internal_links], [agencoen_highlights] and [agencoen_product_qa] shortcodes, or the Rezolve Ai editor blocks."
-msgstr ""
-
-#: admin/views/page-settings.php:219
-msgid "Below the product description"
-msgstr ""
-
-#: admin/views/page-settings.php:220
-msgid "Above the product description"
-msgstr ""
-
-#: admin/views/page-settings.php:221
-msgid "Bottom of the product page"
+#: admin/views/page-settings.php:213
+msgid "Turn on filling"
 msgstr ""
 
 #: admin/views/page-settings.php:222
-msgid "Wherever I place it myself"
+msgid "Automation"
 msgstr ""
 
 #: admin/views/page-settings.php:223
-msgid "Do not show it on the page"
-msgstr ""
-
-#: admin/views/page-settings.php:226
-#: includes/class-content-types.php:49
-msgid "IRL scenario cards"
+msgid "Keep your catalog and content moving without manual clicks."
 msgstr ""
 
 #: admin/views/page-settings.php:227
-#: includes/class-assets.php:349
-#: includes/class-content-types.php:77
-msgid "Internal links"
+msgid "Auto-sync my catalog on a schedule"
 msgstr ""
 
-#: admin/views/page-settings.php:228
-#: includes/class-assets.php:351
-#: includes/class-content-types.php:98
-#: includes/class-frontend.php:347
-msgid "Highlights"
+#: admin/views/page-settings.php:231
+msgid "Frequency"
 msgstr ""
 
-#: admin/views/page-settings.php:229
-#: includes/class-assets.php:352
+#: admin/views/page-settings.php:233
+msgid "Daily"
+msgstr ""
+
+#: admin/views/page-settings.php:234
+msgid "Weekly"
+msgstr ""
+
+#: admin/views/page-settings.php:240
+msgid "Auto-apply suggestions without review"
+msgstr ""
+
+#: admin/views/page-settings.php:242
+msgid "When on, suggested changes go live on your products automatically. You can still revert any product from the Review screen."
+msgstr ""
+
+#: admin/views/page-settings.php:244
+msgid "Scheduled sync and auto-apply send products to Rezolve Ai for enrichment, so they need an account. The schema and product-page options below work on their own."
+msgstr ""
+
+#: admin/views/page-settings.php:249
+msgid "Output Product schema (JSON-LD) on product pages"
+msgstr ""
+
+#: admin/views/page-settings.php:254
+msgid "Show IRL scenarios, internal links, highlights and Q&A on the product page automatically"
+msgstr ""
+
+#: admin/views/page-settings.php:256
+msgid "Or place them yourself with the [agencoen_irl], [agencoen_internal_links], [agencoen_highlights] and [agencoen_product_qa] shortcodes, or the Rezolve Ai editor blocks."
+msgstr ""
+
+#: admin/views/page-settings.php:272
+msgid "Below the product description"
+msgstr ""
+
+#: admin/views/page-settings.php:273
+msgid "Above the product description"
+msgstr ""
+
+#: admin/views/page-settings.php:274
+msgid "Bottom of the product page"
+msgstr ""
+
+#: admin/views/page-settings.php:275
+msgid "In a product tab"
+msgstr ""
+
+#: admin/views/page-settings.php:276
+msgid "Wherever I place it myself"
+msgstr ""
+
+#: admin/views/page-settings.php:277
+msgid "Do not show it on the page"
+msgstr ""
+
+#: admin/views/page-settings.php:280
+#: includes/class-assets.php:383
 #: includes/class-content-types.php:106
 msgid "Product Q&A"
 msgstr ""
 
+#: admin/views/page-settings.php:281
+#: includes/class-assets.php:382
+#: includes/class-content-types.php:98
+#: includes/class-frontend.php:303
+#: includes/class-frontend.php:432
+msgid "Highlights"
+msgstr ""
+
+#: admin/views/page-settings.php:282
+#: includes/class-content-types.php:49
+msgid "IRL scenario cards"
+msgstr ""
+
+#: admin/views/page-settings.php:283
+#: includes/class-assets.php:380
+#: includes/class-content-types.php:77
+msgid "Internal links"
+msgstr ""
+
+#: admin/views/page-settings.php:284
+msgid "Product specifications"
+msgstr ""
+
+#: admin/views/page-settings.php:289
+msgid "Where content goes"
+msgstr ""
+
+#: admin/views/page-settings.php:291
+msgid "Keep each kind of content in the Rezolve Ai block, send it to one of your own fields, or add it as a section of the product description. A field used here is replaced when content is published, and is no longer read as product information. Revert on the Review screen puts it back. Changes apply to content published from now on."
+msgstr ""
+
+#: admin/views/page-settings.php:294
+msgid "Connect to Rezolve Ai to send content to your own fields or into the description. Until then it stays in the Rezolve Ai block."
+msgstr ""
+
+#: admin/views/page-settings.php:319
+msgid "Rezolve Ai block"
+msgstr ""
+
+#: admin/views/page-settings.php:320
+msgid "Inside the product description, at the end"
+msgstr ""
+
+#: admin/views/page-settings.php:321
+msgid "Inside the product description, at the start"
+msgstr ""
+
+#: admin/views/page-settings.php:326
+#, php-format
+msgid "Field: %s"
+msgstr ""
+
+#: admin/views/page-settings.php:334
+msgid "Where the block sits"
+msgstr ""
+
+#: admin/views/page-settings.php:342
+msgid "Written as WooCommerce product attributes, which your theme shows under Additional information."
+msgstr ""
+
+#: admin/views/page-settings.php:346
+msgid "Section heading (optional)"
+msgstr ""
+
 #. translators: %s: SEO plugin name.
-#: admin/views/page-settings.php:255
+#: admin/views/page-settings.php:358
 #, php-format
 msgid "Detected %s. Rezolve Ai automatically suppresses its schema output when your SEO plugin already emits Product schema, to avoid duplicates."
 msgstr ""
 
-#: admin/views/page-settings.php:269
+#: admin/views/page-settings.php:372
 msgid "No SEO plugin detected. WordPress has no SEO title or meta description field of its own, so Rezolve Ai cannot write those until you install Yoast SEO, Rank Math, or All in One SEO. Everything else Rezolve Ai generates still applies."
 msgstr ""
 
-#: admin/views/page-settings.php:278
-#: includes/class-assets.php:259
+#: admin/views/page-settings.php:391
+msgid "ChatGPT product file"
+msgstr ""
+
+#: admin/views/page-settings.php:392
+msgid "Add in Business Hub"
+msgstr ""
+
+#: admin/views/page-settings.php:394
+msgid "ChatGPT shopping reads your catalog from the ChatGPT product file. In ChatGPT Business Hub, claim your business and verify your identity, then add this file's URL as a hosted URL for your products. ChatGPT reads the whole file from that address, and it always holds your latest enriched catalog, so there is nothing to upload again."
+msgstr ""
+
+#: admin/views/page-settings.php:397
+msgid "Rezolve Ai builds this file from your synced catalog, so it needs a connected site."
+msgstr ""
+
+#: admin/views/page-settings.php:402
+msgid "ChatGPT product file URL"
+msgstr ""
+
+#: admin/views/page-settings.php:405
+msgid "Copy"
+msgstr ""
+
+#: admin/views/page-settings.php:407
+#: includes/class-assets.php:764
+msgid "Reading the URL from Rezolve Ai…"
+msgstr ""
+
+#: admin/views/page-settings.php:410
+msgid "The file also names your privacy policy, terms and conditions, and refund and returns pages. While your site is connected, the plugin sends their public addresses to Rezolve Ai with its regular check in, for pages that are published and have text in them. Their text is never sent."
+msgstr ""
+
+#: admin/views/page-settings.php:415
+#: includes/class-assets.php:286
 msgid "Channel feeds"
 msgstr ""
 
-#: admin/views/page-settings.php:279
+#: admin/views/page-settings.php:416
 msgid "When you enrich products with a channel feed type, Rezolve Ai serves the feed at these URLs."
 msgstr ""
 
-#: admin/views/page-settings.php:282
+#: admin/views/page-settings.php:419
 msgid "Google Merchant"
 msgstr ""
 
-#: admin/views/page-settings.php:283
+#: admin/views/page-settings.php:420
 msgid "Microsoft Bing"
 msgstr ""
 
-#: admin/views/page-settings.php:284
-msgid "Agentic Commerce"
+#: admin/views/page-settings.php:421
+msgid "Agentic Commerce (other AI agents)"
 msgstr ""
 
-#: admin/views/page-settings.php:293
+#: admin/views/page-settings.php:430
+msgid "The Agentic Commerce feed is a JSON feed for other AI shopping agents. ChatGPT does not read it: give ChatGPT Business Hub the ChatGPT product file above."
+msgstr ""
+
+#: admin/views/page-settings.php:431
 msgid "Regenerate feed URLs"
 msgstr ""
 
-#: admin/views/page-settings.php:294
+#: admin/views/page-settings.php:432
 msgid "Each URL carries a private token, so only the channels you give it to can read the feed. Regenerating invalidates the old URLs; update them in Google and Microsoft afterwards."
 msgstr ""
 
-#: admin/views/page-settings.php:300
+#: admin/views/page-settings.php:438
 #: admin/views/partial-empty-state.php:42
 msgid "Advanced"
 msgstr ""
 
-#: admin/views/page-settings.php:301
+#: admin/views/page-settings.php:439
 msgid "Platform endpoint, webhook, and diagnostics."
 msgstr ""
 
-#: admin/views/page-settings.php:304
+#: admin/views/page-settings.php:442
 #: admin/views/partial-empty-state.php:44
 msgid "Platform URL"
 msgstr ""
 
-#: admin/views/page-settings.php:309
+#: admin/views/page-settings.php:447
 msgid "Webhook URL (read-only)"
 msgstr ""
 
-#: admin/views/page-settings.php:315
+#: admin/views/page-settings.php:453
 msgid "Enable debug logging"
 msgstr ""
 
-#: admin/views/page-settings.php:320
+#: admin/views/page-settings.php:458
 msgid "Save settings"
 msgstr ""
 
@@ -1188,13 +1471,13 @@ msgid "The crawler analytics, schema output, and publishing tools you are using 
 msgstr ""
 
 #: admin/views/partial-connect-banner.php:39
-#: admin/views/partial-header.php:47
+#: admin/views/partial-header.php:48
 msgid "Connect"
 msgstr ""
 
 #: admin/views/partial-connect-banner.php:41
 #: admin/views/partial-start-here.php:50
-#: includes/class-assets.php:287
+#: includes/class-assets.php:318
 msgid "Dismiss"
 msgstr ""
 
@@ -1203,7 +1486,7 @@ msgid "Connect your site to Rezolve Ai"
 msgstr ""
 
 #: admin/views/partial-empty-state.php:23
-msgid "Paste your API key from the Rezolve Ai platform to add AI writing and AI search research. The crawler analytics and publishing tools on this site do not use it."
+msgid "Paste your API key from the Rezolve Ai platform to add content writing and AI search research. The crawler analytics and publishing tools on this site do not use it."
 msgstr ""
 
 #: admin/views/partial-empty-state.php:33
@@ -1219,12 +1502,12 @@ msgid "What the Rezolve Ai service adds"
 msgstr ""
 
 #: admin/views/partial-empty-state.php:55
-msgid "AI-written product titles, descriptions, and SEO meta, with a before/after review queue"
+msgid "Product titles, descriptions, and SEO meta written for you, with a before/after review queue"
 msgstr ""
 
 #: admin/views/partial-empty-state.php:56
 #: admin/views/partial-empty-state.php:61
-msgid "AI-drafted articles published straight into WordPress"
+msgid "Articles drafted for you and published straight into WordPress"
 msgstr ""
 
 #: admin/views/partial-empty-state.php:57
@@ -1233,30 +1516,30 @@ msgid "AI search visibility research for your brand and market"
 msgstr ""
 
 #: admin/views/partial-empty-state.php:63
-msgid "AI product content is available when WooCommerce is active"
+msgid "Product content is available when WooCommerce is active"
 msgstr ""
 
 #: admin/views/partial-empty-state.php:67
 msgid "Crawler analytics, Product and Article JSON-LD, the channel feed URLs, and the publishing tools are part of the plugin and stay free either way."
 msgstr ""
 
-#: admin/views/partial-header.php:34
+#: admin/views/partial-header.php:35
 msgid "Rezolve Ai quick links"
 msgstr ""
 
-#: admin/views/partial-header.php:35
+#: admin/views/partial-header.php:36
 msgid "Open Rezolve Ai app"
 msgstr ""
 
-#: admin/views/partial-header.php:36
+#: admin/views/partial-header.php:37
 msgid "Docs"
 msgstr ""
 
-#: admin/views/partial-header.php:40
+#: admin/views/partial-header.php:41
 msgid "Connected"
 msgstr ""
 
-#: admin/views/partial-header.php:46
+#: admin/views/partial-header.php:47
 msgid "Not connected"
 msgstr ""
 
@@ -1277,7 +1560,7 @@ msgid "Sync your product catalog to Rezolve Ai"
 msgstr ""
 
 #: admin/views/partial-requires-woo.php:25
-msgid "Generate AI product content and approve it in a before/after review queue"
+msgid "Generate product content and approve it in a before/after review queue"
 msgstr ""
 
 #: admin/views/partial-requires-woo.php:26
@@ -1363,11 +1646,6 @@ msgstr ""
 msgid "Dashboard"
 msgstr ""
 
-#: includes/class-admin.php:73
-#: includes/class-admin.php:101
-msgid "Products"
-msgstr ""
-
 #: includes/class-admin.php:74
 #: includes/class-admin.php:106
 msgid "Review"
@@ -1395,13 +1673,13 @@ msgid "Connection"
 msgstr ""
 
 #: includes/class-admin.php:233
-#: includes/class-assets.php:272
+#: includes/class-assets.php:299
 #: includes/class-dashboard.php:146
 msgid "Ready to review"
 msgstr ""
 
 #: includes/class-admin.php:235
-#: includes/class-assets.php:274
+#: includes/class-assets.php:301
 #: includes/class-dashboard.php:164
 msgid "Dismissed"
 msgstr ""
@@ -1411,16 +1689,16 @@ msgid "AI Search research is not enabled for this Rezolve Ai deployment."
 msgstr ""
 
 #: includes/class-ajax-aeo.php:108
-#: includes/class-assets.php:517
+#: includes/class-assets.php:585
 msgid "Add at least one prompt (three characters or more, one per line)."
 msgstr ""
 
-#: includes/class-ajax-aeo.php:155
+#: includes/class-ajax-aeo.php:204
 msgid "Missing run id."
 msgstr ""
 
-#: includes/class-ajax-aeo.php:196
-#: includes/class-assets.php:521
+#: includes/class-ajax-aeo.php:232
+#: includes/class-assets.php:589
 msgid "Enter a flow name and your brand name."
 msgstr ""
 
@@ -1429,7 +1707,7 @@ msgid "Permission denied."
 msgstr ""
 
 #: includes/class-ajax-base.php:60
-#: includes/class-bot-tracker.php:293
+#: includes/class-bot-tracker.php:299
 msgid "Connect your site first."
 msgstr ""
 
@@ -1438,7 +1716,7 @@ msgid "This feature needs WooCommerce."
 msgstr ""
 
 #: includes/class-ajax-content.php:64
-#: includes/class-assets.php:574
+#: includes/class-assets.php:642
 msgid "Give the article a title of at least 3 characters."
 msgstr ""
 
@@ -1459,1402 +1737,2543 @@ msgstr ""
 msgid "Could not move this post to the trash."
 msgstr ""
 
-#: includes/class-ajax-experiments.php:84
-#: includes/class-ajax-experiments.php:122
+#: includes/class-ajax-custom-fields.php:132
+#: includes/class-ajax-field-formats.php:205
+msgid "That change was not recognised."
+msgstr ""
+
+#: includes/class-ajax-experiments.php:97
+#: includes/class-ajax-experiments.php:135
 msgid "Which experiment?"
 msgstr ""
 
-#: includes/class-ajax-experiments.php:168
-#: includes/class-ajax-experiments.php:192
+#: includes/class-ajax-experiments.php:208
+msgid "Describe the products first."
+msgstr ""
+
+#: includes/class-ajax-experiments.php:240
+msgid "Name this group."
+msgstr ""
+
+#: includes/class-ajax-experiments.php:261
+msgid "Nothing to delete."
+msgstr ""
+
+#: includes/class-ajax-experiments.php:294
+#: includes/class-ajax-experiments.php:318
 msgid "Give this test a name."
 msgstr ""
 
-#: includes/class-ajax-experiments.php:185
-#: includes/class-ajax-experiments.php:209
+#: includes/class-ajax-experiments.php:311
+#: includes/class-ajax-experiments.php:335
 msgid "Nothing to do."
 msgstr ""
 
-#: includes/class-ajax-experiments.php:255
+#: includes/class-ajax-experiments.php:468
 msgid "Choose something to test."
 msgstr ""
 
-#: includes/class-ajax-experiments.php:265
+#: includes/class-ajax-experiments.php:501
 msgid "No products matched that selection."
 msgstr ""
 
-#: includes/class-ajax.php:79
+#. translators: %d: how many pieces of content one experiment may cover.
+#: includes/class-ajax-experiments.php:591
+#, php-format
+msgid "A test compares every combination, so one experiment covers at most %d pieces of content. Take one out to test this instead."
+msgstr ""
+
+#: includes/class-ajax-field-formats.php:183
+#: includes/class-ajax-field-formats.php:232
+msgid "That field was not recognised."
+msgstr ""
+
+#: includes/class-ajax.php:84
 msgid "Please paste your API key."
 msgstr ""
 
-#: includes/class-ajax.php:201
-#: includes/class-ajax.php:694
-#: includes/class-ajax.php:737
+#: includes/class-ajax.php:206
+#: includes/class-ajax.php:829
+#: includes/class-ajax.php:910
 #: includes/class-enrichment.php:47
 msgid "No products selected."
 msgstr ""
 
-#: includes/class-ajax.php:670
-#: includes/class-assets.php:373
+#: includes/class-ajax.php:419
+#: includes/class-assets.php:767
+msgid "Could not read your ChatGPT product file URL from Rezolve Ai."
+msgstr ""
+
+#: includes/class-ajax.php:554
+msgid "Connect to Rezolve Ai to choose where content goes."
+msgstr ""
+
+#: includes/class-ajax.php:805
+#: includes/class-assets.php:404
 msgid "Some of this needs fixing before it can be saved."
 msgstr ""
 
-#: includes/class-api-client.php:916
+#: includes/class-api-client.php:1216
 msgid "No API key configured. Connect your site first."
 msgstr ""
 
 #. translators: %d: HTTP status code.
-#: includes/class-api-client.php:1054
+#: includes/class-api-client.php:1354
 #, php-format
 msgid "The Rezolve Ai platform returned an error (HTTP %d)."
 msgstr ""
 
-#: includes/class-apply.php:55
+#: includes/class-apply.php:67
 msgid "No pending enrichment to apply."
 msgstr ""
 
-#: includes/class-apply.php:60
-#: includes/class-apply.php:246
-#: includes/class-apply.php:483
-#: includes/class-review.php:322
+#: includes/class-apply.php:72
+#: includes/class-apply.php:300
+#: includes/class-apply.php:568
+#: includes/class-review.php:404
 msgid "Product not found."
 msgstr ""
 
 #. translators: %s: reason the SEO write could not be made.
-#: includes/class-apply.php:121
+#: includes/class-apply.php:146
 #, php-format
 msgid "Nothing was applied: %s."
 msgstr ""
 
 #. translators: %s: reason the SEO write could not be made.
-#: includes/class-apply.php:283
+#: includes/class-apply.php:345
 #, php-format
 msgid "Nothing was saved: %s."
 msgstr ""
 
-#: includes/class-apply.php:293
-#: includes/class-apply.php:300
-#: includes/class-apply.php:316
+#: includes/class-apply.php:359
+#: includes/class-apply.php:370
+#: includes/class-apply.php:394
 msgid "Nothing usable was left to save."
 msgstr ""
 
-#: includes/class-apply.php:342
+#: includes/class-apply.php:420
 msgid "None of these images is on this product any more, so nothing was saved."
 msgstr ""
 
-#: includes/class-apply.php:348
-#: includes/class-edit-values.php:205
-#: includes/class-review.php:319
+#: includes/class-apply.php:426
+#: includes/class-edit-values.php:206
+#: includes/class-review.php:401
 msgid "This content cannot be edited here."
 msgstr ""
 
-#: includes/class-apply.php:478
+#: includes/class-apply.php:563
 msgid "No backup to revert to."
 msgstr ""
 
 #: includes/class-articles.php:183
-#: includes/class-enrichment.php:72
+#: includes/class-enrichment.php:73
 msgid "The platform did not return a job id."
 msgstr ""
 
-#: includes/class-assets.php:226
+#: includes/class-assets.php:249
 msgid "Something went wrong. Please try again."
 msgstr ""
 
-#: includes/class-assets.php:227
+#: includes/class-assets.php:250
 msgid "No data yet"
 msgstr ""
 
-#: includes/class-assets.php:229
+#: includes/class-assets.php:252
 msgid "Done."
 msgstr ""
 
-#: includes/class-assets.php:231
+#: includes/class-assets.php:254
 msgid "Saving…"
 msgstr ""
 
-#: includes/class-assets.php:232
+#: includes/class-assets.php:255
 msgid "Open your Rezolve Ai account"
 msgstr ""
 
-#: includes/class-assets.php:233
+#: includes/class-assets.php:256
 msgid "Expand"
 msgstr ""
 
-#: includes/class-assets.php:234
+#: includes/class-assets.php:257
 msgid "just now"
 msgstr ""
 
-#: includes/class-assets.php:236
+#. translators: %s: number of minutes.
+#: includes/class-assets.php:259
 #, php-format
 msgid "%sm ago"
 msgstr ""
 
-#: includes/class-assets.php:238
+#. translators: %s: number of hours.
+#: includes/class-assets.php:261
 #, php-format
 msgid "%sh ago"
 msgstr ""
 
-#: includes/class-assets.php:240
+#. translators: %s: number of days.
+#: includes/class-assets.php:263
 #, php-format
 msgid "%sd ago"
 msgstr ""
 
-#: includes/class-assets.php:242
+#. translators: 1: number processed, 2: total number.
+#: includes/class-assets.php:265
 #, php-format
 msgid "Processing %1$s of %2$s…"
 msgstr ""
 
-#: includes/class-assets.php:245
+#: includes/class-assets.php:268
 msgid "Connecting…"
 msgstr ""
 
-#: includes/class-assets.php:246
+#: includes/class-assets.php:269
 msgid "Could not connect. Check your API key and try again."
 msgstr ""
 
-#: includes/class-assets.php:247
+#: includes/class-assets.php:270
 msgid "Disconnect this site from Rezolve Ai? Your API key will be removed."
 msgstr ""
 
-#: includes/class-assets.php:250
+#: includes/class-assets.php:273
 msgid "Syncing…"
 msgstr ""
 
-#: includes/class-assets.php:251
+#: includes/class-assets.php:274
 msgid "Sync complete."
 msgstr ""
 
-#: includes/class-assets.php:252
+#: includes/class-assets.php:275
 msgid "Sending to AI…"
 msgstr ""
 
-#: includes/class-assets.php:253
+#: includes/class-assets.php:276
 msgid "Queued for enrichment. Results appear as they finish."
 msgstr ""
 
-#: includes/class-assets.php:256
+#. translators: %s: number of products left out of enrichment.
+#: includes/class-assets.php:280
+#, php-format
+msgid "Queued for enrichment. %s left out: an experiment is measuring them."
+msgstr ""
+
+#: includes/class-assets.php:283
 msgid "Pick at least one content type."
 msgstr ""
 
-#: includes/class-assets.php:257
+#: includes/class-assets.php:284
 msgid "On the product page"
 msgstr ""
 
-#: includes/class-assets.php:258
+#: includes/class-assets.php:285
 msgid "Product data"
 msgstr ""
 
-#: includes/class-assets.php:260
+#: includes/class-assets.php:287
 msgid "Recommended"
 msgstr ""
 
-#: includes/class-assets.php:263
+#: includes/class-assets.php:290
 msgid "No products match."
 msgstr ""
 
-#: includes/class-assets.php:265
+#. translators: %s: number of selected products.
+#. translators: %s: number of selected custom fields.
+#: includes/class-assets.php:292
+#: includes/class-assets.php:788
 #, php-format
 msgid "%s selected"
 msgstr ""
 
-#: includes/class-assets.php:267
+#. translators: %s: number of matching products.
+#: includes/class-assets.php:294
 #, php-format
 msgid "Select all %s matching"
 msgstr ""
 
-#: includes/class-assets.php:268
+#: includes/class-assets.php:295
 msgid "Keep only the checked rows"
 msgstr ""
 
-#: includes/class-assets.php:270
+#. translators: 1: current page, 2: total pages.
+#: includes/class-assets.php:297
 #, php-format
 msgid "Page %1$s of %2$s"
 msgstr ""
 
-#: includes/class-assets.php:279
+#: includes/class-assets.php:306
 msgid "Nothing to review right now."
 msgstr ""
 
-#: includes/class-assets.php:280
+#: includes/class-assets.php:307
 msgid "No applied products yet."
 msgstr ""
 
-#: includes/class-assets.php:281
+#: includes/class-assets.php:308
 msgid "Apply every pending suggestion to your live products?"
 msgstr ""
 
-#: includes/class-assets.php:282
+#: includes/class-assets.php:309
 msgid "Applying…"
 msgstr ""
 
-#: includes/class-assets.php:283
+#: includes/class-assets.php:310
 msgid "Applied to your product."
 msgstr ""
 
-#: includes/class-assets.php:284
+#: includes/class-assets.php:311
+msgid "Held back"
+msgstr ""
+
+#: includes/class-assets.php:312
+msgid "One product was left waiting: an experiment is holding it back. Its row says until when."
+msgstr ""
+
+#. translators: %s: number of products.
+#: includes/class-assets.php:314
+#, php-format
+msgid "%s products were left waiting: an experiment is holding them back. Each row says until when."
+msgstr ""
+
+#: includes/class-assets.php:315
 msgid "Dismissed."
 msgstr ""
 
-#: includes/class-assets.php:285
+#: includes/class-assets.php:316
 msgid "Reverted to the original."
 msgstr ""
 
-#: includes/class-assets.php:286
+#: includes/class-assets.php:317
 msgid "Approve"
 msgstr ""
 
-#: includes/class-assets.php:288
+#: includes/class-assets.php:319
 msgid "Revert to original"
 msgstr ""
 
-#: includes/class-assets.php:289
+#: includes/class-assets.php:320
 msgid "Edit"
 msgstr ""
 
-#: includes/class-assets.php:290
+#: includes/class-assets.php:321
 msgid "Current"
 msgstr ""
 
-#: includes/class-assets.php:291
-msgid "AI suggestion"
+#: includes/class-assets.php:322
+msgid "Proposed"
 msgstr ""
 
-#: includes/class-assets.php:292
+#: includes/class-assets.php:323
 msgid "no change"
 msgstr ""
 
-#: includes/class-assets.php:293
+#: includes/class-assets.php:324
 msgid "(empty)"
 msgstr ""
 
-#: includes/class-assets.php:295
+#. translators: %s: measured quality score for a product, 0 to 100.
+#: includes/class-assets.php:326
 #, php-format
 msgid "Score %s"
 msgstr ""
 
-#: includes/class-assets.php:296
+#: includes/class-assets.php:327
 #: includes/class-dashboard.php:182
 msgid "Not scored"
 msgstr ""
 
-#: includes/class-assets.php:299
+#: includes/class-assets.php:330
 msgid "View live page"
 msgstr ""
 
-#: includes/class-assets.php:301
+#. translators: %s: product name.
+#: includes/class-assets.php:332
 #, php-format
 msgid "View live page for %s (opens in a new tab)"
 msgstr ""
 
-#: includes/class-assets.php:302
+#: includes/class-assets.php:333
 msgid "Product images"
 msgstr ""
 
-#: includes/class-assets.php:303
+#: includes/class-assets.php:334
 msgid "Main image first, then the gallery, each with the alt text it has now."
 msgstr ""
 
-#: includes/class-assets.php:304
+#: includes/class-assets.php:335
 msgid "Main image"
 msgstr ""
 
-#: includes/class-assets.php:305
+#: includes/class-assets.php:336
 msgid "No alt text"
 msgstr ""
 
-#: includes/class-assets.php:306
+#: includes/class-assets.php:337
 msgid "This product has no images."
 msgstr ""
 
-#: includes/class-assets.php:308
+#. translators: 1: position of the image, 2: number of images.
+#: includes/class-assets.php:339
 #, php-format
 msgid "Open image %1$s of %2$s at full size (opens in a new tab)"
 msgstr ""
 
-#: includes/class-assets.php:310
+#. translators: 1: number of images shown, 2: number of images on the product.
+#: includes/class-assets.php:341
 #, php-format
 msgid "Showing the first %1$s of %2$s images."
 msgstr ""
 
-#: includes/class-assets.php:317
+#: includes/class-assets.php:348
 msgid "Quality scores"
 msgstr ""
 
-#: includes/class-assets.php:318
+#: includes/class-assets.php:349
 msgid "Content Quality"
 msgstr ""
 
-#: includes/class-assets.php:319
+#: includes/class-assets.php:350
 msgid "SEO Score"
 msgstr ""
 
-#: includes/class-assets.php:320
+#: includes/class-assets.php:351
 msgid "AI Readability"
 msgstr ""
 
-#: includes/class-assets.php:321
+#: includes/class-assets.php:352
 msgid "Brand Voice"
 msgstr ""
 
-#: includes/class-assets.php:322
+#: includes/class-assets.php:353
 msgid "Excellent"
 msgstr ""
 
-#: includes/class-assets.php:323
+#: includes/class-assets.php:354
 msgid "Very Good"
 msgstr ""
 
-#: includes/class-assets.php:324
+#: includes/class-assets.php:355
 msgid "Good"
 msgstr ""
 
-#: includes/class-assets.php:325
+#: includes/class-assets.php:356
 msgid "Needs Improvement"
 msgstr ""
 
-#: includes/class-assets.php:326
+#: includes/class-assets.php:357
 msgid "No brand voice set"
 msgstr ""
 
-#: includes/class-assets.php:327
+#: includes/class-assets.php:358
 msgid "Not scored yet. Scores usually appear within a few minutes of the content being saved."
 msgstr ""
 
-#: includes/class-assets.php:328
+#: includes/class-assets.php:359
 msgid "This content was edited after it was scored, so these scores may be out of date. A new score is on its way."
 msgstr ""
 
-#: includes/class-assets.php:329
+#: includes/class-assets.php:360
 msgid "These scores were measured under an earlier scoring rubric. An updated score is on its way."
 msgstr ""
 
-#: includes/class-assets.php:331
+#. translators: 1: date the content was scored, 2: overall score, 0 to 100.
+#: includes/class-assets.php:362
 #, php-format
 msgid "Scored %1$s · Overall %2$s"
 msgstr ""
 
-#: includes/class-assets.php:333
+#. translators: %s: date the content was scored.
+#: includes/class-assets.php:364
 #, php-format
 msgid "Scored %s"
 msgstr ""
 
-#: includes/class-assets.php:334
+#: includes/class-assets.php:365
 msgid "Score now"
 msgstr ""
 
-#: includes/class-assets.php:335
+#: includes/class-assets.php:366
 msgid "Re-score now"
 msgstr ""
 
-#: includes/class-assets.php:336
+#: includes/class-assets.php:367
 msgid "Re-score"
 msgstr ""
 
-#: includes/class-assets.php:337
+#: includes/class-assets.php:368
 msgid "Scoring…"
 msgstr ""
 
-#: includes/class-assets.php:338
+#: includes/class-assets.php:369
 msgid "Why these scores"
 msgstr ""
 
-#: includes/class-assets.php:339
+#: includes/class-assets.php:370
 msgid "These scores describe a different version of this content."
 msgstr ""
 
-#: includes/class-assets.php:340
+#: includes/class-assets.php:371
 msgid "Not scored yet. Rezolve Ai has not received this content for review yet, so there is nothing to score. It is sent automatically, usually within the hour."
 msgstr ""
 
-#: includes/class-assets.php:341
+#: includes/class-assets.php:372
 msgid "A new score is being measured. This usually takes under a minute."
 msgstr ""
 
-#: includes/class-assets.php:342
+#: includes/class-assets.php:373
 msgid "The new score is taking longer than usual. It will appear here once it is ready."
 msgstr ""
 
-#: includes/class-assets.php:343
+#: includes/class-assets.php:374
 msgid "Quality scores could not be loaded just now. Try again in a moment."
 msgstr ""
 
-#: includes/class-assets.php:344
+#: includes/class-assets.php:375
 msgid "These are the last scores read from Rezolve Ai. They could not be refreshed just now."
 msgstr ""
 
-#: includes/class-assets.php:345
+#: includes/class-assets.php:376
 msgid "Connect this site to Rezolve Ai to see up to date quality scores."
 msgstr ""
 
-#: includes/class-assets.php:346
+#: includes/class-assets.php:377
 #: includes/class-quality.php:170
 msgid "There is no content on this product to score."
 msgstr ""
 
-#: includes/class-assets.php:348
+#. translators: %s: number of scenarios.
+#: includes/class-assets.php:379
 #, php-format
 msgid "IRL scenarios (%s)"
 msgstr ""
 
-#: includes/class-assets.php:350
+#: includes/class-assets.php:381
 msgid "JSON-LD schema"
 msgstr ""
 
-#: includes/class-assets.php:353
+#: includes/class-assets.php:384
 #: includes/class-content-types.php:114
 msgid "Product attributes"
 msgstr ""
 
-#: includes/class-assets.php:354
+#: includes/class-assets.php:385
 msgid "Will be added"
 msgstr ""
 
-#: includes/class-assets.php:355
+#: includes/class-assets.php:386
 msgid "Already on the product, kept"
 msgstr ""
 
-#: includes/class-assets.php:356
+#: includes/class-assets.php:387
 #: includes/class-content-types.php:122
 msgid "Image alt text"
 msgstr ""
 
-#: includes/class-assets.php:357
+#: includes/class-assets.php:388
 msgid "Will be replaced"
 msgstr ""
 
-#: includes/class-assets.php:358
+#: includes/class-assets.php:389
 msgid "Already matches"
 msgstr ""
 
-#: includes/class-assets.php:359
+#: includes/class-assets.php:390
 msgid "Image no longer on this product, skipped"
 msgstr ""
 
-#: includes/class-assets.php:360
+#: includes/class-assets.php:391
 msgid "Current alt text"
 msgstr ""
 
-#: includes/class-assets.php:361
+#: includes/class-assets.php:392
 msgid "Proposed alt text"
 msgstr ""
 
-#: includes/class-assets.php:363
+#. translators: %s: feed channel key.
+#: includes/class-assets.php:394
 #, php-format
 msgid "%s feed"
 msgstr ""
 
-#: includes/class-assets.php:366
+#: includes/class-assets.php:397
 msgid "Edit live"
 msgstr ""
 
-#: includes/class-assets.php:367
-#: includes/class-assets.php:641
-msgid "Save"
-msgstr ""
-
-#: includes/class-assets.php:368
+#: includes/class-assets.php:399
 msgid "Save and republish"
 msgstr ""
 
-#: includes/class-assets.php:369
+#: includes/class-assets.php:400
 msgid "This is live on your store. Saving republishes it."
 msgstr ""
 
-#: includes/class-assets.php:370
+#: includes/class-assets.php:401
 msgid "Live on your store"
 msgstr ""
 
-#: includes/class-assets.php:371
+#: includes/class-assets.php:402
 msgid "Saved. Approving applies your edited version."
 msgstr ""
 
-#: includes/class-assets.php:372
+#: includes/class-assets.php:403
 msgid "Saved and republished to your store."
 msgstr ""
 
-#: includes/class-assets.php:374
+#: includes/class-assets.php:405
 msgid "This product has edits you have not saved. Continue without them?"
 msgstr ""
 
-#: includes/class-assets.php:375
+#: includes/class-assets.php:406
 msgid "Add a highlight"
 msgstr ""
 
-#: includes/class-assets.php:376
+#: includes/class-assets.php:407
 msgid "Add a question"
 msgstr ""
 
-#: includes/class-assets.php:377
+#: includes/class-assets.php:408
 msgid "Add a specification"
 msgstr ""
 
-#: includes/class-assets.php:378
+#: includes/class-assets.php:409
+#: includes/class-assets.php:872
 msgid "Remove"
 msgstr ""
 
-#: includes/class-assets.php:379
+#: includes/class-assets.php:410
 msgid "Move up"
 msgstr ""
 
-#: includes/class-assets.php:380
+#: includes/class-assets.php:411
 msgid "Move down"
 msgstr ""
 
-#: includes/class-assets.php:381
+#: includes/class-assets.php:412
 msgid "Highlight"
 msgstr ""
 
-#: includes/class-assets.php:382
+#: includes/class-assets.php:413
 msgid "Question"
 msgstr ""
 
-#: includes/class-assets.php:383
+#: includes/class-assets.php:414
 msgid "Answer"
 msgstr ""
 
-#: includes/class-assets.php:384
+#: includes/class-assets.php:415
+#: includes/class-assets.php:1006
 msgid "Name"
 msgstr ""
 
-#: includes/class-assets.php:385
+#: includes/class-assets.php:416
+#: includes/class-assets.php:1005
 msgid "Value"
 msgstr ""
 
-#: includes/class-assets.php:386
+#: includes/class-assets.php:417
 msgid "Alt text for this image"
 msgstr ""
 
-#: includes/class-assets.php:387
+#: includes/class-assets.php:418
 msgid "Leave an image blank to keep its current alt text."
 msgstr ""
 
-#: includes/class-assets.php:388
+#: includes/class-assets.php:419
 msgid "This image is no longer on the product, so its alt text is not written."
 msgstr ""
 
-#: includes/class-assets.php:390
+#. translators: 1: number of characters typed, 2: maximum number of characters.
+#: includes/class-assets.php:421
 #, php-format
 msgid "%1$s of %2$s characters"
 msgstr ""
 
-#: includes/class-assets.php:392
+#. translators: 1: number of characters typed, 2: recommended number of characters.
+#: includes/class-assets.php:423
 #, php-format
 msgid "%1$s characters, %2$s recommended"
 msgstr ""
 
-#: includes/class-assets.php:394
+#. translators: %s: comma separated attribute names.
+#: includes/class-assets.php:425
 #, php-format
 msgid "Kept as they are, because you added them yourself: %s"
 msgstr ""
 
-#: includes/class-assets.php:395
+#: includes/class-assets.php:426
 msgid "On your store"
 msgstr ""
 
-#: includes/class-assets.php:401
+#: includes/class-assets.php:432
 msgid "credits used"
 msgstr ""
 
-#: includes/class-assets.php:402
+#: includes/class-assets.php:433
 msgid "Products optimized"
 msgstr ""
 
-#: includes/class-assets.php:404
+#. translators: 1: optimized count, 2: total products.
+#: includes/class-assets.php:435
 #, php-format
 msgid "%1$s of %2$s products"
 msgstr ""
 
-#: includes/class-assets.php:405
+#: includes/class-assets.php:436
 msgid "Not installed"
 msgstr ""
 
-#: includes/class-assets.php:406
+#: includes/class-assets.php:437
 msgid "Product optimization is available with WooCommerce."
 msgstr ""
 
-#: includes/class-assets.php:407
+#: includes/class-assets.php:438
 msgid "Articles published"
 msgstr ""
 
-#: includes/class-assets.php:409
+#. translators: %s: number of draft articles.
+#: includes/class-assets.php:440
 #, php-format
 msgid "%s drafts waiting"
 msgstr ""
 
-#: includes/class-assets.php:410
+#: includes/class-assets.php:441
 msgid "AI bot hits, 7 days"
 msgstr ""
 
-#: includes/class-assets.php:411
+#: includes/class-assets.php:442
 msgid "vs the prior 7 days"
 msgstr ""
 
-#: includes/class-assets.php:413
+#: includes/class-assets.php:444
 msgid "of AI answers name your brand"
 msgstr ""
 
-#: includes/class-assets.php:414
+#: includes/class-assets.php:445
 msgid "n/a"
 msgstr ""
 
-#: includes/class-assets.php:415
+#: includes/class-assets.php:446
 msgid "Could not be measured for this run."
 msgstr ""
 
-#: includes/class-assets.php:416
+#: includes/class-assets.php:447
 msgid "Not measured yet"
 msgstr ""
 
-#: includes/class-assets.php:417
+#: includes/class-assets.php:448
 msgid "Run AI search research to measure this."
 msgstr ""
 
-#: includes/class-assets.php:418
+#: includes/class-assets.php:449
 msgid "optimized"
 msgstr ""
 
-#: includes/class-assets.php:419
+#: includes/class-assets.php:450
 msgid "Products applied per day"
 msgstr ""
 
-#: includes/class-assets.php:422
+#: includes/class-assets.php:453
 msgid "AI Search research is not set up for this Rezolve Ai account yet. Finish setup in the Rezolve Ai app, then reload this page. The Crawlers tab works either way."
 msgstr ""
 
-#: includes/class-assets.php:423
-msgid "Estimated cost:"
-msgstr ""
-
-#: includes/class-assets.php:435
+#: includes/class-assets.php:465
 msgid "Progress"
 msgstr ""
 
-#: includes/class-assets.php:436
+#: includes/class-assets.php:466
 msgid "Done"
 msgstr ""
 
-#: includes/class-assets.php:437
+#: includes/class-assets.php:467
+#: includes/class-assets.php:939
+#: includes/class-assets.php:958
 msgid "Now"
 msgstr ""
 
-#: includes/class-assets.php:438
+#: includes/class-assets.php:468
 msgid "Needs you"
 msgstr ""
 
-#: includes/class-assets.php:439
+#: includes/class-assets.php:469
 msgid "Later"
 msgstr ""
 
-#: includes/class-assets.php:440
+#: includes/class-assets.php:470
 msgid "How each version is doing"
 msgstr ""
 
-#: includes/class-assets.php:441
+#: includes/class-assets.php:471
 msgid "When will I know?"
 msgstr ""
 
-#: includes/class-assets.php:442
+#: includes/class-assets.php:472
 msgid "Once both versions have been seen by enough shoppers, this shows the range narrowing and projects the day it becomes readable."
 msgstr ""
 
-#: includes/class-assets.php:443
-msgid "Where shoppers drop off"
-msgstr ""
-
-#: includes/class-assets.php:444
-msgid "The basket step is not shown because this site does not report it. Rezolve Ai 4.14.0 and later count it, and it appears here on its own once every version has been seen adding to a basket."
-msgstr ""
-
-#: includes/class-assets.php:445
-msgid "Is this being measured properly?"
-msgstr ""
-
-#: includes/class-assets.php:446
-msgid "shoppers could not be tied to this test because another split was running at the same time, so they are left out rather than guessed at."
-msgstr ""
-
-#: includes/class-assets.php:447
-msgid "What it found"
-msgstr ""
-
-#: includes/class-assets.php:448
-msgid "Nothing has been computed yet. Results are worked out overnight, once there is enough traffic for a comparison to mean anything."
-msgstr ""
-
-#: includes/class-assets.php:449
-msgid "What these words mean"
-msgstr ""
-
-#: includes/class-assets.php:450
-msgid "Version"
-msgstr ""
-
-#: includes/class-assets.php:451
-msgid "versions"
-msgstr ""
-
-#: includes/class-assets.php:452
-#: includes/class-assets.php:646
-msgid "Change"
-msgstr ""
-
-#: includes/class-assets.php:454
-msgid "Reading"
-msgstr ""
-
-#: includes/class-assets.php:455
-msgid "Against your original copy"
-msgstr ""
-
-#: includes/class-assets.php:456
-msgid "likely between"
-msgstr ""
-
-#: includes/class-assets.php:457
-msgid "New content"
-msgstr ""
-
-#: includes/class-assets.php:458
-msgid "Left unchanged"
-msgstr ""
-
-#: includes/class-assets.php:459
-msgid "% live"
-msgstr ""
-
-#: includes/class-assets.php:460
-msgid "This finishes the test and makes the winning version the copy every shopper sees. It cannot be resumed afterwards."
-msgstr ""
-
-#: includes/class-assets.php:461
-msgid "The winning version is on its way to your store."
-msgstr ""
-
-#: includes/class-assets.php:462
-msgid "That did not go through."
-msgstr ""
-
-#: includes/class-assets.php:466
-msgid "vs previous period"
-msgstr ""
-
-#: includes/class-assets.php:467
-msgid "Crawler hits"
-msgstr ""
-
-#: includes/class-assets.php:468
-msgid "Active crawlers"
-msgstr ""
-
-#: includes/class-assets.php:469
-msgid "Top crawler"
-msgstr ""
-
-#: includes/class-assets.php:470
-msgid "None yet"
-msgstr ""
-
-#: includes/class-assets.php:471
-msgid "Days with activity"
-msgstr ""
-
-#: includes/class-assets.php:472
-msgid "Other"
-msgstr ""
-
 #: includes/class-assets.php:473
-msgid "No crawler visits recorded yet. Data appears as soon as an AI crawler hits your site."
+msgid "This test compares the products with new content against the held-back products, so it is read once its planned days are done rather than as shoppers arrive. There is no range to draw while it runs."
 msgstr ""
 
 #: includes/class-assets.php:474
-#: includes/class-assets.php:650
-msgid "Page"
+msgid "Products were put into the two groups at random when the test was set up, so there is no shopper split to check. Every shopper sees the same content on a given product."
 msgstr ""
 
 #: includes/class-assets.php:475
-msgid "Hits"
+msgid "This test is closed"
 msgstr ""
 
 #: includes/class-assets.php:476
-msgid "Last seen"
+msgid "Not counting yet"
 msgstr ""
 
 #: includes/class-assets.php:477
-#: includes/class-assets.php:642
-msgid "Saved."
+msgid "Nothing to estimate yet"
 msgstr ""
 
 #: includes/class-assets.php:478
-msgid "Crawler summary sent to Rezolve Ai."
+msgid "The planned days are done"
 msgstr ""
 
 #: includes/class-assets.php:479
-msgid "vs previous run"
+msgid "About 1 day to go"
 msgstr ""
 
-#: includes/class-assets.php:480
-msgid "Answers naming any brand"
-msgstr ""
-
+#. translators: %s: number of days left in the test.
 #: includes/class-assets.php:481
-msgid "How often answers recommend a brand at all."
+#, php-format
+msgid "About %s days to go"
 msgstr ""
 
 #: includes/class-assets.php:482
-msgid "Any brand"
+msgid "Where shoppers drop off"
+msgstr ""
+
+#: includes/class-assets.php:483
+msgid "The basket step is not shown because this site does not report it. Rezolve Ai 4.14.0 and later count it, and it appears here on its own once every version has been seen adding to a basket."
 msgstr ""
 
 #: includes/class-assets.php:484
+msgid "Is this being measured properly?"
+msgstr ""
+
+#: includes/class-assets.php:485
+msgid "shoppers could not be tied to this test because another split was running at the same time, so they are left out rather than guessed at."
+msgstr ""
+
+#: includes/class-assets.php:486
+msgid "What it found"
+msgstr ""
+
+#: includes/class-assets.php:487
+msgid "Nothing has been computed yet. Results are worked out overnight, once there is enough traffic for a comparison to mean anything."
+msgstr ""
+
+#: includes/class-assets.php:488
+msgid "What these words mean"
+msgstr ""
+
+#: includes/class-assets.php:489
+msgid "Also measure"
+msgstr ""
+
+#: includes/class-assets.php:490
+msgid "Read out beside the main goal, on the same products and the same days. Shown on the experiment page, and never what decides the result."
+msgstr ""
+
+#: includes/class-assets.php:491
+msgid "Shown for each version on the experiment page, and never what decides the result."
+msgstr ""
+
+#: includes/class-assets.php:492
+msgid "Also measured"
+msgstr ""
+
+#: includes/class-assets.php:493
+msgid "The other goals you asked to watch, on the same products and the same days. They do not decide the result above."
+msgstr ""
+
+#: includes/class-assets.php:494
+msgid "These could not be read just now. Reload the page to try again."
+msgstr ""
+
+#: includes/class-assets.php:496
+msgid "Range or reason"
+msgstr ""
+
+#: includes/class-assets.php:497
+msgid "No figure"
+msgstr ""
+
+#: includes/class-assets.php:498
+msgid "Version"
+msgstr ""
+
+#: includes/class-assets.php:499
+msgid "versions"
+msgstr ""
+
+#: includes/class-assets.php:500
+#: includes/class-assets.php:757
+#: includes/class-assets.php:884
+msgid "Change"
+msgstr ""
+
+#: includes/class-assets.php:502
+msgid "Reading"
+msgstr ""
+
+#: includes/class-assets.php:503
+msgid "Against your original copy"
+msgstr ""
+
+#: includes/class-assets.php:504
+msgid "likely between"
+msgstr ""
+
+#: includes/class-assets.php:505
+msgid "New content"
+msgstr ""
+
+#: includes/class-assets.php:506
+msgid "Left unchanged"
+msgstr ""
+
+#. translators: %s: what the chart counts, mid-sentence, e.g. "visits" or "shopping impressions".
+#: includes/class-assets.php:508
+#, php-format
+msgid "Average %s per product, in each group"
+msgstr ""
+
+#: includes/class-assets.php:509
+msgid "Visits"
+msgstr ""
+
+#: includes/class-assets.php:510
+msgid "Total visits to each group"
+msgstr ""
+
+#. translators: %s: what the chart counts, e.g. "Visits" or "Shopping impressions".
+#: includes/class-assets.php:512
+#, php-format
+msgid "%s in each group, averaged per product so the two groups compare fairly."
+msgstr ""
+
+#. translators: %s: the day the test started, e.g. "28 Oct".
+#: includes/class-assets.php:514
+#, php-format
+msgid "The test started on %s."
+msgstr ""
+
+#: includes/class-assets.php:515
+msgid "Every day on this chart so far is from before it, when both groups still had the same content. That is the baseline the test is measured against. Days with the new content appear here as they are counted, about a day behind."
+msgstr ""
+
+#: includes/class-assets.php:516
+msgid "Shaded days are from before the test, when both groups had the same content."
+msgstr ""
+
+#. translators: %s: the day the test started, e.g. "28 Oct".
+#: includes/class-assets.php:518
+#, php-format
+msgid "From %s, one group has the new content."
+msgstr ""
+
+#: includes/class-assets.php:519
+msgid "Watch whether the gap between the lines changes after that day. A gap that was already there before the test is not a result."
+msgstr ""
+
+#: includes/class-assets.php:520
+msgid "Before the test"
+msgstr ""
+
+#: includes/class-assets.php:521
+msgid "Test running"
+msgstr ""
+
+#: includes/class-assets.php:522
+msgid "1 product"
+msgstr ""
+
+#. translators: %s: a number of products.
+#. translators: %s: a number of products
+#: includes/class-assets.php:524
+#: includes/class-assets.php:947
+#, php-format
+msgid "%s products"
+msgstr ""
+
+#: includes/class-assets.php:525
+msgid "% live"
+msgstr ""
+
+#: includes/class-assets.php:526
+msgid "This finishes the test and makes the winning version the copy every shopper sees. It cannot be resumed afterwards."
+msgstr ""
+
+#: includes/class-assets.php:527
+msgid "The winning version is on its way to your store."
+msgstr ""
+
+#: includes/class-assets.php:528
+msgid "That did not go through."
+msgstr ""
+
+#: includes/class-assets.php:532
+msgid "vs previous period"
+msgstr ""
+
+#: includes/class-assets.php:533
+msgid "Crawler hits"
+msgstr ""
+
+#: includes/class-assets.php:534
+msgid "Active crawlers"
+msgstr ""
+
+#: includes/class-assets.php:535
+msgid "Top crawler"
+msgstr ""
+
+#: includes/class-assets.php:536
+msgid "None yet"
+msgstr ""
+
+#: includes/class-assets.php:537
+msgid "Days with activity"
+msgstr ""
+
+#: includes/class-assets.php:538
+msgid "Other"
+msgstr ""
+
+#: includes/class-assets.php:539
+msgid "No crawler visits recorded yet. Data appears as soon as an AI crawler hits your site."
+msgstr ""
+
+#: includes/class-assets.php:540
+#: includes/class-assets.php:761
+msgid "Page"
+msgstr ""
+
+#: includes/class-assets.php:541
+msgid "Hits"
+msgstr ""
+
+#: includes/class-assets.php:542
+msgid "Last seen"
+msgstr ""
+
+#: includes/class-assets.php:543
+#: includes/class-assets.php:707
+#: includes/class-assets.php:753
+msgid "Saved."
+msgstr ""
+
+#: includes/class-assets.php:544
+msgid "Crawler summary sent to Rezolve Ai."
+msgstr ""
+
+#: includes/class-assets.php:545
+msgid "vs previous run"
+msgstr ""
+
+#: includes/class-assets.php:546
+msgid "Answers naming any brand"
+msgstr ""
+
+#: includes/class-assets.php:547
+msgid "How often answers recommend a brand at all."
+msgstr ""
+
+#: includes/class-assets.php:548
+msgid "Any brand"
+msgstr ""
+
+#. translators: 1: answers naming your brand, 2: answers analysed.
+#: includes/class-assets.php:550
 #, php-format
 msgid "Named in %1$s of %2$s answers."
 msgstr ""
 
-#: includes/class-assets.php:485
+#: includes/class-assets.php:551
 msgid "Your rank"
 msgstr ""
 
-#: includes/class-assets.php:487
+#. translators: %1$s: number of brands named in AI answers.
+#: includes/class-assets.php:553
 #, php-format
 msgid "Among %1$s brands named in answers."
 msgstr ""
 
-#: includes/class-assets.php:488
+#: includes/class-assets.php:554
 msgid "Not named"
 msgstr ""
 
-#: includes/class-assets.php:490
+#. translators: %1$s: number of other brands named in AI answers.
+#: includes/class-assets.php:556
 #, php-format
 msgid "%1$s other brands were named instead."
 msgstr ""
 
-#: includes/class-assets.php:491
+#: includes/class-assets.php:557
 msgid "No brand was named in these answers."
 msgstr ""
 
-#: includes/class-assets.php:492
+#: includes/class-assets.php:558
 msgid "Your brand was not among the brands listed for this run."
 msgstr ""
 
-#: includes/class-assets.php:494
+#. translators: %1$s: the brand names being matched, each in quotes.
+#: includes/class-assets.php:560
 #, php-format
 msgid "Answers are matched against %1$s. If shoppers know your brand by a shorter name, answers that use it are not counted."
 msgstr ""
 
-#: includes/class-assets.php:495
+#: includes/class-assets.php:561
 msgid "The trend line appears after your second completed run."
 msgstr ""
 
-#: includes/class-assets.php:496
+#: includes/class-assets.php:562
 msgid "Your brand could not be measured in enough runs to draw a line."
 msgstr ""
 
-#: includes/class-assets.php:497
+#: includes/class-assets.php:563
 msgid "Some runs asked different AI engines, so their points are not strictly comparable."
 msgstr ""
 
-#: includes/class-assets.php:499
+#. translators: %1$s: number of citations of this site.
+#: includes/class-assets.php:565
 #, php-format
 msgid "Your site is highlighted: cited %1$s times."
 msgstr ""
 
-#: includes/class-assets.php:500
+#: includes/class-assets.php:566
 msgid "Your site was not cited in the latest run."
 msgstr ""
 
-#: includes/class-assets.php:502
+#. translators: %1$s: how many of the most-cited domains are kept.
+#: includes/class-assets.php:568
 #, php-format
 msgid "Your site was not among the %1$s most-cited domains."
 msgstr ""
 
-#: includes/class-assets.php:503
+#: includes/class-assets.php:569
 msgid "AI responses"
 msgstr ""
 
-#: includes/class-assets.php:504
+#: includes/class-assets.php:570
 msgid "Latest run"
 msgstr ""
 
-#: includes/class-assets.php:505
+#: includes/class-assets.php:571
 msgid "No prompts match your filter."
 msgstr ""
 
-#: includes/class-assets.php:506
+#: includes/class-assets.php:572
 msgid "No prompts saved yet. Add prompts from the Runs tab."
 msgstr ""
 
-#: includes/class-assets.php:507
+#: includes/class-assets.php:573
 msgid "Prompt"
 msgstr ""
 
-#: includes/class-assets.php:508
+#: includes/class-assets.php:574
+#: includes/class-assets.php:693
 msgid "Tags"
 msgstr ""
 
-#: includes/class-assets.php:509
+#: includes/class-assets.php:575
 msgid "No entity data yet. Launch a research run from the Runs tab first."
 msgstr ""
 
-#: includes/class-assets.php:510
+#: includes/class-assets.php:576
+#: includes/class-assets.php:692
+#: includes/class-custom-fields.php:798
 msgid "Brand"
 msgstr ""
 
-#: includes/class-assets.php:511
+#: includes/class-assets.php:577
 msgid "Share of answers"
 msgstr ""
 
-#: includes/class-assets.php:512
+#: includes/class-assets.php:578
 msgid "Your brand"
 msgstr ""
 
-#: includes/class-assets.php:513
+#: includes/class-assets.php:579
 msgid "prompts saved on your research flow."
 msgstr ""
 
-#: includes/class-assets.php:514
+#: includes/class-assets.php:580
 msgid "Flow default"
 msgstr ""
 
-#: includes/class-assets.php:515
+#: includes/class-assets.php:581
 msgid "No suggestions came back. Try adding a topic."
 msgstr ""
 
-#: includes/class-assets.php:516
+#: includes/class-assets.php:582
 msgid "suggested prompts added to the editor."
 msgstr ""
 
-#: includes/class-assets.php:518
+#: includes/class-assets.php:584
+msgid "Sync your catalog to filter by collection."
+msgstr ""
+
+#: includes/class-assets.php:586
 msgid "Replace all saved prompts with the lines in the editor?"
 msgstr ""
 
-#: includes/class-assets.php:519
+#: includes/class-assets.php:587
 msgid "Prompts saved."
 msgstr ""
 
-#: includes/class-assets.php:520
+#: includes/class-assets.php:588
 msgid "Run launched. Results usually arrive within a few minutes."
 msgstr ""
 
-#: includes/class-assets.php:522
+#: includes/class-assets.php:590
 msgid "Research flow created."
 msgstr ""
 
-#: includes/class-assets.php:523
-msgid "Estimate:"
-msgstr ""
-
-#: includes/class-assets.php:524
-msgid "The estimate came back empty. You can launch the run directly."
-msgstr ""
-
-#: includes/class-assets.php:525
+#: includes/class-assets.php:591
 msgid "Completed"
 msgstr ""
 
-#: includes/class-assets.php:526
-#: includes/class-assets.php:584
+#: includes/class-assets.php:592
+#: includes/class-assets.php:652
 msgid "Unknown"
 msgstr ""
 
-#: includes/class-assets.php:528
+#: includes/class-assets.php:594
 msgid "Building"
 msgstr ""
 
-#: includes/class-assets.php:529
+#: includes/class-assets.php:595
 msgid "After run"
 msgstr ""
 
-#: includes/class-assets.php:530
+#: includes/class-assets.php:596
 msgid "No research runs yet. Configure your prompts above and launch the first run."
 msgstr ""
 
-#: includes/class-assets.php:531
+#: includes/class-assets.php:597
 msgid "Run"
 msgstr ""
 
-#: includes/class-assets.php:533
+#: includes/class-assets.php:599
 msgid "Started"
 msgstr ""
 
-#: includes/class-assets.php:534
+#: includes/class-assets.php:600
 msgid "Ended"
 msgstr ""
 
-#: includes/class-assets.php:535
+#: includes/class-assets.php:601
 msgid "Results"
 msgstr ""
 
-#: includes/class-assets.php:536
-#: includes/class-assets.php:594
+#: includes/class-assets.php:602
+#: includes/class-assets.php:662
 msgid "View"
 msgstr ""
 
-#: includes/class-assets.php:537
+#: includes/class-assets.php:603
 msgid "The results snapshot is still building. Check back in a minute."
 msgstr ""
 
-#: includes/class-assets.php:538
+#: includes/class-assets.php:604
 msgid "No per prompt results are available for this run yet."
 msgstr ""
 
-#: includes/class-assets.php:539
+#: includes/class-assets.php:605
 msgid "Engine"
 msgstr ""
 
-#: includes/class-assets.php:540
+#: includes/class-assets.php:606
 msgid "Citations"
 msgstr ""
 
-#: includes/class-assets.php:541
+#: includes/class-assets.php:607
 msgid "Top entities"
 msgstr ""
 
-#: includes/class-assets.php:542
+#: includes/class-assets.php:608
 msgid "Mentioned"
 msgstr ""
 
-#: includes/class-assets.php:543
+#: includes/class-assets.php:609
 msgid "Not mentioned"
 msgstr ""
 
-#: includes/class-assets.php:547
+#: includes/class-assets.php:613
 msgid "Generating"
 msgstr ""
 
-#: includes/class-assets.php:548
+#: includes/class-assets.php:614
 msgid "With editor"
 msgstr ""
 
-#: includes/class-assets.php:551
+#: includes/class-assets.php:617
 msgid "Live"
 msgstr ""
 
-#: includes/class-assets.php:552
+#: includes/class-assets.php:618
 msgid "Draft"
 msgstr ""
 
-#: includes/class-assets.php:554
+#: includes/class-assets.php:620
 msgid "Scheduled"
 msgstr ""
 
-#: includes/class-assets.php:555
+#: includes/class-assets.php:621
 msgid "Private"
 msgstr ""
 
-#: includes/class-assets.php:557
+#: includes/class-assets.php:623
 msgid "In your Rezolve Ai project"
 msgstr ""
 
-#: includes/class-assets.php:558
+#: includes/class-assets.php:624
 msgid "WP drafts"
 msgstr ""
 
-#: includes/class-assets.php:559
+#: includes/class-assets.php:625
 msgid "Waiting to go live"
 msgstr ""
 
-#: includes/class-assets.php:561
+#: includes/class-assets.php:627
 msgid "Live on this site"
 msgstr ""
 
-#: includes/class-assets.php:562
+#: includes/class-assets.php:628
 msgid "Add a brand voice in Rezolve Ai"
 msgstr ""
 
-#: includes/class-assets.php:563
+#. translators: %s: brand voice name.
+#: includes/class-assets.php:630
 #, php-format
 msgid "Writing as %s."
 msgstr ""
 
-#: includes/class-assets.php:564
+#: includes/class-assets.php:631
 msgid "Built in"
 msgstr ""
 
-#: includes/class-assets.php:565
+#: includes/class-assets.php:632
 msgid "Presets"
 msgstr ""
 
-#: includes/class-assets.php:566
+#: includes/class-assets.php:633
 msgid "Custom"
 msgstr ""
 
-#: includes/class-assets.php:567
+#: includes/class-assets.php:634
 msgid "Standard article"
 msgstr ""
 
-#: includes/class-assets.php:569
+#: includes/class-assets.php:636
 msgid "Working"
 msgstr ""
 
-#: includes/class-assets.php:570
+#. translators: %s: number of words in the article.
+#: includes/class-assets.php:638
 #, php-format
 msgid "%s words"
 msgstr ""
 
-#: includes/class-assets.php:571
+#: includes/class-assets.php:639
+#: includes/class-assets.php:704
 msgid "None"
 msgstr ""
 
-#: includes/class-assets.php:572
+#: includes/class-assets.php:640
 msgid "Article ready"
 msgstr ""
 
-#: includes/class-assets.php:573
+#: includes/class-assets.php:641
 msgid "Generation failed. Please try again."
 msgstr ""
 
-#: includes/class-assets.php:575
+#: includes/class-assets.php:643
 msgid "Writing has started. This usually takes a minute or two."
 msgstr ""
 
-#: includes/class-assets.php:576
+#: includes/class-assets.php:644
 msgid "Could not start the article."
 msgstr ""
 
-#: includes/class-assets.php:577
+#: includes/class-assets.php:645
 msgid "Published. The article is live."
 msgstr ""
 
-#: includes/class-assets.php:578
+#: includes/class-assets.php:646
 msgid "Draft created."
 msgstr ""
 
-#: includes/class-assets.php:579
+#: includes/class-assets.php:647
 msgid "View the live article"
 msgstr ""
 
-#: includes/class-assets.php:580
+#: includes/class-assets.php:648
 msgid "Could not publish the article."
 msgstr ""
 
-#: includes/class-assets.php:581
+#: includes/class-assets.php:649
 msgid "Move this draft to the trash?"
 msgstr ""
 
-#: includes/class-assets.php:582
+#: includes/class-assets.php:650
 msgid "Draft moved to the trash."
 msgstr ""
 
-#: includes/class-assets.php:583
+#: includes/class-assets.php:651
 msgid "Could not discard the draft."
 msgstr ""
 
-#: includes/class-assets.php:587
+#: includes/class-assets.php:655
 msgid "No briefs yet. Generate your first article to get started."
 msgstr ""
 
-#: includes/class-assets.php:588
+#: includes/class-assets.php:656
 msgid "Publish"
 msgstr ""
 
-#: includes/class-assets.php:589
+#: includes/class-assets.php:657
 msgid "Create draft"
 msgstr ""
 
-#: includes/class-assets.php:591
+#: includes/class-assets.php:659
 msgid "Type"
 msgstr ""
 
-#: includes/class-assets.php:593
+#: includes/class-assets.php:661
 msgid "Updated"
 msgstr ""
 
-#: includes/class-assets.php:595
+#: includes/class-assets.php:663
 msgid "Could not load briefs."
 msgstr ""
 
-#: includes/class-assets.php:596
+#: includes/class-assets.php:664
 msgid "No Rezolve Ai articles in WordPress yet. Generated drafts will appear here."
 msgstr ""
 
-#: includes/class-assets.php:597
+#: includes/class-assets.php:665
+#: includes/class-assets.php:1004
 msgid "Date"
 msgstr ""
 
-#: includes/class-assets.php:598
+#: includes/class-assets.php:666
 msgid "Republish latest"
 msgstr ""
 
-#: includes/class-assets.php:599
+#: includes/class-assets.php:667
 msgid "Could not load articles."
 msgstr ""
 
-#: includes/class-assets.php:600
+#: includes/class-assets.php:668
 msgid "Updated with the latest version from Rezolve Ai."
 msgstr ""
 
-#: includes/class-assets.php:601
+#: includes/class-assets.php:669
 msgid "Draft updated with the latest version."
 msgstr ""
 
-#: includes/class-assets.php:604
+#: includes/class-assets.php:672
 msgid "and"
 msgstr ""
 
-#: includes/class-assets.php:605
+#: includes/class-assets.php:673
 msgid "of"
 msgstr ""
 
-#: includes/class-assets.php:606
+#: includes/class-assets.php:674
 msgid "products have a second version live"
 msgstr ""
 
-#: includes/class-assets.php:608
+#: includes/class-assets.php:675
+msgid "products have their new content live"
+msgstr ""
+
+#: includes/class-assets.php:677
 msgid "What each version is worth"
 msgstr ""
 
-#: includes/class-assets.php:609
+#: includes/class-assets.php:678
 msgid "Revenue divided by shoppers, counted from your own store. Only shown because real order values were reported."
 msgstr ""
 
-#: includes/class-assets.php:610
+#: includes/class-assets.php:679
+#: includes/class-assets.php:712
 msgid "About"
 msgstr ""
 
-#: includes/class-assets.php:611
+#: includes/class-assets.php:680
 msgid "a year if you keep the winner"
 msgstr ""
 
-#: includes/class-assets.php:612
+#: includes/class-assets.php:681
 msgid "Shoppers"
 msgstr ""
 
-#: includes/class-assets.php:613
+#: includes/class-assets.php:682
 msgid "Revenue"
 msgstr ""
 
-#: includes/class-assets.php:614
+#: includes/class-assets.php:683
 msgid "Per shopper"
 msgstr ""
 
-#: includes/class-assets.php:615
+#: includes/class-assets.php:684
 msgid "Could not check that design."
 msgstr ""
 
-#: includes/class-assets.php:616
+#: includes/class-assets.php:685
 msgid "This design cannot be checked yet"
 msgstr ""
 
-#: includes/class-assets.php:617
+#: includes/class-assets.php:686
 msgid "Could not load what can be tested"
 msgstr ""
 
-#: includes/class-assets.php:620
+#: includes/class-assets.php:689
+msgid "Categories"
+msgstr ""
+
+#: includes/class-assets.php:691
+msgid "Product type"
+msgstr ""
+
+#: includes/class-assets.php:700
+msgid "This catalogue records none of these."
+msgstr ""
+
+#: includes/class-assets.php:701
+msgid "Nothing stored yet. These appear once your catalogue has been read."
+msgstr ""
+
+#: includes/class-assets.php:702
+msgid "Could not read your catalogue filters."
+msgstr ""
+
+#: includes/class-assets.php:705
+msgid "products as of"
+msgstr ""
+
+#: includes/class-assets.php:706
+msgid "not counted yet"
+msgstr ""
+
+#: includes/class-assets.php:708
+msgid "Could not save that group."
+msgstr ""
+
+#: includes/class-assets.php:709
+msgid "No products chosen yet."
+msgstr ""
+
+#: includes/class-assets.php:710
+msgid "Could not count these products."
+msgstr ""
+
+#: includes/class-assets.php:711
+msgid "Fixed when you start the test. Products added to these filters later will not join it."
+msgstr ""
+
+#. translators: 1: products held back at a fifth, 2: products held back at half.
+#: includes/class-assets.php:714
+#, php-format
+msgid "Between about %1$s and %2$s of them will be held back unchanged as the control group, depending on how many you choose to hold back."
+msgstr ""
+
+#: includes/class-assets.php:715
+msgid "of them will be held back unchanged as the control group."
+msgstr ""
+
+#: includes/class-assets.php:716
+msgid "That is too few for a control group."
+msgstr ""
+
+#: includes/class-assets.php:717
+msgid "A product split needs about"
+msgstr ""
+
+#: includes/class-assets.php:718
+msgid "products."
+msgstr ""
+
+#: includes/class-assets.php:719
+msgid "Looking through your catalogue..."
+msgstr ""
+
+#: includes/class-assets.php:720
+msgid "Nothing matched that."
+msgstr ""
+
+#: includes/class-assets.php:721
+msgid "That is smaller than a test usually needs. Take it, and the design check will have the last word."
+msgstr ""
+
+#: includes/class-assets.php:722
+msgid "Use these products"
+msgstr ""
+
+#: includes/class-assets.php:723
+msgid "Using the products you picked."
+msgstr ""
+
+#: includes/class-assets.php:724
+msgid "Could not suggest products just now."
+msgstr ""
+
+#: includes/class-assets.php:725
+msgid "That took longer than expected. Try a shorter description, or pick by category instead."
+msgstr ""
+
+#: includes/class-assets.php:726
+msgid "Search to add a product the filters missed."
+msgstr ""
+
+#: includes/class-assets.php:727
+msgid "Nothing matched that search."
+msgstr ""
+
+#: includes/class-assets.php:728
+msgid "Could not search products."
+msgstr ""
+
+#: includes/class-assets.php:731
 msgid "What testing has been worth"
 msgstr ""
 
-#: includes/class-assets.php:621
+#: includes/class-assets.php:732
 msgid "From"
 msgstr ""
 
-#: includes/class-assets.php:622
+#: includes/class-assets.php:733
 msgid "finished tests, counted as each one was decided."
 msgstr ""
 
-#: includes/class-assets.php:623
+#: includes/class-assets.php:734
 msgid "A year, from decisions taken"
 msgstr ""
 
-#: includes/class-assets.php:624
+#: includes/class-assets.php:735
 msgid "Won by keeping a better version"
 msgstr ""
 
-#: includes/class-assets.php:625
+#: includes/class-assets.php:736
 msgid "Kept by not shipping a worse one"
 msgstr ""
 
-#: includes/class-assets.php:626
+#: includes/class-assets.php:737
 msgid "At least"
 msgstr ""
 
-#: includes/class-assets.php:627
+#: includes/class-assets.php:738
 msgid "a year on the cautious end of every range."
 msgstr ""
 
-#: includes/class-assets.php:628
+#: includes/class-assets.php:739
 msgid "Plus"
 msgstr ""
 
-#: includes/class-assets.php:629
+#: includes/class-assets.php:740
 msgid "a year in"
 msgstr ""
 
-#: includes/class-assets.php:630
+#: includes/class-assets.php:741
 msgid "Tests still running would add about"
 msgstr ""
 
-#: includes/class-assets.php:631
+#: includes/class-assets.php:742
 msgid "a year if their current estimate holds. That is not counted above, because they have not finished."
 msgstr ""
 
-#: includes/class-assets.php:633
+#: includes/class-assets.php:744
 msgid "No tests match that."
 msgstr ""
 
-#: includes/class-assets.php:634
+#: includes/class-assets.php:745
 msgid "Nothing here yet. Finished tests and what they found will collect here."
 msgstr ""
 
-#: includes/class-assets.php:635
+#: includes/class-assets.php:746
 msgid "Could not load your test history."
 msgstr ""
 
-#: includes/class-assets.php:636
+#: includes/class-assets.php:747
 msgid "Running"
 msgstr ""
 
-#: includes/class-assets.php:637
+#: includes/class-assets.php:748
 msgid "won"
 msgstr ""
 
-#: includes/class-assets.php:638
+#: includes/class-assets.php:749
 msgid "not lost"
 msgstr ""
 
-#: includes/class-assets.php:639
+#: includes/class-assets.php:750
 msgid "Edit what you learned"
 msgstr ""
 
-#: includes/class-assets.php:640
+#: includes/class-assets.php:751
 msgid "Add what you learned"
 msgstr ""
 
-#: includes/class-assets.php:643
+#: includes/class-assets.php:754
 msgid "Could not save that note."
 msgstr ""
 
-#: includes/class-assets.php:644
+#: includes/class-assets.php:755
 msgid "Test"
 msgstr ""
 
-#: includes/class-assets.php:645
+#: includes/class-assets.php:756
 msgid "Outcome"
 msgstr ""
 
-#: includes/class-assets.php:647
+#: includes/class-assets.php:758
 msgid "Worth"
 msgstr ""
 
-#: includes/class-assets.php:648
+#: includes/class-assets.php:759
 msgid "Decided"
 msgstr ""
 
-#: includes/class-assets.php:653
+#: includes/class-assets.php:765
+msgid "Copy this URL into ChatGPT Business Hub. The file lists the products you have synced to Rezolve Ai."
+msgstr ""
+
+#: includes/class-assets.php:766
+msgid "Rezolve Ai does not serve a ChatGPT product file for this store."
+msgstr ""
+
+#: includes/class-assets.php:768
+msgid "Try again"
+msgstr ""
+
+#: includes/class-assets.php:769
+msgid "ChatGPT product file URL copied."
+msgstr ""
+
+#: includes/class-assets.php:770
+msgid "The URL is selected. Press Ctrl+C, or Cmd+C on a Mac, to copy it."
+msgstr ""
+
+#: includes/class-assets.php:773
 msgid "Feed URLs regenerated. Update them wherever they are configured."
 msgstr ""
 
-#: includes/class-assets.php:656
+#: includes/class-assets.php:776
 msgid "Settings saved."
 msgstr ""
 
-#: includes/class-assets.php:658
+#: includes/class-assets.php:777
+msgid "No custom fields found on your products yet. They appear here after your next catalog sync."
+msgstr ""
+
+#: includes/class-assets.php:779
+msgid "Custom field status"
+msgstr ""
+
+#: includes/class-assets.php:781
+msgid "Used"
+msgstr ""
+
+#: includes/class-assets.php:782
+msgid "Rewriting"
+msgstr ""
+
+#: includes/class-assets.php:783
+msgid "Left out"
+msgstr ""
+
+#: includes/class-assets.php:784
+msgid "Not used"
+msgstr ""
+
+#: includes/class-assets.php:785
+msgid "Search by field name or content"
+msgstr ""
+
+#: includes/class-assets.php:786
+msgid "Search custom fields"
+msgstr ""
+
+#. translators: %s: number of selected custom fields to leave out.
+#: includes/class-assets.php:790
+#, php-format
+msgid "Leave out %s"
+msgstr ""
+
+#. translators: %s: number of selected custom fields to use again.
+#: includes/class-assets.php:792
+#, php-format
+msgid "Use %s again"
+msgstr ""
+
+#: includes/class-assets.php:793
+msgid "Clear selection"
+msgstr ""
+
+#: includes/class-assets.php:794
+#: includes/class-assets.php:889
+#: includes/class-assets.php:976
+msgid "Field"
+msgstr ""
+
+#: includes/class-assets.php:796
+msgid "Example"
+msgstr ""
+
+#: includes/class-assets.php:798
+#: includes/class-assets.php:959
+msgid "Rewrite"
+msgstr ""
+
+#: includes/class-assets.php:799
+#: includes/class-assets.php:888
+msgid "Action"
+msgstr ""
+
+#: includes/class-assets.php:800
+msgid "Select every field on this page"
+msgstr ""
+
+#. translators: %s: a custom field's name.
+#. translators: %s: product name.
+#: includes/class-assets.php:802
+#: includes/class-assets.php:969
+#, php-format
+msgid "Select %s"
+msgstr ""
+
+#. translators: %s: a custom field's name.
+#: includes/class-assets.php:804
+#, php-format
+msgid "Rewrite %s"
+msgstr ""
+
+#: includes/class-assets.php:805
+msgid "Read only"
+msgstr ""
+
+#: includes/class-assets.php:806
+msgid "No preview"
+msgstr ""
+
+#. translators: %s: the search text.
+#: includes/class-assets.php:808
+#, php-format
+msgid "No fields match \"%s\"."
+msgstr ""
+
+#: includes/class-assets.php:809
+msgid "No fields here yet."
+msgstr ""
+
+#. translators: 1: first row shown, 2: last row shown, 3: number of fields.
+#: includes/class-assets.php:811
+#, php-format
+msgid "Showing %1$s to %2$s of %3$s fields"
+msgstr ""
+
+#: includes/class-assets.php:812
+msgid "Showing 1 field"
+msgstr ""
+
+#: includes/class-assets.php:813
+msgid "Leave out"
+msgstr ""
+
+#: includes/class-assets.php:814
+msgid "Use again"
+msgstr ""
+
+#. translators: %s: a custom field's name.
+#: includes/class-assets.php:816
+#, php-format
+msgid "%s is left out. Rezolve Ai stops using it straight away."
+msgstr ""
+
+#. translators: %s: number of custom fields.
+#: includes/class-assets.php:818
+#, php-format
+msgid "%s fields are left out. Rezolve Ai stops using them straight away."
+msgstr ""
+
+#. translators: %s: a custom field's name.
+#: includes/class-assets.php:820
+#, php-format
+msgid "%s is used again."
+msgstr ""
+
+#. translators: %s: number of custom fields.
+#: includes/class-assets.php:822
+#, php-format
+msgid "%s fields are used again."
+msgstr ""
+
+#. translators: %s: a custom field's name.
+#: includes/class-assets.php:824
+#, php-format
+msgid "%s is used again. Your catalog is resyncing, so it is back on every product once that finishes."
+msgstr ""
+
+#. translators: %s: number of custom fields.
+#: includes/class-assets.php:826
+#, php-format
+msgid "%s fields are used again. Your catalog is resyncing, so they are back on every product once that finishes."
+msgstr ""
+
+#. translators: %s: a custom field's name.
+#: includes/class-assets.php:828
+#, php-format
+msgid "%s is used again. It comes back with your next catalog sync."
+msgstr ""
+
+#. translators: %s: number of custom fields.
+#: includes/class-assets.php:830
+#, php-format
+msgid "%s fields are used again. They come back with your next catalog sync."
+msgstr ""
+
+#. translators: %s: a custom field's name, or a number of fields.
+#: includes/class-assets.php:832
+#, php-format
+msgid "Rezolve Ai can now suggest rewrites for %s."
+msgstr ""
+
+#. translators: %s: a custom field's name, or a number of fields.
+#: includes/class-assets.php:834
+#, php-format
+msgid "%s will no longer be rewritten."
+msgstr ""
+
+#: includes/class-assets.php:835
+msgid "Your custom fields could not be loaded. Try again in a moment."
+msgstr ""
+
+#: includes/class-assets.php:836
+#: includes/class-content-types.php:135
+msgid "Your custom fields"
+msgstr ""
+
+#: includes/class-assets.php:837
+msgid "New: this field was empty"
+msgstr ""
+
+#: includes/class-assets.php:838
+msgid "Check the facts"
+msgstr ""
+
+#: includes/class-assets.php:839
+msgid "How the description will look"
+msgstr ""
+
+#: includes/class-assets.php:841
+#: includes/class-assets.php:928
+msgid "Your own template"
+msgstr ""
+
+#: includes/class-assets.php:842
+msgid "Choose the parts and their order yourself."
+msgstr ""
+
+#: includes/class-assets.php:843
+msgid "Bullet points"
+msgstr ""
+
+#: includes/class-assets.php:844
+msgid "Heading"
+msgstr ""
+
+#: includes/class-assets.php:845
+#: includes/class-assets.php:922
+msgid "Closing sentence"
+msgstr ""
+
+#: includes/class-assets.php:846
+msgid "Numbered points"
+msgstr ""
+
+#: includes/class-assets.php:847
+msgid "Paragraphs"
+msgstr ""
+
+#: includes/class-assets.php:848
+#: includes/class-frontend.php:304
+#: includes/class-frontend.php:455
+msgid "Questions and answers"
+msgstr ""
+
+#: includes/class-assets.php:849
+#: includes/class-assets.php:926
+msgid "Details list"
+msgstr ""
+
+#: includes/class-assets.php:850
+msgid "Add"
+msgstr ""
+
+#: includes/class-assets.php:851
+msgid "Add a part"
+msgstr ""
+
+#: includes/class-assets.php:852
+msgid "In bold"
+msgstr ""
+
+#: includes/class-assets.php:853
+msgid "Bullets"
+msgstr ""
+
+#: includes/class-assets.php:854
+msgid "Down"
+msgstr ""
+
+#: includes/class-assets.php:855
+msgid "Fewest"
+msgstr ""
+
+#. translators: %1$s: a setting, e.g. "Fewest"; %2$s: a part of a template, e.g. "Paragraphs"
+#: includes/class-assets.php:857
+#, php-format
+msgid "%1$s, %2$s"
+msgstr ""
+
+#: includes/class-assets.php:858
+msgid "Heading text, or leave empty for Rezolve Ai to write one"
+msgstr ""
+
+#: includes/class-assets.php:859
+msgid "As headings"
+msgstr ""
+
+#: includes/class-assets.php:860
+msgid "The sentence your values end with, kept as your store writes it."
+msgstr ""
+
+#: includes/class-assets.php:861
+msgid "Large"
+msgstr ""
+
+#: includes/class-assets.php:862
+msgid "As Q and A lines"
+msgstr ""
+
+#: includes/class-assets.php:863
+msgid "A list"
+msgstr ""
+
+#: includes/class-assets.php:864
+msgid "Marked with"
+msgstr ""
+
+#: includes/class-assets.php:865
+msgid "Most"
+msgstr ""
+
+#. translators: %s: a part of a template
+#: includes/class-assets.php:867
+#, php-format
+msgid "Move %s down"
+msgstr ""
+
+#. translators: %s: a part of a template
+#: includes/class-assets.php:869
+#, php-format
+msgid "Move %s up"
+msgstr ""
+
+#: includes/class-assets.php:870
+msgid "Numbers"
+msgstr ""
+
+#: includes/class-assets.php:871
+msgid "Questions shown"
+msgstr ""
+
+#. translators: %s: a part of a template
+#: includes/class-assets.php:874
+#, php-format
+msgid "Remove %s"
+msgstr ""
+
+#: includes/class-assets.php:875
+msgid "Shown as"
+msgstr ""
+
+#: includes/class-assets.php:876
+msgid "Size"
+msgstr ""
+
+#: includes/class-assets.php:877
+msgid "Small"
+msgstr ""
+
+#: includes/class-assets.php:878
+msgid "A table"
+msgstr ""
+
+#: includes/class-assets.php:879
+msgid "Your template"
+msgstr ""
+
+#: includes/class-assets.php:880
+msgid "Up"
+msgstr ""
+
+#. translators: %1$s: how many products, e.g. "812 products"; %2$s: a percentage, e.g. "97%"
+#: includes/class-assets.php:882
+#, php-format
+msgid "%1$s, %2$s alike"
+msgstr ""
+
+#: includes/class-assets.php:883
+msgid "How Rezolve Ai writes into each field"
+msgstr ""
+
+#. translators: %s: a field name
+#: includes/class-assets.php:886
+#, php-format
+msgid "Change the format of %s"
+msgstr ""
+
+#: includes/class-assets.php:887
+msgid "Check again"
+msgstr ""
+
+#: includes/class-assets.php:890
+msgid "Fill when empty"
+msgstr ""
+
+#: includes/class-assets.php:891
+msgid "Format"
+msgstr ""
+
+#: includes/class-assets.php:892
+msgid "Learned from"
+msgstr ""
+
+#. translators: %s: a number of credits
+#: includes/class-assets.php:894
+#, php-format
+msgid "%s credits"
+msgstr ""
+
+#. translators: %1$s and %2$s: numbers of credits
+#: includes/class-assets.php:896
+#, php-format
+msgid "%1$s to %2$s credits"
+msgstr ""
+
+#: includes/class-assets.php:897
+msgid "Nothing learned yet. Formats are learned after your catalog sync, from your own products."
+msgstr ""
+
+#: includes/class-assets.php:898
+msgid "Because this field tells a story or a meaning, its fills are marked Check the facts in Review."
+msgstr ""
+
+#: includes/class-assets.php:899
+msgid "Write this field for products that do not have it"
+msgstr ""
+
+#: includes/class-assets.php:900
+msgid "Each fill is written in this field's format, only from what your product data says, and goes to Review first. Nothing reaches your store until you approve it."
+msgstr ""
+
+#. translators: %s: a field name
+#: includes/class-assets.php:902
+#, php-format
+msgid "Fill %s when empty"
+msgstr ""
+
+#. translators: %1$s: a field name; %2$s: how many products, e.g. "271 products"; %3$s: credits, e.g. "1,355 to 2,710 credits"
+#: includes/class-assets.php:904
+#, php-format
+msgid "%1$s is missing on about %2$s of the types that usually have it. Filling them costs about %3$s, charged only as content is generated."
+msgstr ""
+
+#. translators: %s: a field name
+#: includes/class-assets.php:906
+#, php-format
+msgid "Fill %s when it is empty?"
+msgstr ""
+
+#: includes/class-assets.php:907
+msgid "Always one of the values in this field's own list, spelled as the list spells it."
+msgstr ""
+
+#: includes/class-assets.php:908
+msgid "How Rezolve Ai writes this field"
+msgstr ""
+
+#: includes/class-assets.php:909
+msgid "In this format"
+msgstr ""
+
+#: includes/class-assets.php:910
+msgid "Keep exactly as they are"
+msgstr ""
+
+#: includes/class-assets.php:911
+#: includes/class-content-types.php:63
+msgid "Product description"
+msgstr ""
+
+#: includes/class-assets.php:912
+msgid "Holds content Rezolve Ai places there"
+msgstr ""
+
+#: includes/class-assets.php:913
+msgid "Custom field"
+msgstr ""
+
+#: includes/class-assets.php:914
+msgid "Custom field with a list of values"
+msgstr ""
+
+#: includes/class-assets.php:915
+msgid "Labels by product type"
+msgstr ""
+
+#. translators: %s: a date
+#: includes/class-assets.php:917
+#, php-format
+msgid "Learned %s"
+msgstr ""
+
+#. translators: %s: names of parts of a format, comma separated
+#: includes/class-assets.php:919
+#, php-format
+msgid "Left out in this format: %s."
+msgstr ""
+
+#: includes/class-assets.php:920
+msgid "Your field formats could not be loaded. Try again in a moment."
+msgstr ""
+
+#: includes/class-assets.php:923
+msgid "The sentence your values end with stays as it is."
+msgstr ""
+
+#: includes/class-assets.php:924
+msgid "Links"
+msgstr ""
+
+#: includes/class-assets.php:925
+msgid "Every link in the current text stays, word for word."
+msgstr ""
+
+#: includes/class-assets.php:927
+msgid "The current list of details stays row for row."
+msgstr ""
+
+#: includes/class-assets.php:929
+msgid "Rezolve Ai default"
+msgstr ""
+
+#: includes/class-assets.php:930
+msgid "The layout Rezolve Ai writes when no format is chosen."
+msgstr ""
+
+#: includes/class-assets.php:931
+msgid "From its list"
+msgstr ""
+
+#: includes/class-assets.php:932
+msgid "Match my store"
+msgstr ""
+
+#: includes/class-assets.php:933
+msgid "Written the way your products already are."
+msgstr ""
+
+#: includes/class-assets.php:934
+msgid "Preset"
+msgstr ""
+
+#: includes/class-assets.php:935
+msgid "Rezolve Ai default has no fixed layout to preview: it follows the content type."
+msgstr ""
+
+#: includes/class-assets.php:936
+msgid "Not alike enough to copy"
+msgstr ""
+
+#: includes/class-assets.php:937
+msgid "Not learned yet"
+msgstr ""
+
+#: includes/class-assets.php:938
+msgid "Field formats are not switched on for this site yet, so content is written in Rezolve Ai's own layout for now. What is learned here, and the choices you make, are used as soon as they are."
+msgstr ""
+
+#: includes/class-assets.php:940
+msgid "Rezolve Ai's own layout, sized for the content type it writes."
+msgstr ""
+
+#: includes/class-assets.php:941
+msgid "Parts, in order"
+msgstr ""
+
+#: includes/class-assets.php:942
+msgid "This format could not be previewed."
+msgstr ""
+
+#: includes/class-assets.php:943
+msgid "Your product's own words, laid out in this format. Free: nothing is written or charged."
+msgstr ""
+
+#: includes/class-assets.php:944
+msgid "Preview"
+msgstr ""
+
+#: includes/class-assets.php:945
+msgid "Laying out the preview…"
+msgstr ""
+
+#. translators: %s: the number 1
+#: includes/class-assets.php:949
+#, php-format
+msgid "%s product"
+msgstr ""
+
+#: includes/class-assets.php:950
+msgid "Learn again"
+msgstr ""
+
+#: includes/class-assets.php:951
+msgid "Learning your formats again. This takes a minute or two."
+msgstr ""
+
+#: includes/class-assets.php:953
+msgid "Save and turn on filling"
+msgstr ""
+
+#. translators: %s: a field name
+#: includes/class-assets.php:955
+#, php-format
+msgid "%s saved."
+msgstr ""
+
+#. translators: %s: names of parts of a format, comma separated
+#: includes/class-assets.php:957
+#, php-format
+msgid "Written when content is generated: %s."
+msgstr ""
+
+#: includes/class-assets.php:960
+msgid "product"
+msgstr ""
+
+#: includes/class-assets.php:961
+msgid "products"
+msgstr ""
+
+#. translators: %s: credit balance.
+#: includes/class-assets.php:963
 #, php-format
 msgid "Connection healthy. %s credits available."
 msgstr ""
 
+#: includes/class-assets.php:967
+msgid "Dismiss message"
+msgstr ""
+
+#. translators: %s: product name.
+#: includes/class-assets.php:971
+#, php-format
+msgid "Show details for %s"
+msgstr ""
+
+#: includes/class-assets.php:972
+msgid "Attribute"
+msgstr ""
+
+#: includes/class-assets.php:973
+msgid "Values"
+msgstr ""
+
+#: includes/class-assets.php:974
+msgid "What happens"
+msgstr ""
+
+#: includes/class-assets.php:977
+msgid "Actions"
+msgstr ""
+
+#: includes/class-assets.php:983
+msgid "Research runs"
+msgstr ""
+
+#: includes/class-assets.php:984
+msgid "Results by prompt"
+msgstr ""
+
+#: includes/class-assets.php:985
+#: includes/class-assets.php:1009
+msgid "Step"
+msgstr ""
+
+#: includes/class-assets.php:986
+msgid "State"
+msgstr ""
+
+#: includes/class-assets.php:987
+msgid "Detail"
+msgstr ""
+
+#: includes/class-assets.php:988
+msgid "Check"
+msgstr ""
+
+#: includes/class-assets.php:989
+msgid "Term"
+msgstr ""
+
+#: includes/class-assets.php:990
+msgid "Meaning"
+msgstr ""
+
+#: includes/class-assets.php:991
+msgid "Measurement checks"
+msgstr ""
+
+#: includes/class-assets.php:993
+msgid "Finished tests"
+msgstr ""
+
+#. translators: %s: the name of an experiment.
+#: includes/class-assets.php:995
+#, php-format
+msgid "What you learned from %s"
+msgstr ""
+
+#: includes/class-assets.php:998
+msgid "Chart"
+msgstr ""
+
+#: includes/class-assets.php:999
+msgid "Show data table"
+msgstr ""
+
+#: includes/class-assets.php:1000
+msgid "Hide data table"
+msgstr ""
+
+#: includes/class-assets.php:1001
+msgid "No data"
+msgstr ""
+
+#: includes/class-assets.php:1002
+msgid "Line chart"
+msgstr ""
+
+#: includes/class-assets.php:1003
+msgid "Area chart"
+msgstr ""
+
+#: includes/class-assets.php:1007
+msgid "Share"
+msgstr ""
+
+#: includes/class-assets.php:1010
+msgid "Score range"
+msgstr ""
+
+#: includes/class-assets.php:1012
+msgid "Crawler"
+msgstr ""
+
+#: includes/class-assets.php:1013
+msgid "Domain"
+msgstr ""
+
+#: includes/class-assets.php:1014
+msgid "Difference"
+msgstr ""
+
+#. translators: 1: low end of a range, 2: high end.
+#: includes/class-assets.php:1016
+#, php-format
+msgid "%1$s to %2$s"
+msgstr ""
+
+#. translators: 1: chart title, 2: chart kind such as "Line chart", 3: first date, 4: last date.
+#: includes/class-assets.php:1018
+#, php-format
+msgid "%1$s. %2$s from %3$s to %4$s."
+msgstr ""
+
+#. translators: 1: series name, 2: lowest value, 3: highest value, 4: latest value.
+#: includes/class-assets.php:1020
+#, php-format
+msgid "%1$s: lowest %2$s, highest %3$s, latest %4$s."
+msgstr ""
+
+#. translators: 1: chart title, 2: first date, 3: last date, 4: lowest value, 5: highest value, 6: latest value.
+#: includes/class-assets.php:1022
+#, php-format
+msgid "%1$s. Trend from %2$s to %3$s: lowest %4$s, highest %5$s, latest %6$s."
+msgstr ""
+
+#. translators: 1: chart title, 2: number of bars, 3: label of the highest bar, 4: its value.
+#: includes/class-assets.php:1024
+#, php-format
+msgid "%1$s. Bar chart of %2$s values. Highest: %3$s, %4$s."
+msgstr ""
+
+#. translators: 1: chart title, 2: each slice with its value and share.
+#: includes/class-assets.php:1026
+#, php-format
+msgid "%1$s. Donut chart: %2$s."
+msgstr ""
+
+#. translators: 1: what is measured, 2: value, 3: maximum, 4: percentage.
+#: includes/class-assets.php:1028
+#, php-format
+msgid "%1$s. %2$s of %3$s, %4$s."
+msgstr ""
+
+#. translators: 1: chart title, 2: a score from 0 to 100.
+#: includes/class-assets.php:1030
+#, php-format
+msgid "%1$s. %2$s out of 100."
+msgstr ""
+
+#. translators: 1: chart title, 2: first date, 3: last date, 4: latest estimate, 5: its range.
+#: includes/class-assets.php:1032
+#, php-format
+msgid "%1$s. Estimate from %2$s to %3$s. Latest %4$s, range %5$s."
+msgstr ""
+
+#. translators: 1: chart title, 2: each row with its estimate and range.
+#. translators: 1: chart title, 2: each version with its count at every step.
+#: includes/class-assets.php:1034
+#: includes/class-assets.php:1036
+#, php-format
+msgid "%1$s. %2$s."
+msgstr ""
+
 #. translators: 1: crawler name, 2: date, 3: hit count.
-#: includes/class-bot-tracker.php:561
+#: includes/class-bot-tracker.php:567
 #, php-format
 msgid "%1$s, %2$s: %3$s hits"
+msgstr ""
+
+#: includes/class-content-destinations.php:315
+#: includes/class-meta.php:147
+msgid "Short description"
+msgstr ""
+
+#: includes/class-content-destinations.php:1028
+msgid "This field cannot hold this content. Choose another field in Settings."
 msgstr ""
 
 #: includes/class-content-types.php:50
@@ -2867,10 +4286,6 @@ msgstr ""
 
 #: includes/class-content-types.php:57
 msgid "Rich Product structured data (reviews, FAQ, breadcrumbs) injected into the page head."
-msgstr ""
-
-#: includes/class-content-types.php:63
-msgid "Product description"
 msgstr ""
 
 #: includes/class-content-types.php:64
@@ -2913,40 +4328,83 @@ msgstr ""
 msgid "Accurate alt text for each product image, for accessibility, image search and AI agents. Replaces the current alt text when you approve it."
 msgstr ""
 
-#: includes/class-content-types.php:130
+#: includes/class-content-types.php:136
+msgid "Rewrites the custom fields you chose in Settings, such as care instructions, in place. A field you change after the suggestion is written is left as it is."
+msgstr ""
+
+#: includes/class-content-types.php:143
 msgid "Google Merchant feed"
 msgstr ""
 
-#: includes/class-content-types.php:131
+#: includes/class-content-types.php:144
 msgid "Google Shopping feed records, served at a feed URL."
 msgstr ""
 
-#: includes/class-content-types.php:138
+#: includes/class-content-types.php:151
 msgid "Agentic Commerce feed"
 msgstr ""
 
-#: includes/class-content-types.php:139
+#: includes/class-content-types.php:152
 msgid "OpenAI's Agentic Commerce Protocol feed for AI shopping agents."
 msgstr ""
 
-#: includes/class-content-types.php:146
+#: includes/class-content-types.php:159
 msgid "Microsoft Bing feed"
 msgstr ""
 
-#: includes/class-content-types.php:147
+#: includes/class-content-types.php:160
 msgid "Microsoft Bing Shopping feed records, served at a feed URL."
 msgstr ""
 
-#: includes/class-content-types.php:154
+#: includes/class-content-types.php:167
 msgid "WooCommerce product fields"
 msgstr ""
 
-#: includes/class-content-types.php:155
+#: includes/class-content-types.php:168
 msgid "Product tags, product attributes, and SEO meta written onto the product itself. Tags and attributes are added, never replaced, and categories are never changed."
 msgstr ""
 
-#: includes/class-cron.php:122
+#: includes/class-cron.php:131
 msgid "Once Weekly"
+msgstr ""
+
+#: includes/class-custom-fields.php:340
+#: includes/class-custom-fields.php:344
+#: includes/class-custom-fields.php:372
+msgid "Rezolve Ai is not allowed to edit this field."
+msgstr ""
+
+#: includes/class-custom-fields.php:349
+msgid "This suggestion has nothing left to publish. Generate it again."
+msgstr ""
+
+#: includes/class-custom-fields.php:354
+#: includes/class-custom-fields.php:397
+msgid "This kind of field cannot be rewritten."
+msgstr ""
+
+#: includes/class-custom-fields.php:359
+msgid "This field changed in WordPress after the suggestion was written. Generate it again."
+msgstr ""
+
+#: includes/class-custom-fields.php:368
+msgid "This field has a value now. Generate it again."
+msgstr ""
+
+#: includes/class-custom-fields.php:384
+msgid "This field is not in your ACF field groups any more."
+msgstr ""
+
+#: includes/class-custom-fields.php:392
+msgid "This value is not one of the field's choices any more. Generate it again."
+msgstr ""
+
+#: includes/class-custom-fields.php:628
+msgid "Yes"
+msgstr ""
+
+#: includes/class-custom-fields.php:628
+msgid "No"
 msgstr ""
 
 #: includes/class-dashboard.php:321
@@ -2960,154 +4418,154 @@ msgstr ""
 msgid "%s ago"
 msgstr ""
 
-#: includes/class-edit-values.php:182
+#: includes/class-edit-values.php:183
 msgid "The title cannot be empty."
 msgstr ""
 
 #. translators: %d: maximum number of characters.
-#: includes/class-edit-values.php:184
+#: includes/class-edit-values.php:185
 #, php-format
 msgid "The title is longer than %d characters. Shorten it to save."
 msgstr ""
 
-#: includes/class-edit-values.php:190
+#: includes/class-edit-values.php:191
 msgid "Add an SEO title."
 msgstr ""
 
 #. translators: %d: maximum number of characters.
-#: includes/class-edit-values.php:192
+#: includes/class-edit-values.php:193
 #, php-format
 msgid "The SEO title is longer than %d characters. Shorten it to save."
 msgstr ""
 
-#: includes/class-edit-values.php:198
+#: includes/class-edit-values.php:199
 msgid "Add a meta description."
 msgstr ""
 
 #. translators: %d: maximum number of characters.
-#: includes/class-edit-values.php:200
+#: includes/class-edit-values.php:201
 #, php-format
 msgid "The meta description is longer than %d characters. Shorten it to save."
 msgstr ""
 
-#: includes/class-edit-values.php:219
+#: includes/class-edit-values.php:220
 msgid "Highlights must be a list."
 msgstr ""
 
-#: includes/class-edit-values.php:231
+#: includes/class-edit-values.php:232
 #, php-format
 msgid "This highlight is longer than %d characters. Shorten it to save."
 msgstr ""
 
-#: includes/class-edit-values.php:243
+#: includes/class-edit-values.php:244
 #, php-format
 msgid "Keep %d highlights or fewer. Stores show at most that many."
 msgstr ""
 
-#: includes/class-edit-values.php:246
+#: includes/class-edit-values.php:247
 msgid "Add at least one highlight, or dismiss this suggestion instead."
 msgstr ""
 
-#: includes/class-edit-values.php:258
+#: includes/class-edit-values.php:259
 msgid "Questions must be a list."
 msgstr ""
 
-#: includes/class-edit-values.php:270
+#: includes/class-edit-values.php:271
 msgid "Add the question, or remove this answer."
 msgstr ""
 
-#: includes/class-edit-values.php:274
+#: includes/class-edit-values.php:275
 msgid "Add an answer, or remove this question."
 msgstr ""
 
-#: includes/class-edit-values.php:279
+#: includes/class-edit-values.php:280
 #, php-format
 msgid "This question is longer than %d characters. Shorten it to save."
 msgstr ""
 
-#: includes/class-edit-values.php:284
+#: includes/class-edit-values.php:285
 #, php-format
 msgid "This answer is longer than %d characters. Shorten it to save."
 msgstr ""
 
-#: includes/class-edit-values.php:294
+#: includes/class-edit-values.php:295
 #, php-format
 msgid "Keep %d questions or fewer."
 msgstr ""
 
-#: includes/class-edit-values.php:297
+#: includes/class-edit-values.php:298
 msgid "Add at least one question, or dismiss this suggestion instead."
 msgstr ""
 
-#: includes/class-edit-values.php:309
+#: includes/class-edit-values.php:310
 msgid "Specifications must be a list."
 msgstr ""
 
-#: includes/class-edit-values.php:322
+#: includes/class-edit-values.php:323
 msgid "Add a name for this value, or remove the row."
 msgstr ""
 
-#: includes/class-edit-values.php:326
+#: includes/class-edit-values.php:327
 msgid "Add a value, or remove this row."
 msgstr ""
 
-#: includes/class-edit-values.php:331
+#: includes/class-edit-values.php:332
 msgid "Names starting with pa_ are reserved by WooCommerce."
 msgstr ""
 
-#: includes/class-edit-values.php:336
+#: includes/class-edit-values.php:337
 #, php-format
 msgid "This name is longer than %d characters. Shorten it to save."
 msgstr ""
 
-#: includes/class-edit-values.php:341
+#: includes/class-edit-values.php:342
 #, php-format
 msgid "This value is longer than %d characters. Shorten it to save."
 msgstr ""
 
-#: includes/class-edit-values.php:347
+#: includes/class-edit-values.php:348
 msgid "Use letters or numbers in this name."
 msgstr ""
 
-#: includes/class-edit-values.php:366
+#: includes/class-edit-values.php:367
 #, php-format
 msgid "Keep %d specifications or fewer."
 msgstr ""
 
-#: includes/class-edit-values.php:369
+#: includes/class-edit-values.php:370
 msgid "Add at least one specification, or dismiss this suggestion instead."
 msgstr ""
 
-#: includes/class-edit-values.php:381
+#: includes/class-edit-values.php:382
 msgid "Alt text must be a list."
 msgstr ""
 
-#: includes/class-edit-values.php:395
+#: includes/class-edit-values.php:396
 msgid "This image has no address, so its alt text cannot be matched."
 msgstr ""
 
-#: includes/class-edit-values.php:400
+#: includes/class-edit-values.php:401
 #, php-format
 msgid "This alt text is longer than %d characters. Shorten it to save."
 msgstr ""
 
-#: includes/class-edit-values.php:413
+#: includes/class-edit-values.php:414
 msgid "Write alt text for at least one image, or dismiss this suggestion instead."
 msgstr ""
 
-#: includes/class-edit-values.php:445
+#: includes/class-edit-values.php:446
 msgid "The description cannot be empty."
 msgstr ""
 
-#: includes/class-edit-values.php:448
+#: includes/class-edit-values.php:449
 msgid "The description is too long to save."
 msgstr ""
 
-#: includes/class-experiments.php:216
+#: includes/class-experiments.php:329
 msgid "That is not something you can do to an experiment."
 msgstr ""
 
-#: includes/class-experiments.php:254
+#: includes/class-experiments.php:367
 msgid "That version could not be identified."
 msgstr ""
 
@@ -3119,39 +4577,72 @@ msgstr ""
 msgid "Invalid or missing feed token. Copy the feed URL from the Rezolve Ai Settings screen."
 msgstr ""
 
-#: includes/class-frontend.php:285
+#: includes/class-frontend.php:301
+#: includes/class-frontend.php:368
 msgid "How customers use this"
 msgstr ""
 
-#: includes/class-frontend.php:322
-msgid "Related products"
-msgstr ""
-
-#: includes/class-frontend.php:322
+#: includes/class-frontend.php:302
+#: includes/class-frontend.php:406
 msgid "You might also like"
 msgstr ""
 
-#: includes/class-frontend.php:347
+#: includes/class-frontend.php:406
+msgid "Related products"
+msgstr ""
+
+#: includes/class-frontend.php:432
 msgid "Product highlights"
 msgstr ""
 
-#: includes/class-frontend.php:369
+#: includes/class-frontend.php:455
 msgid "Questions and answers about this product"
 msgstr ""
 
-#: includes/class-frontend.php:369
-msgid "Questions and answers"
+#: includes/class-held-back.php:321
+#, php-format
+msgid "Held back by \"%1$s\" until %2$s"
 msgstr ""
 
-#: includes/class-meta.php:130
-msgid "Short description"
+#: includes/class-held-back.php:325
+#, php-format
+msgid "Held back by \"%s\" until it finishes"
 msgstr ""
 
-#: includes/class-meta.php:131
+#: includes/class-held-back.php:329
+#, php-format
+msgid "Held back by an experiment until %s"
+msgstr ""
+
+#: includes/class-held-back.php:331
+msgid "Held back by an experiment until it finishes"
+msgstr ""
+
+#. translators: %s: why the product is held, e.g. Held back by "Spring copy" until 24 November 2026.
+#: includes/class-held-back.php:347
+#, php-format
+msgid "Not applied. %s. This product is in the control group of a product split, which keeps its content unchanged while the experiment measures it. It can be approved after that."
+msgstr ""
+
+#: includes/class-held-back.php:362
+msgid "We could not check whether this product is held back by an experiment, so nothing was applied. Try again in a minute."
+msgstr ""
+
+#. translators: %s: why the product is held, e.g. Held back by "Spring copy" until 24 November 2026.
+#: includes/class-held-back.php:379
+#, php-format
+msgid "Your edit was not saved. %s. This product is in the control group of a product split, which keeps its live content unchanged while the experiment measures it. It can be edited after that."
+msgstr ""
+
+#: includes/class-held-back.php:394
+msgid "We could not check whether this product is held back by an experiment, so your edit was not saved. Try again in a minute."
+msgstr ""
+
+#: includes/class-meta.php:148
 msgid "Description"
 msgstr ""
 
-#: includes/class-meta.php:133
+#: includes/class-meta.php:150
 msgid "SEO meta description"
 msgstr ""
 
@@ -3159,7 +4650,7 @@ msgstr ""
 msgid "Some products failed to enrich."
 msgstr ""
 
-#: includes/class-poller.php:313
+#: includes/class-poller.php:327
 msgid "Enrichment timed out."
 msgstr ""
 
@@ -3180,19 +4671,32 @@ msgstr ""
 msgid "Rezolve Ai returned quality scores this plugin could not read."
 msgstr ""
 
-#: includes/class-review.php:327
+#: includes/class-review.php:243
+msgid "Written in your store's format."
+msgstr ""
+
+#: includes/class-review.php:244
+msgid "Written in the format you chose."
+msgstr ""
+
+#: includes/class-review.php:247
+#, php-format
+msgid "Format match %d%%."
+msgstr ""
+
+#: includes/class-review.php:409
 msgid "This suggestion is no longer waiting for review or live, so it cannot be edited."
 msgstr ""
 
-#: includes/class-review.php:333
+#: includes/class-review.php:415
 msgid "This product was approved in the meantime. Reload the page to edit what is live."
 msgstr ""
 
-#: includes/class-review.php:334
+#: includes/class-review.php:416
 msgid "This product is no longer live. Reload the page to see where it stands."
 msgstr ""
 
-#: includes/class-review.php:343
+#: includes/class-review.php:425
 msgid "There is no suggestion of this kind on this product to edit."
 msgstr ""
 

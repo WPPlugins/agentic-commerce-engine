@@ -50,6 +50,8 @@ final class Plugin {
 	private $sync;
 	/** @var Apply */
 	private $apply;
+	/** @var Held_Back */
+	private $held_back;
 	/** @var Enrichment */
 	private $enrichment;
 	/** @var Poller */
@@ -103,6 +105,10 @@ final class Plugin {
 	private $ajax_aeo;
 	/** @var Ajax_Bots */
 	private $ajax_bots;
+	/** @var Ajax_Custom_Fields */
+	private $ajax_custom_fields;
+	/** @var Ajax_Field_Formats */
+	private $ajax_field_formats;
 	/** @var Assets */
 	private $assets;
 	/** @var Admin */
@@ -150,6 +156,7 @@ final class Plugin {
 		$this->seo            = new Seo_Adapter();
 		$this->sync           = new Sync( $this );
 		$this->apply          = new Apply( $this );
+		$this->held_back      = new Held_Back( $this );
 		$this->enrichment     = new Enrichment( $this );
 		$this->poller         = new Poller( $this );
 		$this->review         = new Review( $this );
@@ -174,6 +181,8 @@ final class Plugin {
 		$this->ajax_aeo       = new Ajax_Aeo( $this );
 		$this->ajax_experiments = new Ajax_Experiments( $this );
 		$this->ajax_bots      = new Ajax_Bots( $this );
+		$this->ajax_custom_fields = new Ajax_Custom_Fields( $this );
+		$this->ajax_field_formats = new Ajax_Field_Formats( $this );
 		$this->assets         = new Assets( $this );
 		$this->admin          = new Admin( $this );
 		$this->frontend       = new Frontend( $this );
@@ -216,6 +225,8 @@ final class Plugin {
 			$this->ajax_content->register();
 			$this->ajax_aeo->register();
 			$this->ajax_bots->register();
+			$this->ajax_custom_fields->register();
+			$this->ajax_field_formats->register();
 			// Woo-gated inside its own gate chain, like the commerce actions
 			// in class-ajax.php: the nonce is checked before the Woo state, so
 			// a hand-crafted request cannot probe whether Woo is active.
@@ -263,6 +274,10 @@ final class Plugin {
 	/** @return Sync */
 	public function sync() {
 		return $this->sync;
+	}
+	/** @return Held_Back */
+	public function held_back() {
+		return $this->held_back;
 	}
 	/** @return Apply */
 	public function apply() {

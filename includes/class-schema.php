@@ -391,13 +391,35 @@ class Schema {
 			'description'  => $description,
 			'sku'          => $product->get_sku(),
 			'url'          => $product->get_permalink(),
-			'price'        => $price,
-			'priceRange'   => $price_range,
-			'currency'     => get_woocommerce_currency(),
-			'availability' => self::availability_url( $product->get_stock_status() ),
-			'images'       => $images,
-			'rating'       => $rating,
+			'price'           => $price,
+			'priceRange'      => $price_range,
+			'priceValidUntil' => self::price_valid_until( $product ),
+			'currency'        => get_woocommerce_currency(),
+			'availability'    => self::availability_url( $product->get_stock_status() ),
+			'images'          => $images,
+			'rating'          => $rating,
 		);
+	}
+
+	/**
+	 * The day the current price stops applying, or '' when the store does not
+	 * say. Only a running sale with an end date does: a regular price has no end,
+	 * and until a scheduled sale starts its end date belongs to a price nobody
+	 * is being charged. Google only recommends priceValidUntil, so leaving it out
+	 * is safe, and a made-up date is not.
+	 *
+	 * In the site's timezone, so this is the day the merchant picked. WooCommerce
+	 * stores the end of that day, which in UTC can already be the next one.
+	 *
+	 * @param \WC_Product $product Product.
+	 * @return string Y-m-d, or ''.
+	 */
+	public static function price_valid_until( $product ) {
+		if ( ! $product->is_on_sale() ) {
+			return '';
+		}
+		$ends = $product->get_date_on_sale_to();
+		return $ends ? $ends->date( 'Y-m-d' ) : '';
 	}
 
 	/* --------------------------------------------------------------------- */
@@ -420,7 +442,7 @@ class Schema {
 				'priceCurrency'   => isset( $ctx['currency'] ) ? (string) $ctx['currency'] : '',
 				'availability'    => isset( $ctx['availability'] ) ? (string) $ctx['availability'] : '',
 				'url'             => $url,
-				'priceValidUntil' => gmdate( 'Y-m-d', time() + YEAR_IN_SECONDS ),
+				'priceValidUntil' => isset( $ctx['priceValidUntil'] ) ? (string) $ctx['priceValidUntil'] : '',
 			)
 		);
 
@@ -442,7 +464,7 @@ class Schema {
 					'@type'         => 'AggregateOffer',
 					'priceCurrency' => isset( $ctx['currency'] ) ? (string) $ctx['currency'] : '',
 					'lowPrice'      => (string) $range['low'],
-					'highPrice'     => (string) ( isset( $range['high'] ) ? $range['high'] : $range['low'] ),
+					'highPrice'     => isset( $range['high'] ) ? (string) $range['high'] : '',
 					'offerCount'    => isset( $range['count'] ) ? (int) $range['count'] : null,
 					'availability'  => isset( $ctx['availability'] ) ? (string) $ctx['availability'] : '',
 					'url'           => $url,
@@ -492,6 +514,10 @@ class Schema {
 	/**
 	 * Map a WooCommerce stock status onto a schema.org availability URL.
 	 *
+	 * A status this does not know, such as one an extension added, maps to ''
+	 * rather than to in stock: the Offer then says nothing about availability
+	 * instead of promising what the store did not say.
+	 *
 	 * @param string $status instock|outofstock|onbackorder.
 	 * @return string
 	 */
@@ -502,8 +528,9 @@ class Schema {
 			case 'onbackorder':
 				return 'https://schema.org/BackOrder';
 			case 'instock':
-			default:
 				return 'https://schema.org/InStock';
+			default:
+				return '';
 		}
 	}
 

@@ -42,8 +42,12 @@
 	--ace-primary-dark: #4338ca;
 	--ace-text: #111827;
 	--ace-subdued: #4b5563;
-	--ace-faint: #9ca3af;
+	/* Smallest text and chart labels: 4.8:1 on white (was #9ca3af, 2.5:1). */
+	--ace-faint: #6b7280;
 	--ace-border: #d1d5db;
+	/* The edge of a field or switch has to be seen to be used: 3.2:1 on
+	   white, the colour WordPress uses for its own inputs. */
+	--ace-control-border: #8c8f94;
 	--ace-border-light: #e5e7eb;
 	--ace-surface: #ffffff;
 	--ace-surface-2: #f9fafb;
@@ -169,7 +173,11 @@
 	letter-spacing: 0.08em;
 	color: var(--ace-primary-dark);
 }
-.ace-brand-title {
+.ace-brand-title,
+.agencoen-wrap .ace-brand-title {
+	margin: 0;
+	padding: 0;
+	line-height: 1.3;
 	font-size: 16px;
 	font-weight: 600;
 	color: var(--ace-text);
@@ -217,7 +225,7 @@
 }
 .ace-pill-success { background: var(--ace-success-bg); color: var(--ace-success-text); }
 .ace-pill-neutral { background: var(--ace-neutral-bg); color: var(--ace-neutral-text); }
-.ace-pill-host { font-weight: 400; opacity: 0.85; }
+.ace-pill-host { font-weight: 400; }
 
 /* ------------------------------------------------------------------ */
 /* Cards + headings                                                    */
@@ -301,6 +309,7 @@
 	box-shadow: var(--ace-card-shadow);
 	padding: 16px 18px 14px;
 	--ace-accent: var(--ace-indigo);
+	--ace-accent-text: var(--ace-primary-dark);
 }
 .ace-stat::before {
 	content: '';
@@ -311,11 +320,13 @@
 	height: 2px;
 	background: var(--ace-accent);
 }
-.ace-stat[data-accent="indigo"] { --ace-accent: var(--ace-indigo); }
-.ace-stat[data-accent="emerald"] { --ace-accent: var(--ace-emerald); }
-.ace-stat[data-accent="violet"] { --ace-accent: var(--ace-violet); }
-.ace-stat[data-accent="cyan"] { --ace-accent: #0891b2; }
-.ace-stat[data-accent="amber"] { --ace-accent: #d97706; }
+/* The bar keeps the accent; the label uses a darker shade of it, because the
+   accents themselves are 2.5:1 to 4.5:1 on white and the label is 11px. */
+.ace-stat[data-accent="indigo"] { --ace-accent: var(--ace-indigo); --ace-accent-text: #4338ca; }
+.ace-stat[data-accent="emerald"] { --ace-accent: var(--ace-emerald); --ace-accent-text: #047857; }
+.ace-stat[data-accent="violet"] { --ace-accent: var(--ace-violet); --ace-accent-text: #6d28d9; }
+.ace-stat[data-accent="cyan"] { --ace-accent: #0891b2; --ace-accent-text: #0e7490; }
+.ace-stat[data-accent="amber"] { --ace-accent: #d97706; --ace-accent-text: #b45309; }
 
 .ace-stat-label {
 	display: block;
@@ -323,7 +334,7 @@
 	font-weight: 600;
 	text-transform: uppercase;
 	letter-spacing: 0.06em;
-	color: var(--ace-accent);
+	color: var(--ace-accent-text);
 	margin-bottom: 7px;
 }
 .ace-stat-row {
@@ -516,6 +527,7 @@
 	cursor: pointer;
 	text-decoration: none;
 	padding: 0;
+	min-height: 24px;
 	font-family: inherit;
 }
 .ace-link-sm:hover { text-decoration: underline; }
@@ -549,7 +561,7 @@
 	font-size: 14px;
 	color: var(--ace-text);
 	background: var(--ace-surface);
-	border: 1px solid var(--ace-border);
+	border: 1px solid var(--ace-control-border);
 	border-radius: var(--ace-radius-md);
 	transition: border-color 0.15s ease, box-shadow 0.15s ease;
 	line-height: 1.4;
@@ -561,15 +573,23 @@
 	max-width: none;
 }
 .ace-textarea { min-height: 96px; resize: vertical; }
+/* A 2px ring in the primary colour (6.3:1 on white). The old 15% glow was
+   1.3:1, which a keyboard user could not find. The transparent outline is
+   what Windows high contrast mode draws instead of the shadow. */
 .ace-input:focus,
 .ace-select:focus,
 .ace-textarea:focus {
-	outline: none;
+	outline: 2px solid transparent;
 	border-color: var(--ace-primary);
-	box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+	box-shadow: 0 0 0 1px var(--ace-primary);
 }
+.ace-input[aria-invalid="true"] { border-color: var(--ace-error-text); }
 .ace-input[readonly], .ace-input:disabled { background: var(--ace-surface-2); color: var(--ace-subdued); }
 .ace-input-sm { max-width: 230px; }
+/* A read-only URL with its Copy button beside it (ChatGPT product file, 4.34.0).
+   Wraps under the input on a narrow screen rather than squeezing it. */
+.ace-copy-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ace-copy-row .ace-input { flex: 1 1 320px; min-width: 0; }
 
 .ace-toggle {
 	display: flex;
@@ -588,6 +608,13 @@
 	flex: 0 0 auto;
 }
 .ace-indent { margin-left: 26px; }
+
+/* Where content goes (4.25.0): one row per content type, with the controls
+   for the chosen destination under it. */
+.ace-subhead { font-size: 14px; margin: 20px 0 6px; }
+.ace-sub-field { display: block; margin-top: 8px; }
+.ace-sub-field label { display: block; font-weight: 400; margin-bottom: 2px; }
+[data-ace-when][hidden] { display: none !important; }
 
 .ace-help {
 	font-size: 13px;
@@ -617,13 +644,13 @@
 .ace-review-cta { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 
 .ace-connect-banner { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-.ace-connect-banner .ace-help { color: inherit; opacity: .85; margin: 4px 0 0; }
+.ace-connect-banner .ace-help { color: inherit; margin: 4px 0 0; }
 .ace-connect-banner .ace-btn { flex: none; }
 .ace-connect-banner-actions { display: flex; align-items: center; gap: 12px; flex: none; }
-.ace-connect-banner-actions .ace-link-sm { color: inherit; opacity: .8; }
+.ace-connect-banner-actions .ace-link-sm { color: inherit; text-decoration: underline; }
 
 .ace-start-card { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-.ace-start-card .ace-help { color: inherit; opacity: .85; margin: 4px 0 0; }
+.ace-start-card .ace-help { color: inherit; margin: 4px 0 0; }
 .ace-start-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .ace-start-note { font-size: 12px; }
 
@@ -682,6 +709,21 @@
 	display: block;
 }
 .ace-prod-name { font-weight: 500; }
+/* A row header (the product name) looks like the cells beside it. */
+.ace-table tbody th {
+	text-align: left;
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--ace-text);
+	text-transform: none;
+	letter-spacing: normal;
+	padding: 11px 16px;
+	border-bottom: 1px solid var(--ace-border-light);
+	background: none;
+	white-space: normal;
+	vertical-align: middle;
+}
+.ace-table tbody tr:last-child th { border-bottom: none; }
 .ace-loading { text-align: center; color: var(--ace-subdued); padding: 26px; }
 .ace-pagination {
 	display: flex;
@@ -733,6 +775,14 @@
 }
 .ace-batch-text { font-size: 13px; color: var(--ace-subdued); white-space: nowrap; font-variant-numeric: tabular-nums; }
 
+/* Experiment progress: the batch bar, sized for a table cell. The fill takes
+   the step's state (done, blocked), like the stepper's chips beside it. */
+.ace-exp-progress { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; min-width: 120px; max-width: 240px; }
+.ace-exp-progress .ace-batch-bar { flex: none; width: 100%; height: 6px; }
+.ace-exp-progress-caption { font-size: 12px; color: var(--ace-subdued); font-variant-numeric: tabular-nums; }
+.ace-batch-fill.is-success { background: var(--ace-emerald); }
+.ace-batch-fill.is-warning { background: var(--ace-amber); }
+
 /* ------------------------------------------------------------------ */
 /* Review list + diffs                                                 */
 /* ------------------------------------------------------------------ */
@@ -747,21 +797,29 @@
 }
 .ace-rev-head { display: flex; align-items: center; gap: 12px; padding: 12px 16px; }
 .ace-rev-toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	background: none;
 	border: none;
+	border-radius: var(--ace-radius-sm);
 	cursor: pointer;
 	font-size: 18px;
 	color: var(--ace-subdued);
 	padding: 0;
-	width: 18px;
+	width: 28px;
+	height: 28px;
 	flex: 0 0 auto;
 }
+.ace-rev-toggle:hover { background: var(--ace-surface-3); }
 .ace-caret { display: inline-block; transition: transform 0.15s ease; }
 .ace-rev-item.is-open .ace-caret { transform: rotate(90deg); }
 .ace-rev-compact .ace-rev-toggle { display: none; }
 .ace-rev-main { flex: 1; min-width: 0; }
 .ace-rev-title { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .ace-rev-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 5px; }
+.ace-rev-held { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 6px; font-size: 12px; color: var(--ace-subdued); }
+.ace-rev-held[hidden] { display: none; }
 .ace-fieldchip {
 	font-size: 11px;
 	color: var(--ace-subdued);
@@ -989,7 +1047,7 @@
 	border: 2px solid var(--ace-surface);
 	border-radius: 4px;
 	min-width: 40px;
-	color: var(--ace-text);
+	color: #000;
 }
 .ace-heatmap td.is-deep { color: #fff; }
 
@@ -1040,6 +1098,23 @@
 	.ace-skeleton::after { animation: none; }
 	.ace-ring-fg { transition: none; }
 	.ace-btn.is-busy::after { animation: none; }
+	.ace-batch-fill { transition: none; }
+	.ace-caret,
+	.ace-tab,
+	.ace-btn,
+	.ace-input,
+	.ace-select,
+	.ace-textarea { transition: none; }
+	/* Whatever is added later is covered too: ace-spin, tab and caret
+	   movement, the switch knob. */
+	.agencoen-wrap *,
+	.agencoen-wrap *::before,
+	.agencoen-wrap *::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
 }
 
 /* ------------------------------------------------------------------ */
@@ -1048,6 +1123,9 @@
 
 .ace-modal { position: fixed; inset: 0; z-index: 100050; display: flex; align-items: center; justify-content: center; }
 .ace-modal[hidden] { display: none; }
+/* `hidden` must win over a component's own display (.ace-selbar is flex), or
+   an empty selection bar or pager still draws. */
+.agencoen-wrap [hidden] { display: none !important; }
 .ace-modal-backdrop { position: absolute; inset: 0; background: rgba(17, 24, 39, 0.45); }
 .ace-modal-card {
 	position: relative;
@@ -1110,15 +1188,15 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 15px;
-	height: 15px;
-	margin-left: 6px;
+	width: 24px;
+	height: 24px;
+	margin-left: 2px;
 	padding: 0;
 	border-radius: 50%;
-	border: 1px solid var(--ace-border);
+	border: 1px solid var(--ace-control-border);
 	background: var(--ace-surface);
 	color: var(--ace-subdued);
-	font-size: 10px;
+	font-size: 12px;
 	font-weight: 600;
 	line-height: 1;
 	cursor: help;
@@ -1148,6 +1226,21 @@
 .ace-toast-error { background: #fee2e2; border-color: #fecaca; color: #b91c1c; }
 .ace-toast-info { background: #dbeafe; border-color: #bfdbfe; color: #1d4ed8; }
 .ace-toast a { color: inherit; font-weight: 600; }
+.ace-toast-close {
+	min-width: 24px;
+	min-height: 24px;
+	margin-left: 6px;
+	padding: 0 4px;
+	border: 1px solid currentColor;
+	border-radius: 6px;
+	background: transparent;
+	color: inherit;
+	font-size: 16px;
+	line-height: 1;
+	cursor: pointer;
+	vertical-align: middle;
+}
+.ace-toast-close:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 
 .ace-chart-tip {
 	position: fixed;
@@ -1168,7 +1261,7 @@
 .ace-chart-tip .ace-tip-row { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
 .ace-chart-tip .ace-tip-dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; flex: 0 0 auto; }
 .ace-chart-tip .ace-tip-val { margin-left: auto; font-weight: 600; padding-left: 10px; }
-.ace-help-tip { max-width: 260px; }
+.ace-help-tip { max-width: 260px; pointer-events: auto; }
 
 /* Utility classes (initial states formerly inline) */
 .ace-skeleton-chart { height: 180px; }
@@ -1181,6 +1274,10 @@
 .ace-ct-table { width: 100%; border-collapse: collapse; }
 .ace-ct-table th,
 .ace-ct-table td { text-align: left; vertical-align: middle; padding: 6px 8px 6px 0; border-bottom: 1px solid var(--ace-border-light); }
+/* Custom fields keep their lines (care guides, lists), read top-aligned beside each other. */
+.ace-cf-review th,
+.ace-cf-review td { vertical-align: top; }
+.ace-cf-review td { white-space: pre-line; overflow-wrap: anywhere; }
 .ace-ct-alt img { display: block; width: 48px; height: 48px; object-fit: cover; border-radius: 4px; }
 .ace-ct-chip { display: inline-block; font-size: 11px; line-height: 1.6; padding: 0 8px; border-radius: 999px; white-space: nowrap; }
 .ace-ct-chip--ok { background: #e7f6ec; color: #1e6b3a; }
@@ -1283,3 +1380,127 @@
 	.ace-rev-head { flex-wrap: wrap; }
 	.ace-rev-actions { flex: 1 1 100%; justify-content: flex-end; }
 }
+
+/* Custom fields card (4.24) */
+/* Custom fields table (Settings, 4.24.1): the index table components, sized
+   to sit inside a settings card rather than on the page. */
+.agencoen-wrap .ace-custom-fields { margin-top: 14px; }
+.agencoen-wrap .ace-cf-tabs { margin-bottom: 10px; }
+.agencoen-wrap .ace-cf-toolbar { padding: 0; border: 0; box-shadow: none; background: none; margin-bottom: 10px; }
+.agencoen-wrap .ace-cf-frame { border: 1px solid var(--ace-border-light); border-radius: var(--ace-radius-lg); overflow: hidden; }
+.agencoen-wrap .ace-cf-frame .ace-pagination { justify-content: space-between; }
+.agencoen-wrap .ace-cf-note { margin: 0; padding: 16px; }
+.agencoen-wrap .ace-cf-table td { vertical-align: middle; }
+.agencoen-wrap .ace-cf-kind { font-size: 12px; color: var(--ace-subdued); margin-top: 2px; }
+.agencoen-wrap .ace-cf-example {
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	max-width: 360px;
+	color: var(--ace-subdued);
+}
+.agencoen-wrap .ace-cf-action { text-align: right; white-space: nowrap; }
+
+/* An on/off switch drawn on a native checkbox, so it keeps keyboard and
+   screen reader behaviour (role="switch" on the input). The selectors carry
+   the input type and the wrapper because WordPress's own admin CSS styles
+   every input[type="checkbox"] (size, border, checkmark) with more weight
+   than a single class. */
+.agencoen-wrap input[type="checkbox"].ace-switch {
+	-webkit-appearance: none;
+	appearance: none;
+	position: relative;
+	display: inline-block;
+	width: 34px;
+	min-width: 34px;
+	height: 20px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 999px;
+	background: var(--ace-control-border);
+	box-shadow: none;
+	cursor: pointer;
+	transition: background 0.15s ease;
+	vertical-align: middle;
+}
+.agencoen-wrap input[type="checkbox"].ace-switch::after {
+	content: "";
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	background: #fff;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+	transition: transform 0.15s ease;
+}
+.agencoen-wrap input[type="checkbox"].ace-switch::before,
+.agencoen-wrap input[type="checkbox"].ace-switch:checked::before { content: none; display: none; }
+.agencoen-wrap input[type="checkbox"].ace-switch:checked { background: var(--ace-primary); }
+.agencoen-wrap input[type="checkbox"].ace-switch:checked::after { transform: translateX(14px); }
+.agencoen-wrap input[type="checkbox"].ace-switch:focus { box-shadow: none; outline: none; }
+.agencoen-wrap input[type="checkbox"].ace-switch:focus-visible { outline: 2px solid var(--ace-primary); outline-offset: 2px; }
+.agencoen-wrap input[type="checkbox"].ace-switch:disabled { opacity: 0.5; cursor: default; }
+
+/* ------------------------------------------------------------------ */
+/* Accessibility (4.27.0)                                              */
+/* ------------------------------------------------------------------ */
+
+/* One focus ring for everything a keyboard can reach in the plugin's screens. */
+.agencoen-wrap a:focus-visible,
+.agencoen-wrap button:focus-visible,
+.agencoen-wrap summary:focus-visible,
+.agencoen-wrap [tabindex]:focus-visible,
+.agencoen-wrap input[type="checkbox"]:focus-visible,
+.agencoen-wrap input[type="radio"]:focus-visible {
+	outline: 2px solid var(--ace-primary);
+	outline-offset: 2px;
+}
+.ace-modal-card:focus { outline: none; }
+
+/* Dashboard chart heading with its help button beside it. */
+.ace-chart-head { display: flex; align-items: center; gap: 6px; margin: 0 0 14px; }
+.ace-chart-head .ace-h3 { margin: 0; }
+
+/* Two radio buttons that answer one question. */
+.ace-radio-group { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 14px; margin: 0; padding: 0; border: 0; min-width: 0; }
+.ace-radio-group legend { float: left; margin: 0 6px 0 0; padding: 0; }
+.ace-radio-group .ace-label { margin-bottom: 0; }
+
+/* A chart's numbers, behind "Show data table". */
+.ace-chart-data { margin-top: 8px; }
+.ace-chart-data-table { margin-top: 8px; max-height: 320px; overflow: auto; border: 1px solid var(--ace-border-light); border-radius: var(--ace-radius-md); }
+.ace-chart-data-table caption { text-align: left; font-size: 12px; font-weight: 600; color: var(--ace-subdued); padding: 8px 12px 4px; }
+.ace-chart-data-table .ace-table th,
+.ace-chart-data-table .ace-table td { padding: 6px 12px; font-size: 13px; }
+.ace-donut-legend .ace-legend-line { min-height: 24px; }
+
+/* Field formats card and layout previews (4.28.0) */
+.agencoen-wrap .ace-ff-head { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+.agencoen-wrap .ace-ff-table td { vertical-align: top; }
+.agencoen-wrap .ace-ff-table td .ace-chip { margin-bottom: 4px; }
+.agencoen-wrap .ace-ff-card { width: 760px; }
+.agencoen-wrap .ace-ff-modes,
+.agencoen-wrap .ace-ff-locks { border: 0; margin: 12px 0; padding: 0; min-width: 0; }
+.agencoen-wrap .ace-ff-option { display: flex; gap: 8px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--ace-border-light); border-radius: var(--ace-radius-lg); margin-bottom: 6px; cursor: pointer; }
+.agencoen-wrap .ace-ff-option input { margin-top: 3px; flex-shrink: 0; }
+.agencoen-wrap .ace-ff-option .ace-help { display: block; margin: 2px 0 0; }
+.agencoen-wrap .ace-ff-parts { margin: 6px 0 12px 20px; }
+.agencoen-wrap .ace-ff-labels { margin: 6px 0 12px; padding: 0; list-style: none; }
+.agencoen-wrap .ace-ff-cap { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ace-subdued); margin: 10px 0 4px; }
+.agencoen-wrap .ace-layout-preview { border: 1px solid var(--ace-border-light); border-radius: var(--ace-radius-lg); padding: 10px 12px; background: var(--ace-surface); overflow-wrap: anywhere; }
+.agencoen-wrap .ace-layout-preview ul,
+.agencoen-wrap .ace-layout-preview ol { margin: 0 0 8px 20px; list-style: revert; }
+.agencoen-wrap .ace-layout-preview p { margin: 0 0 8px; }
+.agencoen-wrap .ace-ff-template { border: 0; margin: 12px 0; padding: 0; min-width: 0; }
+.agencoen-wrap .ace-ff-tpl { margin: 6px 0; padding: 0; list-style: none; }
+.agencoen-wrap .ace-ff-tpl-part { border: 1px solid var(--ace-border-light); border-radius: var(--ace-radius-lg); padding: 8px 10px; margin-bottom: 6px; }
+.agencoen-wrap .ace-ff-tpl-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: center; }
+.agencoen-wrap .ace-ff-tpl-settings,
+.agencoen-wrap .ace-ff-tpl-add { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin-top: 6px; }
+.agencoen-wrap .ace-ff-tpl-field { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--ace-subdued); }
+.agencoen-wrap .ace-ff-tpl-field input[type="number"] { width: 72px; }
+.agencoen-wrap .ace-ff-tpl-wide { flex: 1 1 220px; min-width: 0; }

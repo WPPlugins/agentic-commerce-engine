@@ -23,6 +23,13 @@
  * order-level rows would flip that and is not worth it for any question this
  * feature asks.
  *
+ * AGENT-SENT ORDERS
+ * Orders that came through a shopping agent's buy link carry the opaque token
+ * Rezolve Ai put on that link (see Ucp). They are reported as day, token and
+ * product totals, with the number of distinct orders per token per day. The
+ * token is the only join; no order id, customer id or email is sent, the same
+ * line the rest of this report holds.
+ *
  * DEGRADES RATHER THAN LIES
  * The lookup tables only exist when WooCommerce Analytics is enabled, and on
  * some stores the historical import never finished. Both cases report nothing
@@ -44,6 +51,8 @@ class Sales_Tracker {
 	const REPORT_DAYS = 3;
 	/** Products per day. */
 	const MAX_PRODUCTS = 1000;
+	/** Agent-attributed orders read per run. */
+	const MAX_AGENT_ORDERS = 500;
 
 	/** @var Plugin */
 	private $plugin;
@@ -74,10 +83,28 @@ class Sales_Tracker {
 			return false;
 		}
 		$store_id = $settings->get_store_id();
-		if ( ! $store_id || ! $this->is_available() ) {
+		if ( ! $store_id ) {
 			return false;
 		}
 
+		$agent = $this->agent_report();
+		$days  = $this->is_available() ? $this->sales_days() : array();
+		if ( empty( $days ) && empty( $agent ) ) {
+			return false;
+		}
+
+		$currency = function_exists( 'get_woocommerce_currency' ) ? (string) get_woocommerce_currency() : '';
+		$result   = $this->plugin->api()->sales_ingest( $store_id, $days, $agent, $currency );
+		return ! is_wp_error( $result );
+	}
+
+	/**
+	 * Per-product sales per day from the Analytics lookup tables, or an empty
+	 * array when there are none.
+	 *
+	 * @return array<int,array{date:string,products:array}>
+	 */
+	private function sales_days() {
 		global $wpdb;
 		$lookup = $wpdb->prefix . 'wc_order_product_lookup';
 		$stats  = $wpdb->prefix . 'wc_order_stats';
@@ -107,7 +134,7 @@ class Sales_Tracker {
 		);
 
 		if ( empty( $rows ) ) {
-			return false;
+			return array();
 		}
 
 		$days = array();
@@ -136,7 +163,139 @@ class Sales_Tracker {
 			);
 		}
 
-		$result = $this->plugin->api()->sales_ingest( $store_id, $payload );
-		return ! is_wp_error( $result );
+		return $payload;
+	}
+
+	/**
+	 * Agent-sent orders and landings over the report window.
+	 *
+	 * Reads order ids by meta, then each order's line items: product, quantity
+	 * and net line total. The order object is loaded to read those and nothing
+	 * else leaves this method.
+	 *
+	 * @return array<int,array{date:string,handoffs:array}>
+	 */
+	private function agent_report() {
+		if ( ! function_exists( 'wc_get_orders' ) ) {
+			return array();
+		}
+		$since = gmdate( 'Y-m-d', strtotime( '-' . self::REPORT_DAYS . ' days' ) );
+
+		$ids = wc_get_orders(
+			array(
+				'limit'        => self::MAX_AGENT_ORDERS,
+				'return'       => 'ids',
+				'status'       => array( 'wc-completed', 'wc-processing', 'wc-on-hold' ),
+				'date_created' => '>=' . strtotime( $since . ' 00:00:00' ),
+				'meta_query'   => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					array(
+						'key'     => Ucp::ORDER_META_AGENT,
+						'compare' => 'EXISTS',
+					),
+				),
+			)
+		);
+
+		$orders = array();
+		foreach ( is_array( $ids ) ? $ids : array() as $id ) {
+			$order = wc_get_order( $id );
+			if ( ! $order ) {
+				continue;
+			}
+			$created = $order->get_date_created();
+			$items   = array();
+			foreach ( $order->get_items() as $item ) {
+				$items[] = array(
+					'product_id' => (int) $item->get_product_id(),
+					'quantity'   => (int) $item->get_quantity(),
+					'total'      => (float) $item->get_total(),
+				);
+			}
+			$orders[] = array(
+				'date'  => $created ? $created->date( 'Y-m-d' ) : '',
+				'ref'   => (string) $order->get_meta( Ucp::ORDER_META_AGENT ),
+				'items' => $items,
+			);
+		}
+
+		return self::fold_agent_orders( $orders, Ucp::landings_since( $since ) );
+	}
+
+	/**
+	 * Fold agent orders and landings into the report's day, token and product
+	 * totals. Pure, so the test runner can drive it.
+	 *
+	 * @param array $orders   Each {date, ref, items: [{product_id, quantity, total}]}.
+	 * @param array $landings day => [ref => count].
+	 * @return array<int,array{date:string,handoffs:array}>
+	 */
+	public static function fold_agent_orders( array $orders, array $landings ) {
+		$days = array();
+
+		foreach ( $landings as $day => $refs ) {
+			foreach ( (array) $refs as $ref => $count ) {
+				$ref = Ucp::sanitize_agent_ref( (string) $ref );
+				if ( '' === $ref || (int) $count <= 0 ) {
+					continue;
+				}
+				$days[ $day ][ $ref ]             = isset( $days[ $day ][ $ref ] ) ? $days[ $day ][ $ref ] : self::empty_handoff();
+				$days[ $day ][ $ref ]['landings'] = (int) $count;
+			}
+		}
+
+		foreach ( $orders as $order ) {
+			$ref = Ucp::sanitize_agent_ref( isset( $order['ref'] ) ? $order['ref'] : '' );
+			$day = isset( $order['date'] ) ? (string) $order['date'] : '';
+			if ( '' === $ref || 1 !== preg_match( '/^\d{4}-\d{2}-\d{2}$/', $day ) ) {
+				continue;
+			}
+			$entry = isset( $days[ $day ][ $ref ] ) ? $days[ $day ][ $ref ] : self::empty_handoff();
+			++$entry['orders'];
+			foreach ( isset( $order['items'] ) ? (array) $order['items'] : array() as $item ) {
+				$pid = isset( $item['product_id'] ) ? (int) $item['product_id'] : 0;
+				if ( $pid <= 0 ) {
+					continue;
+				}
+				if ( ! isset( $entry['products'][ $pid ] ) ) {
+					$entry['products'][ $pid ] = array(
+						'productId'    => $pid,
+						'units'        => 0,
+						'revenueMinor' => 0,
+					);
+				}
+				$entry['products'][ $pid ]['units']        += max( 0, (int) $item['quantity'] );
+				// Minor units, so the server never has to guess decimal places.
+				$entry['products'][ $pid ]['revenueMinor'] += (int) round( (float) $item['total'] * 100 );
+			}
+			$days[ $day ][ $ref ] = $entry;
+		}
+
+		ksort( $days );
+		$out = array();
+		foreach ( $days as $day => $refs ) {
+			$handoffs = array();
+			foreach ( $refs as $ref => $entry ) {
+				$handoffs[] = array(
+					'ref'      => $ref,
+					'landings' => $entry['landings'],
+					'orders'   => $entry['orders'],
+					'products' => array_values( $entry['products'] ),
+				);
+			}
+			$out[] = array(
+				'date'     => $day,
+				'handoffs' => $handoffs,
+			);
+		}
+		return $out;
+	}
+
+	/** @return array{landings:int,orders:int,products:array} */
+	private static function empty_handoff() {
+		return array(
+			'landings' => 0,
+			'orders'   => 0,
+			'products' => array(),
+		);
 	}
 }

@@ -29,7 +29,7 @@ $agencoen_offline = empty( $connected );
 		<button type="button" class="ace-btn ace-btn-primary" id="agencoen-content-new" <?php disabled( $agencoen_offline ); ?>><?php esc_html_e( 'New article', 'agentic-commerce-engine' ); ?></button>
 	</div>
 
-	<div class="ace-tabs" id="agencoen-content-tabs" role="tablist">
+	<div class="ace-tabs" id="agencoen-content-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Content sections', 'agentic-commerce-engine' ); ?>">
 		<button type="button" class="ace-tab is-active" data-tab="generate"><?php esc_html_e( 'Generate', 'agentic-commerce-engine' ); ?></button>
 		<button type="button" class="ace-tab" data-tab="briefs"><?php esc_html_e( 'Briefs', 'agentic-commerce-engine' ); ?></button>
 		<button type="button" class="ace-tab" data-tab="published"><?php esc_html_e( 'Published', 'agentic-commerce-engine' ); ?></button>
@@ -132,15 +132,18 @@ $agencoen_offline = empty( $connected );
 	<!-- Briefs -->
 	<div data-panel="briefs" hidden>
 		<div class="ace-card">
+			<h2 class="ace-card-title"><?php esc_html_e( 'Project briefs', 'agentic-commerce-engine' ); ?></h2>
 			<?php if ( $agencoen_offline ) : ?>
 				<p class="ace-help"><?php esc_html_e( 'Briefs are stored in your Rezolve Ai project, so this list is empty without an account. Articles already in WordPress are on the Published tab.', 'agentic-commerce-engine' ); ?></p>
 			<?php endif; ?>
 			<div class="ace-toolbar">
+				<label class="screen-reader-text" for="agencoen-content-briefs-status"><?php esc_html_e( 'Brief status', 'agentic-commerce-engine' ); ?></label>
 				<select class="ace-select" id="agencoen-content-briefs-status" <?php disabled( $agencoen_offline ); ?>>
 					<option value="all"><?php esc_html_e( 'All statuses', 'agentic-commerce-engine' ); ?></option>
 					<option value="draft"><?php esc_html_e( 'Ready to publish', 'agentic-commerce-engine' ); ?></option>
 					<option value="published"><?php esc_html_e( 'Published', 'agentic-commerce-engine' ); ?></option>
 				</select>
+				<label class="screen-reader-text" for="agencoen-content-briefs-search"><?php esc_html_e( 'Search briefs', 'agentic-commerce-engine' ); ?></label>
 				<input type="search" class="ace-input" id="agencoen-content-briefs-search" placeholder="<?php esc_attr_e( 'Search briefs', 'agentic-commerce-engine' ); ?>" <?php disabled( $agencoen_offline ); ?> />
 			</div>
 			<div id="agencoen-content-briefs-table"></div>

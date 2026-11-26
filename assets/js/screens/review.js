@@ -77,6 +77,16 @@
 	}
 
 	/**
+	 * The disclosure button of a row, named after its product: a list of
+	 * buttons that all say "Expand" tells a screen reader user nothing about
+	 * which product each one opens.
+	 */
+	function toggleHtml( name, bodyId ) {
+		return '<button type="button" class="ace-rev-toggle" aria-expanded="false" aria-controls="' + attr( bodyId ) + '" aria-label="' +
+			attr( withName( t( 'showDetailsFor', 'Show details for %s' ), name ) ) + '"><span class="ace-caret" aria-hidden="true">&rsaquo;</span></button>';
+	}
+
+	/**
 	 * Every image on the product, the main image first, each with the alt text
 	 * it has now. Each opens at full size, because the thumbnail is a crop.
 	 */
@@ -85,7 +95,7 @@
 			return '';
 		}
 		var images = gallery.images || [];
-		var html = '<div class="ace-gallery-block"><div class="ace-ct-title">' + core.esc( t( 'imagesTitle', 'Product images' ) ) + '</div>';
+		var html = '<div class="ace-gallery-block"><div class="ace-ct-title" role="heading" aria-level="4">' + core.esc( t( 'imagesTitle', 'Product images' ) ) + '</div>';
 		if ( ! images.length ) {
 			return html + '<p class="ace-muted ace-gallery-note">' + core.esc( t( 'noImages', 'This product has no images.' ) ) + '</p></div>';
 		}
@@ -235,7 +245,7 @@
 	 * @param {Object}           waiting Group keys with a re-score in flight.
 	 */
 	function qualityHtml( view, waiting ) {
-		var title = '<div class="ace-ct-title">' + core.esc( t( 'qualityTitle', 'Quality scores' ) ) + '</div>';
+		var title = '<div class="ace-ct-title" role="heading" aria-level="4">' + core.esc( t( 'qualityTitle', 'Quality scores' ) ) + '</div>';
 		if ( ! view ) {
 			return title + '<div class="ace-skeleton ace-skeleton-text" style="width:60%"></div>';
 		}
@@ -303,15 +313,15 @@
 		if ( 'live' === mode ) {
 			// Applied: what shoppers see now, which is what "Edit live" opens with.
 			var live = row.before || row.after;
-			return '<div class="ace-diff is-live"><div class="ace-diff-label">' + core.esc( row.label ) + edit + '</div>' +
+			return '<div class="ace-diff is-live"><div class="ace-diff-label"><span role="heading" aria-level="4">' + core.esc( row.label ) + '</span>' + edit + '</div>' +
 				'<div class="ace-diff-col ace-diff-live"><div class="ace-diff-cap">' + core.esc( t( 'editLiveCap', 'Live on your store' ) ) + '</div><div class="ace-diff-text">' + ( live ? core.esc( clean ? stripTags( live ) : live ) : empty ) + '</div></div></div>';
 		}
 		var before = row.before ? core.esc( clean ? stripTags( row.before ) : row.before ) : empty;
 		var after = row.after ? core.esc( clean ? stripTags( row.after ) : row.after ) : '';
 		return '<div class="ace-diff ' + ( row.changed ? 'is-changed' : 'is-same' ) + '">' +
-			'<div class="ace-diff-label">' + core.esc( row.label ) + ( row.changed ? '' : ' <span class="ace-diff-tag">' + core.esc( t( 'noChange', 'no change' ) ) + '</span>' ) + edit + '</div>' +
+			'<div class="ace-diff-label"><span role="heading" aria-level="4">' + core.esc( row.label ) + ( row.changed ? '' : ' <span class="ace-diff-tag">' + core.esc( t( 'noChange', 'no change' ) ) + '</span>' ) + '</span>' + edit + '</div>' +
 			'<div class="ace-diff-cols"><div class="ace-diff-col ace-diff-before"><div class="ace-diff-cap">' + core.esc( t( 'current', 'Current' ) ) + '</div><div class="ace-diff-text">' + before + '</div></div>' +
-			'<div class="ace-diff-col ace-diff-after"><div class="ace-diff-cap">' + core.esc( t( 'aiSuggestion', 'AI suggestion' ) ) + '</div><div class="ace-diff-text">' + after + '</div></div></div></div>';
+			'<div class="ace-diff-col ace-diff-after"><div class="ace-diff-cap">' + core.esc( t( 'proposed', 'Proposed' ) ) + '</div><div class="ace-diff-text">' + after + '</div></div></div></div>';
 	}
 
 	function renderDiffHtml( diff, mode ) {
@@ -329,7 +339,7 @@
 		if ( irlRaw ) {
 			var irl = irlRaw && irlRaw.scenarios ? irlRaw.scenarios : irlRaw;
 			if ( Array.isArray( irl ) && irl.length ) {
-				html += '<div class="ace-ct-block"><div class="ace-ct-title">' + core.esc( fmt( t( 'irlTitle', 'IRL scenarios (%s)' ), irl.length ) ) + '</div><div class="ace-ct-irl">' +
+				html += '<div class="ace-ct-block"><div class="ace-ct-title" role="heading" aria-level="4">' + core.esc( fmt( t( 'irlTitle', 'IRL scenarios (%s)' ), irl.length ) ) + '</div><div class="ace-ct-irl">' +
 					irl.slice( 0, 6 ).map( function ( s ) {
 						return '<div class="ace-ct-card"><strong>' + core.esc( ( s && s.title ) || '' ) + '</strong><div>' + core.esc( stripTags( ( s && s.description ) || '' ) ) + '</div></div>';
 					} ).join( '' ) + '</div></div>';
@@ -339,7 +349,7 @@
 		if ( linkRaw ) {
 			var links = linkRaw && linkRaw.links ? linkRaw.links : linkRaw;
 			if ( Array.isArray( links ) && links.length ) {
-				html += '<div class="ace-ct-block"><div class="ace-ct-title">' + core.esc( t( 'internalLinks', 'Internal links' ) ) + '</div><ul class="ace-ct-links">' +
+				html += '<div class="ace-ct-block"><div class="ace-ct-title" role="heading" aria-level="4">' + core.esc( t( 'internalLinks', 'Internal links' ) ) + '</div><ul class="ace-ct-links">' +
 					links.map( function ( l ) {
 						return '<li>' + core.esc( ( l && ( l.anchorText || l.targetUrl ) ) || '' ) + '</li>';
 					} ).join( '' ) + '</ul></div>';
@@ -348,11 +358,11 @@
 		var sch = content[ 'jsonld-schema' ] || content[ 'json-ld-schema' ];
 		if ( sch ) {
 			var schStr = 'string' === typeof sch ? sch : JSON.stringify( sch, null, 2 );
-			html += '<div class="ace-ct-block"><div class="ace-ct-title">' + core.esc( t( 'jsonldTitle', 'JSON-LD schema' ) ) + '</div><pre class="ace-ct-json">' + core.esc( schStr.slice( 0, 1400 ) ) + '</pre></div>';
+			html += '<div class="ace-ct-block"><div class="ace-ct-title" role="heading" aria-level="4">' + core.esc( t( 'jsonldTitle', 'JSON-LD schema' ) ) + '</div><pre class="ace-ct-json">' + core.esc( schStr.slice( 0, 1400 ) ) + '</pre></div>';
 		}
 		[ 'google-shopping', 'microsoft-shopping', 'agentic-commerce' ].forEach( function ( chKey ) {
 			if ( content[ chKey ] ) {
-				html += '<div class="ace-ct-block"><div class="ace-ct-title">' + core.esc( fmt( t( 'feedTitle', '%s feed' ), chKey ) ) + '</div><pre class="ace-ct-json">' + core.esc( JSON.stringify( content[ chKey ], null, 2 ).slice( 0, 800 ) ) + '</pre></div>';
+				html += '<div class="ace-ct-block"><div class="ace-ct-title" role="heading" aria-level="4">' + core.esc( fmt( t( 'feedTitle', '%s feed' ), chKey ) ) + '</div><pre class="ace-ct-json">' + core.esc( JSON.stringify( content[ chKey ], null, 2 ).slice( 0, 800 ) ) + '</pre></div>';
 			}
 		} );
 		return html;
@@ -369,7 +379,7 @@
 		}
 		var html = '';
 		var block = function ( title, body, type ) {
-			return sectionHtml( type, '<div class="ace-ct-block"><div class="ace-ct-head"><div class="ace-ct-title">' + core.esc( title ) + '</div>' + editButtonHtml( type, mode ) + '</div>' + body + '</div>' );
+			return sectionHtml( type, '<div class="ace-ct-block"><div class="ace-ct-head"><div class="ace-ct-title" role="heading" aria-level="4">' + core.esc( title ) + '</div>' + editButtonHtml( type, mode ) + '</div>' + body + '</div>' );
 		};
 		var chip = function ( text, tone ) {
 			return '<span class="ace-ct-chip ace-ct-chip--' + tone + '">' + core.esc( text ) + '</span>';
@@ -388,7 +398,10 @@
 		}
 
 		if ( Array.isArray( extras.attributes ) && extras.attributes.length ) {
-			html += block( t( 'attributesTitle', 'Product attributes' ), '<table class="ace-ct-table"><tbody>' + extras.attributes.map( function ( a ) {
+			html += block( t( 'attributesTitle', 'Product attributes' ), '<table class="ace-ct-table">' +
+				'<caption class="screen-reader-text">' + core.esc( t( 'attributesTitle', 'Product attributes' ) ) + '</caption>' +
+				'<thead><tr><th scope="col">' + core.esc( t( 'colAttribute', 'Attribute' ) ) + '</th><th scope="col">' + core.esc( t( 'colValues', 'Values' ) ) + '</th><th scope="col">' + core.esc( t( 'colOutcome', 'What happens' ) ) + '</th></tr></thead>' +
+				'<tbody>' + extras.attributes.map( function ( a ) {
 				var action = chip( t( 'attrAdd', 'Will be added' ), 'ok' );
 				if ( 'exists' === a.action ) {
 					action = chip( t( 'attrExists', 'Already on the product, kept' ), 'muted' );
@@ -405,11 +418,38 @@
 				same: [ t( 'altSame', 'Already matches' ), 'muted' ],
 				unmatched: [ t( 'altUnmatched', 'Image no longer on this product, skipped' ), 'warn' ],
 			};
-			html += block( t( 'imageAltTitle', 'Image alt text' ), '<table class="ace-ct-table ace-ct-alt"><thead><tr><th></th><th>' + core.esc( t( 'currentAlt', 'Current alt text' ) ) + '</th><th>' + core.esc( t( 'proposedAlt', 'Proposed alt text' ) ) + '</th><th></th></tr></thead><tbody>' + extras.imageAlt.map( function ( row ) {
+			html += block( t( 'imageAltTitle', 'Image alt text' ), '<table class="ace-ct-table ace-ct-alt">' +
+				'<caption class="screen-reader-text">' + core.esc( t( 'imageAltTitle', 'Image alt text' ) ) + '</caption>' +
+				'<thead><tr><th scope="col">' + core.esc( t( 'colImage', 'Image' ) ) + '</th><th scope="col">' + core.esc( t( 'currentAlt', 'Current alt text' ) ) + '</th><th scope="col">' + core.esc( t( 'proposedAlt', 'Proposed alt text' ) ) + '</th><th scope="col">' + core.esc( t( 'colOutcome', 'What happens' ) ) + '</th></tr></thead><tbody>' + extras.imageAlt.map( function ( row ) {
 				var label = labels[ row.action ] || labels.write;
 				var thumb = row.thumb ? '<img src="' + core.esc( row.thumb ).replace( /"/g, '&quot;' ) + '" alt="" width="48" height="48" loading="lazy">' : '';
 				return '<tr><td>' + thumb + '</td><td>' + ( row.current ? core.esc( row.current ) : '<em class="ace-muted">' + core.esc( t( 'emptyValue', '(empty)' ) ) + '</em>' ) + '</td><td>' + core.esc( row.proposed ) + '</td><td>' + chip( label[ 0 ], label[ 1 ] ) + '</td></tr>';
 			} ).join( '' ) + '</tbody></table>', 'image_alt' );
+		}
+
+		// Rewritten custom fields (4.24.0). Read-only here: approve or dismiss
+		// the product to decide them. A field changed on this site since the
+		// suggestion was written is skipped when it is applied.
+		if ( Array.isArray( extras.customFields ) && extras.customFields.length ) {
+			html += sectionHtml( 'custom_fields', '<div class="ace-ct-block"><div class="ace-ct-head"><div class="ace-ct-title" role="heading" aria-level="4">' + core.esc( t( 'customFieldsTitle', 'Your custom fields' ) ) + '</div></div>' +
+				'<table class="ace-ct-table ace-cf-review">' +
+				'<caption class="screen-reader-text">' + core.esc( t( 'customFieldsTitle', 'Your custom fields' ) ) + '</caption>' +
+				'<thead><tr><th scope="col">' + core.esc( t( 'colField', 'Field' ) ) + '</th><th scope="col">' + core.esc( t( 'currentValue', 'Now' ) ) + '</th><th scope="col">' + core.esc( t( 'proposedValue', 'Rewrite' ) ) + '</th></tr></thead><tbody>' +
+				extras.customFields.map( function ( row ) {
+					// 4.28.0: a field written for a product that did not have it,
+					// and a story or meaning to check before approving.
+					var tags = ( row.isNew ? ' ' + core.chip( 'info', t( 'customFieldNew', 'New: this field was empty' ) ) : '' ) +
+						( row.checkFacts ? ' ' + core.chip( 'warning', t( 'customFieldCheckFacts', 'Check the facts' ) ) : '' );
+					return '<tr><th scope="row"><span translate="no">' + core.esc( row.label ) + '</span>' + tags + '</th><td translate="no">' + ( row.current ? core.esc( row.current ) : '<em class="ace-muted">' + core.esc( t( 'emptyValue', '(empty)' ) ) + '</em>' ) + '</td><td translate="no">' + core.esc( row.proposed ) + '</td></tr>';
+				} ).join( '' ) + '</tbody></table></div>' );
+		}
+
+		// A description written in the store's format (4.28.0): how it will look.
+		// The layout was cleaned with wp_kses_post on the server.
+		if ( extras.layout && extras.layout.html ) {
+			html += sectionHtml( 'layout', '<div class="ace-ct-block"><div class="ace-ct-head"><div class="ace-ct-title" role="heading" aria-level="4">' + core.esc( t( 'layoutTitle', 'How the description will look' ) ) + '</div></div>' +
+				'<p class="ace-help">' + core.esc( extras.layout.note || '' ) + '</p>' +
+				'<div class="ace-layout-preview" translate="no">' + extras.layout.html + '</div></div>' );
 		}
 
 		return html;
@@ -548,7 +588,7 @@
 			var value = live ? ( diffRow.before || diffRow.after || '' ) : ( diffRow.after || '' );
 			label = diffRow.label || '';
 			if ( 'description' === type ) {
-				body = '<textarea id="' + attr( domId ) + '" class="ace-edit-wpeditor" rows="14">' + core.esc( value ) + '</textarea>';
+				body = '<textarea id="' + attr( domId ) + '" class="ace-edit-wpeditor" rows="14" aria-label="' + attr( label ) + '">' + core.esc( value ) + '</textarea>';
 			} else if ( 'title' === type ) {
 				body = fieldHtml( 'value', value, limit( 'title', 'maxChars', 255 ), limit( 'title', 'recommendedChars', 70 ), label );
 			} else if ( 'seo_title' === type ) {
@@ -585,7 +625,7 @@
 		}
 
 		return '<div class="ace-editor" data-type="' + attr( type ) + '">' +
-			'<div class="ace-ct-head"><div class="ace-ct-title">' + core.esc( label ) + '</div></div>' +
+			'<div class="ace-ct-head"><div class="ace-ct-title" role="heading" aria-level="4">' + core.esc( label ) + '</div></div>' +
 			( live ? '<p class="ace-edit-livenote">' + core.esc( t( 'editLiveNote', 'This is live on your store. Saving republishes it.' ) ) + '</p>' : '' ) +
 			'<div class="ace-edit-errors" role="alert" hidden></div>' +
 			body +
@@ -720,11 +760,10 @@
 				done += ( d.processed || 0 );
 				var total = done + ( d.remaining || 0 );
 				var pctDone = total > 0 ? Math.round( ( done / total ) * 100 ) : 100;
-				if ( fill ) {
-					fill.style.width = pctDone + '%';
-				}
+				var said = fmt( t( 'processing', 'Processing %1$s of %2$s…' ), core.num( done ), core.num( total ) );
+				core.setProgress( fill, pctDone, said );
 				if ( text ) {
-					text.textContent = fmt( t( 'processing', 'Processing %1$s of %2$s…' ), core.num( done ), core.num( total ) );
+					text.textContent = said;
 				}
 				if ( d.done || 0 === d.processed ) {
 					if ( text ) {
@@ -734,12 +773,10 @@
 						if ( box ) {
 							box.hidden = true;
 						}
-						if ( fill ) {
-							fill.style.width = '0%';
-						}
+						core.setProgress( fill, 0 );
 					}, 1400 );
 					if ( onDone ) {
-						onDone( done );
+						onDone( done, d );
 					}
 					return null;
 				}
@@ -882,6 +919,10 @@
 					core.toast( err.message || t( 'editFix', 'Some of this needs fixing before it can be saved.' ), 'error' );
 					return;
 				}
+				// Held by a product split (4.30.1): the row says until when.
+				if ( err && err.heldBack ) {
+					setHeld( item, err.heldBack );
+				}
 				core.errorToast( err );
 			} );
 		}
@@ -978,6 +1019,45 @@
 			}, RESCORE_POLL_MS );
 		}
 
+		/**
+		 * Why a product cannot be applied yet (4.29.0): a product split holds
+		 * it in its control group. Approve stays: applying asks again, so a
+		 * product released since the page loaded applies normally.
+		 */
+		function heldHtml( label ) {
+			return '<div class="ace-rev-held"' + ( label ? '' : ' hidden' ) + '>' +
+				core.chip( 'warning', t( 'heldBackChip', 'Held back' ) ) +
+				' <span class="ace-rev-held-text">' + core.esc( label || '' ) + '</span></div>';
+		}
+
+		/** Show or clear one row's held-back line. '' clears it. */
+		function setHeld( item, label ) {
+			var held = item ? $( '.ace-rev-held', item ) : null;
+			if ( ! held ) {
+				return;
+			}
+			$( '.ace-rev-held-text', held ).textContent = label || '';
+			held.hidden = ! label;
+		}
+
+		/**
+		 * The rows' held-back lines painted from what was last checked; now
+		 * ask what is current. A failed check leaves them as they are.
+		 */
+		function loadHeldBack( ids ) {
+			if ( ! ids.length ) {
+				return;
+			}
+			core.post( 'review_held_back', { ids: ids } ).then( function ( d ) {
+				var products = d.products || {};
+				Object.keys( products ).forEach( function ( id ) {
+					setHeld( list.querySelector( '.ace-rev-item[data-id="' + attr( id ) + '"]' ), products[ id ] );
+				} );
+			} ).catch( function () {
+				/* display only: applying checks again and refuses on its own */
+			} );
+		}
+
 		function itemHtml( item ) {
 			var chips = ( item.fields || [] ).map( function ( f ) {
 				return '<span class="ace-fieldchip">' + core.esc( f ) + '</span>';
@@ -986,17 +1066,19 @@
 			var score = '<span class="ace-rev-score">' + scoreChipHtml( !! q.known, q.overall ) + '</span>';
 			// The thumbnail and the links sit outside every <button>, so the
 			// delegated click handler below never reads them as a toggle.
+			var bodyId = 'ace-rev-body-p-' + item.id;
 			return '<div class="ace-rev-item" data-id="' + attr( item.id ) + '">' +
 				'<div class="ace-rev-head">' +
-				'<button type="button" class="ace-rev-toggle" aria-label="' + core.esc( t( 'expand', 'Expand' ) ) + '"><span class="ace-caret">&rsaquo;</span></button>' +
+				toggleHtml( item.name, bodyId ) +
 				thumbHtml( item.thumb ) +
-				'<div class="ace-rev-main"><div class="ace-rev-title">' + core.esc( item.name ) + ' ' + score + '</div><div class="ace-rev-chips">' + chips + '</div></div>' +
+				'<div class="ace-rev-main"><div class="ace-rev-title" role="heading" aria-level="3">' + core.esc( item.name ) + ' ' + score + '</div><div class="ace-rev-chips">' + chips + '</div>' +
+				heldHtml( item.heldBack ) + '</div>' +
 				'<div class="ace-rev-actions">' +
 				liveLinkHtml( item.liveUrl, item.name ) +
 				( item.editLink ? '<a class="ace-link-sm" href="' + attr( item.editLink ) + '" target="_blank" rel="noopener">' + core.esc( t( 'edit', 'Edit' ) ) + '</a>' : '' ) +
 				'<button type="button" class="ace-btn ace-btn-secondary ace-btn-sm ace-rev-dismiss">' + core.esc( t( 'dismiss', 'Dismiss' ) ) + '</button>' +
 				'<button type="button" class="ace-btn ace-btn-primary ace-btn-sm ace-rev-approve">' + core.esc( t( 'approve', 'Approve' ) ) + '</button>' +
-				'</div></div><div class="ace-rev-body" hidden></div></div>';
+				'</div></div><div class="ace-rev-body" id="' + attr( bodyId ) + '" hidden></div></div>';
 		}
 
 		// The two tab counts are rendered once by PHP and then owned by this
@@ -1041,9 +1123,11 @@
 					count.textContent = core.num( d.total );
 				}
 				// The list painted cached chips; now read what is current.
-				loadQuality( d.items.map( function ( item ) {
+				var ids = d.items.map( function ( item ) {
 					return String( item.id );
-				} ) );
+				} );
+				loadQuality( ids );
+				loadHeldBack( ids );
 			} ).catch( core.errorToast );
 		}
 
@@ -1053,13 +1137,14 @@
 		 * table, and a stand-in photo here would hide a missing image.
 		 */
 		function appliedItemHtml( row ) {
+			var bodyId = 'ace-rev-body-a-' + row.id;
 			return '<div class="ace-rev-item ace-rev-applied" data-id="' + attr( row.id ) + '"><div class="ace-rev-head">' +
-				'<button type="button" class="ace-rev-toggle" aria-label="' + attr( t( 'expand', 'Expand' ) ) + '"><span class="ace-caret">&rsaquo;</span></button>' +
+				toggleHtml( row.name, bodyId ) +
 				thumbHtml( row.thumb ) +
-				'<div class="ace-rev-main"><div class="ace-rev-title">' + core.esc( row.name ) + ' ' + core.chip( 'success', t( 'statusApplied', 'Applied' ) ) + '</div></div>' +
+				'<div class="ace-rev-main"><div class="ace-rev-title" role="heading" aria-level="3">' + core.esc( row.name ) + ' ' + core.chip( 'success', t( 'statusApplied', 'Applied' ) ) + '</div></div>' +
 				'<div class="ace-rev-actions">' + liveLinkHtml( row.liveUrl, row.name ) +
 				'<button type="button" class="ace-btn ace-btn-secondary ace-btn-sm ace-rev-revert">' + core.esc( t( 'revertToOriginal', 'Revert to original' ) ) + '</button></div></div>' +
-				'<div class="ace-rev-body" hidden></div></div>';
+				'<div class="ace-rev-body" id="' + attr( bodyId ) + '" hidden></div></div>';
 		}
 
 		function loadApplied( reset ) {
@@ -1121,7 +1206,16 @@
 		if ( approveAll ) {
 			approveAll.addEventListener( 'click', function () {
 				if ( window.confirm( t( 'confirmApproveAll', 'Apply every pending suggestion to your live products?' ) ) ) {
-					drainServer( 'approve_batch', { search: pending.search }, function () {
+					drainServer( 'approve_batch', { search: pending.search }, function ( done, last ) {
+						var held = last && last.held ? last.held : 0;
+						if ( held > 0 ) {
+							core.toast(
+								1 === held
+									? t( 'heldBackOne', 'One product was left waiting: an experiment is holding it back. Its row says until when.' )
+									: fmt( t( 'heldBackMany', '%s products were left waiting: an experiment is holding them back. Each row says until when.' ), core.num( held ) ),
+								'info'
+							);
+						}
 						loadPending( true );
 						// The whole queue just moved to applied. Re-fetch rather
 						// than count it: a batch can be interrupted, so the
@@ -1141,9 +1235,11 @@
 			}
 			var id = item.getAttribute( 'data-id' );
 
-			if ( e.target.closest( '.ace-rev-toggle' ) ) {
+			var toggle = e.target.closest( '.ace-rev-toggle' );
+			if ( toggle ) {
 				var body = $( '.ace-rev-body', item );
 				item.classList.toggle( 'is-open' );
+				toggle.setAttribute( 'aria-expanded', body.hidden ? 'true' : 'false' );
 				if ( body.hidden ) {
 					body.hidden = false;
 					if ( ! body.getAttribute( 'data-loaded' ) ) {
@@ -1233,6 +1329,10 @@
 					bumpCount( '#ace-count-applied', 1 );
 				} ).catch( function ( err ) {
 					core.setBusy( btn, false );
+					// Held by a product split: the row stays, and says why.
+					if ( err && err.heldBack ) {
+						setHeld( item, err.heldBack );
+					}
 					core.errorToast( err );
 				} );
 			} else if ( btn.classList.contains( 'ace-rev-dismiss' ) ) {

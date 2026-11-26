@@ -27,6 +27,12 @@ class Cron {
 	const REVIEW_SYNC    = 'agencoen_review_sync';
 	/** One-time walk of existing decisions, armed by a version bump. */
 	const REVIEW_BACKFILL = 'agencoen_review_backfill';
+	/** One full catalog sync, armed by an upgrade that changed what a product syncs as (4.20.1). */
+	const CATALOG_RESYNC = 'agencoen_catalog_resync';
+	/** Failed first pages counted so far for CATALOG_RESYNC. */
+	const OPT_RESYNC_TRIES = 'agencoen_catalog_resync_tries';
+	/** Tries in all before the re-sync is left to the next scheduled or manual sync. */
+	const RESYNC_MAX_TRIES = 3;
 	const SWEEP_LIMIT    = 100;
 
 	/** @var Plugin */
@@ -57,6 +63,7 @@ class Cron {
 			add_action( self::SWEEP_HOOK, array( $this, 'auto_apply_sweep' ) );
 			add_action( self::SWEEP_CONTINUE, array( $this, 'auto_apply_sweep' ) );
 			add_action( Sync::CONTINUE_HOOK, array( $this->plugin->sync(), 'continue_sync' ) );
+			add_action( self::CATALOG_RESYNC, array( $this, 'catalog_resync' ) );
 		}
 	}
 
@@ -68,6 +75,7 @@ class Cron {
 		$this->plugin->bots()->prune();
 		if ( $this->plugin->settings()->is_bots_report() ) {
 			$this->plugin->bots()->report_back();
+			Signed_Agents::report( $this->plugin );
 		}
 
 		// Storefront traffic and sales ride the same daily tick rather than
@@ -106,6 +114,7 @@ class Cron {
 	public function bot_report() {
 		if ( $this->plugin->settings()->is_bots_report() ) {
 			$this->plugin->bots()->report_back();
+			Signed_Agents::report( $this->plugin );
 		}
 	}
 
@@ -126,6 +135,25 @@ class Cron {
 	}
 
 	/**
+	 * WooCommerce's base country (Settings, General, Store Address) as an
+	 * uppercase ISO 3166-1 alpha-2 code, or '' when WooCommerce is absent or
+	 * the setting is not a country.
+	 *
+	 * @return string
+	 */
+	public static function base_country() {
+		if ( ! function_exists( 'WC' ) ) {
+			return '';
+		}
+		$wc = WC();
+		if ( ! $wc || ! isset( $wc->countries ) || ! is_object( $wc->countries ) || ! method_exists( $wc->countries, 'get_base_country' ) ) {
+			return '';
+		}
+		$code = strtoupper( (string) $wc->countries->get_base_country() );
+		return preg_match( '/^[A-Z]{2}$/', $code ) ? $code : '';
+	}
+
+	/**
 	 * Heartbeat: report health and refresh the credit cache.
 	 */
 	public function heartbeat() {
@@ -134,23 +162,30 @@ class Cron {
 			return;
 		}
 
-		$response = $this->plugin->api()->heartbeat(
-			array(
-				'storeId'       => $settings->get_store_id(),
-				'pluginVersion' => AGENCOEN_VERSION,
-				'wcVersion'     => defined( 'WC_VERSION' ) ? WC_VERSION : null,
-				'productCount'  => $this->plugin->repository()->count_published(),
-				// What this site is actually measuring. Sent every hour rather
-				// than once at connect time, because both switches live in
-				// wp_options and can be turned off without Rezolve Ai ever hearing.
-				// Until this shipped, nothing on the Rezolve Ai side could tell a site
-				// that had declined tracking from one that had never been asked.
-				'traffic'       => array(
-					'enabled' => $settings->is_traffic_enabled(),
-					'report'  => $settings->is_traffic_report(),
-				),
-			)
+		$body = array(
+			'storeId'       => $settings->get_store_id(),
+			'pluginVersion' => AGENCOEN_VERSION,
+			'wcVersion'     => defined( 'WC_VERSION' ) ? WC_VERSION : null,
+			'productCount'  => $this->plugin->repository()->count_published(),
+			// What this site is actually measuring. Sent every hour rather
+			// than once at connect time, because both switches live in
+			// wp_options and can be turned off without Rezolve Ai ever hearing.
+			// Until this shipped, nothing on the Rezolve Ai side could tell a site
+			// that had declined tracking from one that had never been asked.
+			'traffic'       => array(
+				'enabled' => $settings->is_traffic_enabled(),
+				'report'  => $settings->is_traffic_report(),
+			),
 		);
+		// The store's own country, for the OpenAI product file's store_country.
+		// Sent only when WooCommerce states one, so an unset base country keeps
+		// whatever was last reported rather than clearing it.
+		$country = self::base_country();
+		if ( '' !== $country ) {
+			$body['storeCountry'] = $country;
+		}
+
+		$response = $this->plugin->api()->heartbeat( $body );
 
 		// Learn (or forget) the UCP delivery token. It rides the heartbeat so
 		// the merchant never has to paste anything, and so turning delivery off
@@ -179,6 +214,31 @@ class Cron {
 		// honoured on this storefront without the merchant touching anything.
 		if ( is_array( $response ) && ! empty( $response['contentPlacement'] ) && is_array( $response['contentPlacement'] ) ) {
 			$settings->save_placement( $response['contentPlacement'] );
+		}
+
+		// Where each content type is written (4.25.0): the block, one of the
+		// store's own fields, or a description section. PRESENT-only, but an
+		// EMPTY map is meaningful here: nothing is routed, everything goes to
+		// the block, so it is saved rather than skipped.
+		if ( is_array( $response ) && isset( $response['contentDestinations'] ) && is_array( $response['contentDestinations'] ) ) {
+			Content_Destinations::save( $response['contentDestinations'] );
+		}
+
+		// Custom fields the merchant left out, refreshed hourly. PRESENT-only
+		// like the others. When a field was brought back, one catalogue sync
+		// sends it again (it was stripped from the platform when left out).
+		if ( is_array( $response ) && isset( $response['customFields'] ) && is_array( $response['customFields'] ) ) {
+			if ( $settings->save_custom_fields( $response['customFields'] ) && ! wp_next_scheduled( self::CATALOG_RESYNC ) ) {
+				wp_schedule_single_event( time() + 5 * MINUTE_IN_SECONDS, self::CATALOG_RESYNC );
+			}
+		}
+
+		// The store's policy pages, for the seller columns of the OpenAI
+		// product file (4.34.0). WooCommerce stores only: no other kind of
+		// site has a product file. Sent when changed or a day old, never on
+		// every tick; see Legal_Policies.
+		if ( $this->plugin->has_woo() ) {
+			Legal_Policies::report( $this->plugin );
 		}
 
 		// Keep the dashboard balance reasonably fresh.
@@ -219,6 +279,40 @@ class Cron {
 	}
 
 	/**
+	 * The one full sync an upgrade arms when it changes what a product syncs
+	 * as. 4.20.1: an image with no alt text used to be sent with the product
+	 * name in its place, and Rezolve Ai keeps what it was sent until the product
+	 * is synced again. Auto-sync is off by default, so without this most sites
+	 * would keep showing the name for months.
+	 *
+	 * Connected sites only: a site that connects later sends a full sync then.
+	 * A first page that fails is tried again an hour later, RESYNC_MAX_TRIES
+	 * times in all, after which the next scheduled or manual sync carries the
+	 * fix. Later pages already retry through the sync's own continuation.
+	 */
+	public function catalog_resync() {
+		if ( ! $this->plugin->settings()->is_connected() ) {
+			delete_option( self::OPT_RESYNC_TRIES );
+			return;
+		}
+
+		$result = $this->plugin->sync()->kickoff_full_sync();
+		if ( ! is_wp_error( $result ) ) {
+			delete_option( self::OPT_RESYNC_TRIES );
+			return;
+		}
+
+		$tries = (int) get_option( self::OPT_RESYNC_TRIES, 0 ) + 1;
+		if ( $tries >= self::RESYNC_MAX_TRIES ) {
+			delete_option( self::OPT_RESYNC_TRIES );
+			$this->plugin->logger()->error( 'Catalog re-sync gave up after ' . $tries . ' tries; the next sync will send the update: ' . $result->get_error_message() );
+			return;
+		}
+		update_option( self::OPT_RESYNC_TRIES, $tries, false );
+		wp_schedule_single_event( time() + HOUR_IN_SECONDS, self::CATALOG_RESYNC );
+	}
+
+	/**
 	 * Apply a bounded batch of enriched-but-unapplied products when auto-apply
 	 * is on, then self-reschedule to drain any remaining backlog.
 	 *
@@ -232,9 +326,22 @@ class Cron {
 			return;
 		}
 
-		$ids     = $this->plugin->repository()->ids_with_status( Meta::STATUS_ENRICHED, 1, self::SWEEP_LIMIT );
+		// Products a product split was last found holding are stepped past,
+		// and the rest are asked about in one request before any is applied
+		// (4.29.0). A check that fails applies nothing and does not re-arm:
+		// the next daily sweep tries again.
+		$ids     = $this->plugin->repository()->ids_with_status( Meta::STATUS_ENRICHED, 1, self::SWEEP_LIMIT, true );
+		$checked = $this->plugin->held_back()->check( $ids );
+		if ( is_wp_error( $checked ) ) {
+			return;
+		}
 		$applied = 0;
 		foreach ( $ids as $id ) {
+			if ( ! empty( $checked[ $id ] ) ) {
+				// Held: no longer in the sweep's window, which is progress.
+				++$applied;
+				continue;
+			}
 			if ( ! is_wp_error( $this->plugin->apply()->apply( $id ) ) ) {
 				++$applied;
 			}

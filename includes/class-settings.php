@@ -59,6 +59,11 @@ class Settings {
 	const OPT_TRAFFIC_ENABLED = 'agencoen_traffic_enabled';
 	const OPT_TRAFFIC_REPORT  = 'agencoen_traffic_report';
 
+	/* New in 4.24 — custom fields. { revision: int, excluded: string[] }, mirrored
+	 * from the platform (heartbeat, and every save in the Custom fields card), so
+	 * a field left out in the web app or the Shopify app is not sent from here. */
+	const OPT_CUSTOM_FIELDS = 'agencoen_custom_fields';
+
 	/** Per-user dismissal of the optional-connection notice. */
 	const META_CONNECT_NOTICE = 'agencoen_connect_notice_dismissed';
 	const META_START_CARD     = 'agencoen_start_card_dismissed';
@@ -208,6 +213,54 @@ class Settings {
 	}
 
 	/**
+	 * Field ids the merchant left out of writing (see Custom_Fields::field_id).
+	 * Static because the serializer reads it for every product it builds.
+	 *
+	 * @return string[]
+	 */
+	public static function custom_field_exclusions() {
+		$stored = get_option( self::OPT_CUSTOM_FIELDS, array() );
+		if ( ! is_array( $stored ) || empty( $stored['excluded'] ) || ! is_array( $stored['excluded'] ) ) {
+			return array();
+		}
+		return array_values( array_filter( array_map( 'strval', $stored['excluded'] ), 'strlen' ) );
+	}
+
+	/**
+	 * Store the platform's custom-field settings. Returns true when the set of
+	 * excluded fields changed, so a caller can re-sync a field brought back.
+	 *
+	 * @param array $payload { revision, excluded }.
+	 * @return bool Whether the exclusions changed.
+	 */
+	public function save_custom_fields( $payload ) {
+		if ( ! is_array( $payload ) ) {
+			return false;
+		}
+		$before   = self::custom_field_exclusions();
+		$excluded = array();
+		if ( isset( $payload['excluded'] ) && is_array( $payload['excluded'] ) ) {
+			foreach ( $payload['excluded'] as $id ) {
+				if ( is_string( $id ) && '' !== $id && strlen( $id ) <= 1300 ) {
+					$excluded[] = sanitize_text_field( $id );
+				}
+			}
+		}
+		update_option(
+			self::OPT_CUSTOM_FIELDS,
+			array(
+				'revision' => isset( $payload['revision'] ) ? absint( $payload['revision'] ) : 0,
+				'excluded' => $excluded,
+			),
+			false
+		);
+		sort( $before );
+		$after = $excluded;
+		sort( $after );
+		return $before !== $after;
+	}
+
+	/**
 	 * Forget the connection (keeps automation prefs).
 	 */
 	public function clear_connection() {
@@ -219,6 +272,7 @@ class Settings {
 		delete_option( self::OPT_PLATFORM );
 		delete_option( self::OPT_FEATURES );
 		delete_option( self::OPT_PLACEMENT );
+		delete_option( self::OPT_CUSTOM_FIELDS );
 		delete_transient( Dashboard::CREDITS_TRANSIENT );
 		delete_transient( Dashboard::CREDITS_BACKOFF );
 		Dashboard::reset_memo();
@@ -419,7 +473,7 @@ class Settings {
 	 * @return string[]
 	 */
 	public static function placements() {
-		return array( 'below_description', 'above_description', 'bottom_of_page', 'manual', 'hidden' );
+		return array( 'below_description', 'above_description', 'bottom_of_page', 'product_tab', 'manual', 'hidden' );
 	}
 
 	/**
